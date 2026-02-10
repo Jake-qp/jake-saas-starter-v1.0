@@ -1,17 +1,9 @@
 ---
 name: ui
 description: Use when creating visual interfaces. Uses shadcn/ui for 90%+ token savings.
-version: "2.0.0"
-category: design
-phase: 2
-triggers: ["ui", "design system", "components", "make it look good", "shadcn"]
-requires: []
-gate_type: decision
 ---
 
 # UI Skill
-
-> **V2.0:** Now uses shadcn/ui for 90%+ token savings on component creation.
 
 ## Professional Mindset
 

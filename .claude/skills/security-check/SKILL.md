@@ -1,6 +1,7 @@
 ---
 name: security-check
 description: Red-team security audit before commits. Investigate security problems, permission gaps. Act like a pen-tester. Suggest fixes.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Security Check Skill
@@ -33,24 +34,15 @@ Don't think like a developer. Think like someone trying to:
 
 ### Step 1: Scope Assessment & Change Detection
 
-```bash
-# What files changed?
-CHANGED_FILES=$(git diff --name-only HEAD~5 2>/dev/null; git diff --cached --name-only 2>/dev/null)
-echo "$CHANGED_FILES"
-```
+Use Grep and Glob to identify what changed and categorize the change scope:
 
-**Categorize the changes to determine which checks apply:**
-
-```bash
-# Detect change categories
-HAS_AUTH=$(echo "$CHANGED_FILES" | grep -iE "(auth|login|session|token|password|credential)" && echo "yes")
-HAS_API=$(echo "$CHANGED_FILES" | grep -iE "(api/|routes/|endpoint|handler|controller)" && echo "yes")
-HAS_DB=$(echo "$CHANGED_FILES" | grep -iE "(schema|model|query|mutation|prisma|drizzle|database|convex)" && echo "yes")
-HAS_UPLOAD=$(echo "$CHANGED_FILES" | grep -iE "(upload|file|media|image|attachment)" && echo "yes")
-HAS_CONFIG=$(echo "$CHANGED_FILES" | grep -iE "(config|env|setting)" && echo "yes")
-HAS_FRONTEND=$(echo "$CHANGED_FILES" | grep -iE "\.(tsx|jsx|css|scss)$" && echo "yes")
-HAS_USERDATA=$(echo "$CHANGED_FILES" | grep -iE "(user|profile|account|personal|pii)" && echo "yes")
-```
+- **Auth code:** Search for files matching `*auth*`, `*login*`, `*session*`, `*token*`, `*password*`
+- **API endpoints:** Search for files in `api/`, `routes/`, or matching `*handler*`, `*controller*`
+- **Database/models:** Search for files matching `*schema*`, `*model*`, `*query*`, `*mutation*`
+- **File uploads:** Search for files matching `*upload*`, `*file*`, `*media*`
+- **Config/env:** Search for files matching `*config*`, `*env*`, `*setting*`
+- **Frontend:** Search for `*.tsx`, `*.jsx`, `*.css` files
+- **User data:** Search for files matching `*user*`, `*profile*`, `*account*`
 
 ### Step 2: Adaptive Security Matrix
 
@@ -185,16 +177,18 @@ HAS_USERDATA=$(echo "$CHANGED_FILES" | grep -iE "(user|profile|account|personal|
 
 ### Step 4: ALWAYS RUN - Secrets Scan
 
-**This check runs regardless of what changed:**
+**This check runs regardless of what changed.**
 
-```bash
-# Search for potential secrets in code
-grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
-  -E "(sk_live_|pk_live_|AKIA[A-Z0-9]{16}|ghp_[a-zA-Z0-9]{36}|password\s*=\s*['\"][^'\"]+['\"])" \
-  src/ 2>/dev/null | grep -v "\.test\." | grep -v "__test__" | head -10
-```
+Use the Grep tool to search for potential hardcoded secrets across the codebase:
 
-**CRITICAL if found.** Remove secrets, use environment variables.
+- **API keys:** Search for patterns like `sk_live_`, `pk_live_`, `AKIA` (AWS keys), `ghp_` (GitHub tokens)
+- **Passwords:** Search for `password\s*=\s*['"]` in source files
+- **Connection strings:** Search for `mongodb://`, `postgres://`, `mysql://` with credentials
+- **Private keys:** Search for `-----BEGIN` in non-key files
+
+Search in `*.ts`, `*.tsx`, `*.js`, `*.jsx` files. Exclude test files from results.
+
+**CRITICAL if found.** Report the location and recommend using environment variables instead.
 
 ---
 
@@ -215,11 +209,10 @@ grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
 
 ### Step 6: Dependency Audit (run periodically)
 
-```bash
-npm audit 2>/dev/null || echo "Run npm audit manually"
-```
+Read `package.json` and check for known vulnerable packages. Look for outdated or deprecated dependencies. Flag any packages with known CVEs.
 
 **Run if:** Adding new dependencies or before launch. Skip for small changes.
+**Note:** For `npm audit`, ask the user to run it separately — this skill is read-only.
 
 ## Severity Classification
 

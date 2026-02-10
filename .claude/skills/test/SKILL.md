@@ -1,12 +1,7 @@
 ---
 name: test
 description: Use after feature implementation for systematic QA testing. Finds bugs, writes regression tests, fixes issues in a loop until clean.
-version: "1.0.0"
-category: quality
-phase: null
-triggers: ["test this", "QA", "find bugs", "test everything", "verify it works"]
-requires: []
-gate_type: none
+argument-hint: "[feature or area to test]"
 ---
 
 # Test Skill

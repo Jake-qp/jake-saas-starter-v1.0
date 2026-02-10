@@ -1,3 +1,9 @@
+---
+name: prd
+description: Use when creating comprehensive Product Requirement Documents for complex multi-phase features that spawn multiple child features.
+argument-hint: "[feature-name or area]"
+---
+
 # PRD Skill
 
 ## Overview
@@ -13,6 +19,29 @@ PRD (Strategic)          Spec (Tactical)
 ```
 
 **Key Concept:** PRD → spawns child features → each child built with `/build`
+
+## How Product Strategists Think
+
+**"What's the smallest version that proves the idea?"**
+Amateurs write 50-page PRDs covering every edge case. Experts define the minimum viable scope that validates the core hypothesis. The PRD exists to align a team on what to build FIRST, not to document everything forever.
+
+**"What decisions can't be reversed?"**
+Not all decisions are equal. Schema changes are expensive to reverse. UI layouts are cheap. A good PRD identifies the one-way doors and gets those right. Everything else can iterate.
+
+**"Who will read this, and what do they need?"**
+The Context Summary exists for `/build` to consume. The rest exists for humans to align on. Write for both audiences — machine-readable context at the top, human-readable decisions below.
+
+### What Separates Amateurs from Professionals
+
+| Amateur | Professional |
+|---------|--------------|
+| Writes PRD to document everything | Writes PRD to align on decisions |
+| 50-page novel nobody reads | Scannable sections with clear decisions |
+| Starts coding, PRD is afterthought | PRD BEFORE code — architecture decisions first |
+| No child feature breakdown | Clear decomposition into buildable units |
+| Vague "make it better" goals | Observable, testable acceptance criteria |
+
+When you catch yourself writing a PRD without concrete acceptance criteria or without decomposing into child features — STOP. Those are the two things that make a PRD actionable.
 
 ## When to Use /prd
 

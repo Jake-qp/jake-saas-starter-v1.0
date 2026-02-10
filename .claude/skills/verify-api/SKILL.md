@@ -1,6 +1,7 @@
 ---
 name: verify-api
 description: Use before integrating any external API, third-party service, or SDK. Before writing any integration code.
+allowed-tools: Read, Grep, Glob, WebFetch, WebSearch
 ---
 
 # Verify API Skill
@@ -49,10 +50,12 @@ This is non-negotiable. APIs change too frequently. What you "know" about an API
 
 ### Step 1: Find Current Official Documentation
 
+Use **WebSearch** to find the current official docs, then **WebFetch** to read them.
+
 **Priority order:**
 1. MCP documentation tools (Context7, etc.) — most current
-2. Official API docs website — authoritative
-3. SDK TypeScript definitions — type-accurate
+2. Official API docs website via WebFetch — authoritative
+3. SDK TypeScript definitions via Read — type-accurate
 4. Confirm with user — when uncertain
 
 **Never trust:**
@@ -61,8 +64,8 @@ This is non-negotiable. APIs change too frequently. What you "know" about an API
 - Your own memory (training data is stale)
 
 ```
-✅ https://stripe.com/docs/api/customers/create
-✅ https://platform.openai.com/docs/api-reference
+✅ WebSearch → find official docs URL → WebFetch to read
+✅ Read installed SDK's TypeScript definitions for type accuracy
 ❌ "How to use Stripe API" blog from 2022
 ❌ Stack Overflow answer from 3 years ago
 ```
@@ -98,22 +101,17 @@ Document what you find:
 **Verified:** [today's date]
 ```
 
-### Step 3: Test With Real Call
+### Step 3: Verify Response Shape
 
-Before writing integration code, prove it works:
+Before writing integration code, confirm the API behaves as documented:
 
-```bash
-# Test the actual endpoint
-curl -X POST https://api.stripe.com/v1/customers \
-  -u sk_test_xxx: \
-  -d email="test@example.com"
+1. **Use WebFetch** on the API's official docs to verify endpoint, method, params, and response shape
+2. **Use Read** to check any installed SDK's TypeScript definitions for type accuracy
+3. **Use Grep** to find existing integrations in the codebase for patterns to follow
 
-# Verify response matches expected shape
-# Check status codes
-# Confirm auth method works
-```
+If the docs are ambiguous or you can't verify the response shape, flag this to the user and suggest a manual curl test before proceeding.
 
-**If curl works, proceed. If curl fails, fix before coding.**
+**Note:** This skill is read-only. For live API testing (curl/fetch), ask the user to test manually or use a separate tool.
 
 ### Step 4: Document Findings
 
@@ -131,18 +129,17 @@ Add to SCRATCHPAD or inline comments:
   - Returns 200 even for idempotent creates
 ```
 
-## Using MCP Documentation Tools
+## Using Available Research Tools
 
-If Context7 or similar MCP tools are available:
+Use the tools available to this skill for verification:
 
-```
-# Query BEFORE implementing
-"Stripe API create customer current parameters"
-"OpenAI chat completions API request format"
-"Twilio send SMS endpoint authentication"
-```
+- **WebSearch** — Find current official documentation URLs
+- **WebFetch** — Read API docs pages directly to verify endpoints, params, response shapes
+- **Grep** — Search the codebase for existing integrations and patterns
+- **Read** — Read SDK TypeScript definitions, existing config, integration code
+- **Glob** — Find relevant files (SDK type definitions, existing API clients)
 
-**MCP tools give you current docs.** Use them first. They exist to solve the stale-training-data problem.
+**WebSearch + WebFetch give you current docs.** Use them first. They exist to solve the stale-training-data problem.
 
 ## Red Flags That Demand Re-verification
 
