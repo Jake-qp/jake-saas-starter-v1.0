@@ -9,6 +9,7 @@ module.exports = {
     "convex/_generated",
     // There are currently ESLint errors in shadcn/ui
     "components/ui",
+    "e2e",
   ],
   parserOptions: {
     project: true,
@@ -19,17 +20,17 @@ module.exports = {
     // TypeScript, and can be removed for stricter
     // linting down the line.
 
-    // Only warn on unused variables, and ignore variables starting with `_`
+    // Error on unused variables, ignore variables starting with `_`
     "@typescript-eslint/no-unused-vars": [
-      "warn",
+      "error",
       { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
     ],
 
     // Allow escaping the compiler
     "@typescript-eslint/ban-ts-comment": "error",
 
-    // Allow explicit `any`s
-    "@typescript-eslint/no-explicit-any": "off",
+    // Warn on explicit `any`s — tightened for AI-generated code quality
+    "@typescript-eslint/no-explicit-any": "warn",
 
     // START: Allow implicit `any`s
     "@typescript-eslint/no-unsafe-argument": "off",

@@ -17,34 +17,44 @@
 
 **Key Decisions:**
 - Replace Clerk with Convex Auth (single source of truth, no external auth dependency)
-- Auth: Convex Auth with email/password only (no OAuth providers — keeps setup simple)
-- Team-level billing via Polar (B2B SaaS model: Slack, Notion, Linear)
+- Auth: Convex Auth with email/password + magic link via Resend OTP (no OAuth providers — keeps setup simple)
+- Team-level billing via Polar (B2B SaaS model: Slack, Notion, Linear) with credit-based AI consumption
 - Feature flags stored in Convex (reactive subscriptions = instant propagation)
-- AI via Vercel AI SDK with Convex HTTP actions for streaming
+- AI via Vercel AI SDK — dual streaming patterns: Next.js API route (default) + Convex HTTP action (alternative)
 - Super admin via `isSuperAdmin` boolean on users (orthogonal to team roles)
 - Configurable entitlement system (tiers, limits, feature gates defined in config, not hardcoded)
 - Three fixed roles (Owner/Admin/Member) with opt-in custom roles for Enterprise tier
+- Marketing site with modular landing page sections, legal pages, contact form
+- MDX-based blog and changelog for content marketing (zero runtime cost)
+- Production infrastructure: Sentry error monitoring, Vercel Analytics + Speed Insights, preview seed data
+- Deploy on Vercel with GitHub auto-deploy; Convex backend on `.convex.cloud`
+- Waitlist/pre-launch mode toggled via feature flag
 
 **Schema Changes:**
 - `users`: Remove `tokenIdentifier`, add `isSuperAdmin`; integrate `authTables`
 - `teams`: Add `polarCustomerId`, `subscriptionTier`, `subscriptionStatus`
-- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `featureFlags`, `teamFeatureFlags`, `analyticsEvents`, `auditLog`
+- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `featureFlags`, `teamFeatureFlags`, `analyticsEvents`, `auditLog`, `waitlistEntries`
 
 ### Child Features
 
-| ID | Name | Priority | Status | Dependencies |
-|----|------|----------|--------|--------------|
-| F001-001 | Convex Auth Migration | P0 | pending | None |
-| F001-002 | Design System Expansion | P0 | pending | None |
-| F001-003 | Polar Billing Integration | P1 | pending | F001-001 |
-| F001-004 | Enhanced RBAC | P1 | pending | F001-001, F001-003 |
-| F001-005 | AI/LLM Integration | P2 | pending | F001-003, F001-004 |
-| F001-006 | Notification System | P2 | pending | F001-001, F001-003 |
-| F001-007 | Onboarding System | P2 | pending | F001-001, F001-003 |
-| F001-008 | Feature Flags | P3 | pending | F001-003 |
-| F001-009 | Analytics & Event Tracking | P3 | pending | F001-001 |
-| F001-010 | Super Admin Panel | P3 | pending | F001-003, F001-004, F001-008, F001-009 |
-| F001-011 | Example App (Notes CRUD) | P2 | pending | F001-001, F001-004, F001-003 |
+| ID | Name | Priority | Status | Dependencies | Notes |
+|----|------|----------|--------|--------------|-------|
+| F001-001 | Convex Auth Migration + Magic Link | P0 | pending | None | **Enhanced** — add Resend OTP magic link |
+| F001-002 | Design System Expansion | P0 | pending | None | |
+| F001-003 | Polar Billing + Credit System | P1 | pending | F001-001 | **Enhanced** — add credit-based AI consumption |
+| F001-004 | Enhanced RBAC | P1 | pending | F001-001, F001-003 | |
+| F001-005 | AI/LLM Integration (Dual Streaming) | P2 | pending | F001-003, F001-004 | **Enhanced** — ship Next.js API route + Convex HTTP action |
+| F001-006 | Notification System | P2 | pending | F001-001, F001-003 | |
+| F001-007 | Onboarding System | P2 | pending | F001-001, F001-003 | |
+| F001-008 | Feature Flags | P3 | pending | F001-003 | |
+| F001-009 | Analytics & Event Tracking | P3 | pending | F001-001 | |
+| F001-010 | Super Admin Panel | P3 | pending | F001-003, F001-004, F001-008, F001-009 | |
+| F001-011 | Example App (Notes CRUD) | P2 | pending | F001-001, F001-004, F001-003 | |
+| F001-012 | Marketing Site & Legal Pages | P1 | pending | F001-002 | **NEW** |
+| F001-013 | Blog & Changelog (MDX) | P2 | pending | F001-012 | **NEW** |
+| F001-014 | Production Infrastructure | P1 | pending | None | **NEW** |
+| F001-015 | Waitlist / Pre-Launch Mode | P3 | pending | F001-008, F001-006 | **NEW** |
+| F001-016 | Testing & Quality Infrastructure | P0 | pending | None | **NEW** — Vitest, Playwright, CI/CD, pre-commit hooks |
 
 ---
 
@@ -77,18 +87,22 @@ Developers think of this as "the last boilerplate I need." It should feel like a
 - "How do I add AI features?" (F001-005)
 - "How do I manage who can do what?" (F001-004)
 - "How do I see what's happening across my platform?" (F001-010)
+- "How do I customize the landing page?" (F001-012)
+- "How do I deploy this to production?" (F001-014)
+- "How do I add a blog post?" (F001-013)
+- "How do I run a waitlist before launch?" (F001-015)
 
 ---
 
 ## Executive Summary
 
-This PRD defines the transformation of an existing SaaS starter kit into a comprehensive, production-grade boilerplate. The current codebase provides multi-tenant foundations (teams, RBAC, invites, soft deletion) built on Next.js 14, Convex, Clerk, and shadcn/ui. It needs to evolve into a complete platform with native auth, billing, AI integration, admin tooling, feature flags, analytics, and onboarding.
+This PRD defines the transformation of an existing SaaS starter kit into a comprehensive, production-grade boilerplate. The current codebase provides multi-tenant foundations (teams, RBAC, invites, soft deletion) built on Next.js 14, Convex, Clerk, and shadcn/ui. It needs to evolve into a complete platform with native auth, billing, AI integration, admin tooling, feature flags, analytics, onboarding, a polished marketing site, content marketing infrastructure, and production deployment tooling.
 
-The upgrade is structured as 11 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, feature flags, analytics) over third-party services where possible, reducing external dependencies and leveraging Convex's real-time subscriptions.
+The upgrade is structured as 15 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, feature flags, analytics) over third-party services where possible, reducing external dependencies and leveraging Convex's real-time subscriptions.
 
-**Before:** A starter with auth (Clerk), teams, and basic RBAC. Developers must build billing, AI, admin, notifications, and analytics from scratch.
+**Before:** A starter with auth (Clerk), teams, and basic RBAC. Developers must build billing, AI, admin, notifications, analytics, marketing pages, and deployment infrastructure from scratch.
 
-**After:** A complete SaaS platform with Convex Auth, Polar billing, AI/LLM integration, super admin panel, feature flags, in-app notifications, onboarding wizard, analytics, and a rich example app — all following consistent patterns and ready for customization.
+**After:** A complete SaaS platform with Convex Auth (email/password + magic link), Polar billing with credit-based AI consumption, dual AI/LLM streaming patterns, super admin panel, feature flags, in-app notifications, onboarding wizard, analytics, a polished marketing site with legal pages, MDX blog/changelog, Sentry error monitoring, Vercel Analytics, preview seed data, waitlist mode, and a rich example app — all following consistent patterns and ready for customization.
 
 ---
 
@@ -116,16 +130,21 @@ Existing starters optimize for demo-ability over production-readiness. They show
 
 ## Vision: The Complete SaaS Foundation
 
-A boilerplate where cloning the repo and setting 5 environment variables gives you:
-- User auth with email/password via Convex Auth
+A boilerplate where cloning the repo and setting environment variables gives you:
+- User auth with email/password + magic link via Convex Auth
 - Multi-tenant teams with Owner/Admin/Member roles
-- Billing per team via Polar with configurable tiers and entitlements
-- AI chat with streaming, usage tracking, and rate limiting
+- Billing per team via Polar with configurable tiers, entitlements, and credit-based AI consumption
+- AI chat with dual streaming patterns (Next.js API route + Convex HTTP action), usage tracking, and rate limiting
 - In-app + email notifications
 - Guided onboarding for new users and teams
 - Feature flags with per-team overrides
 - First-party analytics and event tracking
 - Super admin panel for platform operations
+- A polished marketing site with hero, features, pricing, FAQ, contact form, and legal pages
+- MDX-based blog and changelog for content marketing
+- Sentry error monitoring, Vercel Analytics, and Speed Insights
+- Preview deployment seed data for PR reviews
+- Waitlist/pre-launch mode with admin approval workflow
 - A rich example app demonstrating every pattern
 
 ---
@@ -136,30 +155,39 @@ A boilerplate where cloning the repo and setting 5 environment variables gives y
 
 | Component | Current State | New State |
 |-----------|--------------|-----------|
-| Auth | Clerk (`@clerk/nextjs`) | Convex Auth (`@convex-dev/auth`) |
-| Auth pages | Clerk hosted/modal | Custom sign-in/sign-up/forgot-password pages (email/password) |
-| Middleware | Clerk `authMiddleware` | Simple redirect-based middleware |
-| Provider | `ClerkProvider` + `ConvexProviderWithClerk` | `ConvexAuthProvider` |
-| User lookup | `tokenIdentifier` from Clerk JWT | Session-based via Convex Auth |
-| Billing | None | Polar via `@convex-dev/polar` component |
-| Entitlements | None | Configurable tier/limit/feature-gate system |
+| Auth | Clerk (`@clerk/nextjs`) | Convex Auth (`@convex-dev/auth`) — email/password + magic link via Resend OTP |
+| Auth pages | Clerk hosted/modal | Custom sign-in/sign-up/forgot-password pages |
+| Middleware | Clerk `authMiddleware` | Simple redirect-based middleware via `createRouteMatcher` |
+| Provider | `ClerkProvider` + `ConvexProviderWithClerk` | Two-layer: `ConvexAuthNextjsServerProvider` + `ConvexAuthNextjsProvider` |
+| User lookup | `tokenIdentifier` from Clerk JWT | Session-based via Convex Auth (`getAuthUserId()`) |
+| Billing | None | Polar via `@convex-dev/polar` component + credit-based AI consumption |
+| Entitlements | None | Configurable tier/limit/feature-gate system with credit decrement |
 | Roles | Admin, Member (2) | Owner, Admin, Member (3) + custom roles |
 | Permissions | 5 | ~14 |
-| AI | None | Vercel AI SDK + Convex HTTP actions |
+| AI | None | Vercel AI SDK — dual: Next.js API route (default) + Convex HTTP action (alt) |
 | Notifications | Invite emails only | In-app (real-time) + email templates |
 | Onboarding | None | Multi-step wizard |
 | Feature flags | None | Convex-native with per-team overrides |
 | Analytics | None | First-party event tracking in Convex |
 | Admin | None | Super admin panel (`/admin`) |
 | Demo content | Messages (basic chat) | Notes CRUD (rich reference implementation) |
-| UI components | 39 shadcn/ui | 49+ shadcn/ui + 8 app-level components |
+| Landing page | Bare `/` route | Modular marketing site: hero, features, pricing, FAQ, CTA |
+| Legal pages | None | ToS, Privacy Policy, Cookie Policy (MDX) |
+| Blog | None | MDX-based blog + changelog (static generation) |
+| Error monitoring | None | Sentry (`@sentry/nextjs`) — optional, env-var gated |
+| Performance monitoring | None | Vercel Analytics + Speed Insights |
+| Preview deploys | No seed data | Preview seed data function for Convex |
+| Waitlist | None | Pre-launch email collection with admin approval |
+| UI components | 39 shadcn/ui | 49+ shadcn/ui + 14 app-level components |
 
 ### Key Flows
 
-1. **New user sign-up:** Landing page > Sign up (email/password) > Personal team created > Onboarding wizard > Dashboard
-2. **Team creation + billing:** Create team > Select plan (free/pro/enterprise) > Polar checkout > Team activated with entitlements
-3. **AI usage:** Team member opens AI chat > Sends prompt > Streaming response via HTTP action > Usage tracked and decremented from tier quota
+1. **New user sign-up:** Landing page > Sign up (email/password or magic link) > `afterUserCreatedOrUpdated` callback auto-creates personal team > Onboarding wizard > Dashboard
+2. **Team creation + billing:** Create team > Select plan (free/pro/enterprise) > Polar checkout (team-level, via `getUserInfo` mapped to team) > Webhook updates `subscriptionTier` > Team activated with entitlements
+3. **AI usage:** Team member opens AI chat > Sends prompt > Streaming response via Next.js API route (default) or Convex HTTP action (alt) > Credits decremented from tier quota > Usage tracked per team per period
 4. **Admin oversight:** Super admin logs in > `/admin` dashboard > Views user/team metrics, manages feature flags, reviews audit log
+5. **Marketing funnel:** Visitor lands on `/` > Reads features/pricing/FAQ > Clicks CTA to sign up or submits contact form
+6. **Waitlist flow:** `waitlist_mode` flag enabled > Visitors see `/waitlist` > Submit email > Admin approves > Approved user gets invite email via Resend
 
 ### Out of Scope (This Build)
 
@@ -171,18 +199,29 @@ A boilerplate where cloning the repo and setting 5 environment variables gives y
 - SSO / SAML / OAuth providers (can be added later)
 - Webhook management UI for end users
 - Public API with API keys
+- MFA / TOTP (deferred — future enhancement for B2B security)
+- Feedback widget (developers can add their own)
+- Figma UI kit (not code — out of scope)
+- Plugin / extension system (modular architecture already allows removing modules)
+- Turborepo monorepo (single Next.js app is simpler for a boilerplate)
+- Multiple billing providers (committed to Polar)
+- CMS abstraction layer (MDX is sufficient; swappable by developer)
 
 ### Relationship to Other Features
 
 | Feature | Relates To | How |
 |---------|-----------|-----|
 | Auth (F001-001) | Everything | Foundation — all modules depend on authenticated context |
-| Billing (F001-003) | Entitlements, Feature Flags | Tier determines limits and feature access |
+| Billing (F001-003) | Entitlements, AI, Feature Flags | Tier determines limits and feature access; credits gate AI usage |
 | RBAC (F001-004) | All team features | Permissions gate every team action |
-| AI (F001-005) | Billing, RBAC | Rate-limited by tier, gated by permission |
-| Feature Flags (F001-008) | Admin, Billing | Flags can be tier-based or per-team |
+| AI (F001-005) | Billing, RBAC | Rate-limited by tier credits, gated by permission |
+| Feature Flags (F001-008) | Admin, Billing, Waitlist | Flags can be tier-based, per-team, or control pre-launch mode |
 | Analytics (F001-009) | Admin | Admin dashboard surfaces aggregate analytics |
 | Admin (F001-010) | Everything | Admin panel aggregates all modules |
+| Marketing (F001-012) | Billing, Design System | Pricing table reads from `planConfig.ts`; uses design system components |
+| Blog (F001-013) | Marketing | Shares layout/navigation with marketing site |
+| Prod Infra (F001-014) | Everything | Error monitoring, analytics, and deployment tooling for all modules |
+| Waitlist (F001-015) | Feature Flags, Notifications | Controlled by feature flag; sends emails via Resend |
 
 ---
 
@@ -191,63 +230,77 @@ A boilerplate where cloning the repo and setting 5 environment variables gives y
 ### System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Next.js 14 (App Router)                  │
-│                                                              │
-│  app/                     app/t/[teamSlug]/   app/admin/     │
-│  ├─ auth/sign-in          ├─ dashboard        ├─ dashboard   │
-│  ├─ auth/sign-up          ├─ settings/billing  ├─ users      │
-│  └─ auth/forgot-password  ├─ settings/members  ├─ teams      │
-│                           ├─ notes             ├─ flags      │
-│                           └─ ai                └─ analytics  │
-│                                                              │
-│  ConvexAuthProvider (replaces ClerkProvider)                  │
-│  useConvexAuth / useQuery / useMutation / useChat            │
-└──────────────────────┬──────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                     Next.js 14 (App Router) — Deployed on Vercel │
+│                                                                   │
+│  Public:                    Authenticated:          Admin:        │
+│  app/                       app/t/[teamSlug]/       app/admin/    │
+│  ├─ (marketing)/            ├─ dashboard            ├─ dashboard  │
+│  │  ├─ page.tsx (landing)   ├─ settings/billing     ├─ users     │
+│  │  ├─ pricing/             ├─ settings/members     ├─ teams     │
+│  │  ├─ contact/             ├─ notes                ├─ flags     │
+│  │  └─ legal/               └─ ai                   ├─ analytics │
+│  ├─ blog/                                           └─ waitlist  │
+│  ├─ changelog/              Auth:                                │
+│  ├─ waitlist/               app/auth/                            │
+│  └─ api/ai/chat/            ├─ sign-in                           │
+│     (Vercel Edge)           ├─ sign-up                           │
+│                             └─ forgot-password                   │
+│                                                                   │
+│  Providers: ConvexAuthNextjsServerProvider (server)               │
+│           + ConvexAuthNextjsProvider (client)                     │
+│  Monitoring: @sentry/nextjs + @vercel/analytics + @vercel/speed  │
+│  useConvexAuth / useQuery / useMutation / useChat                │
+└──────────────────────┬───────────────────────────────────────────┘
                        │ Convex React Client
                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Convex Backend                           │
-│                                                              │
-│  convex/                                                     │
-│  ├─ auth.ts              (Convex Auth config)                │
-│  ├─ schema.ts            (convex-ents + authTables)          │
-│  ├─ functions.ts         (query/mutation wrappers)           │
-│  ├─ permissions.ts       (RBAC checks)                       │
-│  ├─ entitlements.ts      (tier/limit/feature checks)         │
-│  ├─ billing.ts           (Polar integration)                 │
-│  ├─ http.ts              (HTTP routes: webhooks, AI stream)  │
-│  ├─ convex.config.ts     (Polar component registration)      │
-│  ├─ users/teams/         (Team CRUD, members, invites)       │
-│  ├─ notes/               (Example CRUD app)                  │
-│  ├─ ai/                  (AI conversations, usage tracking)  │
-│  ├─ notifications/       (In-app + email)                    │
-│  ├─ featureFlags/        (Flag definitions + overrides)      │
-│  ├─ analytics/           (Event tracking)                    │
-│  └─ admin/               (Super admin queries/mutations)     │
-│                                                              │
-│  Security Layers:                                            │
-│  1. Schema: validators, unique constraints, soft deletion    │
-│  2. Runtime: viewerX(), viewerHasPermissionX(),              │
-│     checkEntitlement(), checkRateLimit()                     │
-│  3. Infrastructure: env vars, HMAC webhook verification      │
-└──────────────────────┬──────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                     Convex Backend (.convex.cloud)                │
+│                                                                   │
+│  convex/                                                          │
+│  ├─ auth.ts              (Convex Auth: Password + ResendOTP)      │
+│  ├─ schema.ts            (convex-ents + authTables)               │
+│  ├─ functions.ts         (query/mutation wrappers)                │
+│  ├─ permissions.ts       (RBAC checks)                            │
+│  ├─ entitlements.ts      (tier/limit/credit checks)               │
+│  ├─ billing.ts           (Polar integration)                      │
+│  ├─ http.ts              (HTTP routes: webhooks, AI stream alt)   │
+│  ├─ convex.config.ts     (Polar component registration)           │
+│  ├─ helpers/ResendOTP.ts (Magic link email provider)              │
+│  ├─ seedPreview.ts       (Preview deploy seed data)               │
+│  ├─ users/teams/         (Team CRUD, members, invites)            │
+│  ├─ notes/               (Example CRUD app)                       │
+│  ├─ ai/                  (AI conversations, usage, credits)       │
+│  ├─ notifications/       (In-app + email)                         │
+│  ├─ featureFlags/        (Flag definitions + overrides)           │
+│  ├─ analytics/           (Event tracking)                         │
+│  ├─ waitlist/            (Waitlist entries + approval)             │
+│  └─ admin/               (Super admin queries/mutations)          │
+│                                                                   │
+│  Security Layers:                                                 │
+│  1. Schema: validators, unique constraints, soft deletion         │
+│  2. Runtime: viewerX(), viewerHasPermissionX(),                   │
+│     checkEntitlement(), checkRateLimit()                          │
+│  3. Infrastructure: env vars, HMAC webhook verification           │
+└──────────────────────┬───────────────────────────────────────────┘
                        │
-           ┌───────────┼───────────┐
-           ▼           ▼           ▼
-      Polar API   OpenAI/Claude   Resend
-      (Billing)   (AI Providers)  (Email)
+           ┌───────────┼───────────┬───────────┐
+           ▼           ▼           ▼           ▼
+      Polar API   OpenAI/Claude   Resend     Sentry
+      (Billing)   (AI Providers)  (Email)    (Monitoring)
 ```
 
 ### Auth Flow (Post-Migration)
 
 ```
 User visits /auth/sign-in
-  → Convex Auth sign-in (email/password)
+  → Option A: Email/password sign-in via Convex Auth Password provider
+  → Option B: Magic link sign-in via Convex Auth ResendOTP provider
   → Session created in Convex
-  → ConvexAuthProvider detects session
-  → Redirect to /t (triggers user store + personal team creation)
-  → Redirect to /t/[teamSlug] (dashboard)
+  → ConvexAuthNextjsProvider detects session
+  → afterUserCreatedOrUpdated callback: auto-creates personal team
+  → Redirect to /t (triggers user store)
+  → Redirect to /t/[teamSlug] (dashboard) or /t/onboarding (first time)
 ```
 
 ### Billing Flow
@@ -437,6 +490,16 @@ auditLog: defineEnt({
   .index("userAction", ["userId", "action"])
 ```
 
+#### `waitlistEntries`
+```typescript
+waitlistEntries: defineEnt({
+  email: v.string(),
+  status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+})
+  .field("email", v.string(), { unique: true })
+  .index("status", ["status"])
+```
+
 ---
 
 ## Data Flow
@@ -464,21 +527,54 @@ auditLog: defineEnt({
 3. Result reactively updates via Convex subscription
 ```
 
-### AI Streaming Flow
+### Credit-Based Entitlement Check Flow
+```
+1. User action triggers mutation (e.g., AI request)
+2. Mutation calls checkEntitlement(ctx, teamId, "aiCredits")
+3. checkEntitlement:
+   a. Gets team.subscriptionTier (default: "free")
+   b. Reads PLAN_CONFIG[tier].limits.aiCredits → totalCredits
+   c. Queries aiUsage for current period → creditsUsed
+   d. Returns { allowed: creditsUsed < totalCredits, used, limit, remaining }
+4. If not allowed → throw ConvexError with credit details and upgrade prompt
+5. If allowed → proceed with action
+6. After completion → decrement credits based on model/token usage
+   (e.g., GPT-4 costs 10 credits, Claude Haiku costs 2 credits)
+```
+
+### AI Streaming Flow (Dual Pattern)
+
+**Default: Next.js API Route (Vercel Edge)**
 ```
 1. Client calls useChat() (Vercel AI SDK)
+2. Request hits Next.js API route: POST /api/ai/chat (Vercel Edge Function)
+3. API route:
+   a. Authenticates user via Convex session token
+   b. Calls Convex mutation to check permission + entitlement + rate limit
+   c. Creates/updates aiConversation via Convex mutation
+   d. Calls AI provider via Vercel AI SDK (streamText)
+   e. Streams response to client
+   f. On completion: calls Convex mutation to save aiMessage + update credit usage
+4. Client receives streamed tokens via useChat
+```
+
+**Alternative: Convex HTTP Action**
+```
+1. Client calls useChat() (Vercel AI SDK) pointed at .convex.site URL
 2. Request hits Convex HTTP action: POST /api/ai/chat
 3. HTTP action:
    a. Authenticates user via session token
    b. Checks permission: "Use AI"
-   c. Checks entitlement: aiRequests remaining
+   c. Checks entitlement: credits remaining
    d. Checks rate limit: token bucket for team
    e. Creates/updates aiConversation
    f. Calls AI provider via Vercel AI SDK (streamText)
    g. Streams response to client
-   h. Schedules mutation to save aiMessage + update aiUsage
+   h. Schedules mutation to save aiMessage + update credit usage
 4. Client receives streamed tokens via useChat
 ```
+
+Both patterns share the same Convex mutations for saving messages, tracking usage, and checking entitlements. Only the streaming transport differs.
 
 ---
 
@@ -500,6 +596,14 @@ auditLog: defineEnt({
 | 12 | AI usage counter drift | User charged more/less than actual | Medium | Reconcile usage counts periodically via scheduled function |
 | 13 | Team at member limit tries to accept invite | Exceeds entitlement | Medium | Check entitlement in invite acceptance flow; reject with upgrade prompt |
 | 14 | Analytics table grows unbounded | Performance degradation | Medium | TTL-based cleanup via scheduled function (e.g., 90-day retention) |
+| 15 | Magic link email not delivered | User can't sign in | Medium | Fall back to email/password; show "Didn't receive email?" with retry |
+| 16 | Credit calculation drift (token counting) | User overcharged/undercharged | Medium | Use conservative estimate before streaming; reconcile after completion |
+| 17 | Sentry DSN not configured | No error monitoring | Low | All Sentry code env-var gated; app works fine without it |
+| 18 | Waitlist mode enabled but no admin to approve | Users stuck in pending | Medium | First super admin auto-created; admin panel shows pending count badge |
+| 19 | MDX blog post has invalid frontmatter | Build fails on Vercel | Medium | Validate frontmatter schema at build time; fail fast with clear error |
+| 20 | Preview deploy seed data conflicts with real data | Data corruption | Low | Seed only runs in preview deployments; checks for existing data first |
+| 21 | Dual AI streaming pattern confusion | Developer uses wrong pattern | Low | Default is Next.js API route; Convex HTTP action documented as alternative with clear trade-offs |
+| 22 | Duplicate waitlist email submission | Confusion or spam | Low | Unique constraint on email; show "already on waitlist" message |
 
 ---
 
@@ -507,88 +611,179 @@ auditLog: defineEnt({
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `convex/auth.ts` | Convex Auth provider config (Password/email) |
-| `convex/convex.config.ts` | Component registration (Polar) |
-| `convex/http.ts` | HTTP routes (Polar webhooks, AI streaming) |
-| `convex/billing.ts` | Polar integration queries/mutations |
-| `convex/entitlements.ts` | Tier config + entitlement check functions |
-| `convex/rateLimiting.ts` | Token bucket rate limiter |
-| `convex/notes/` | Notes CRUD (queries, mutations) |
-| `convex/ai/` | AI conversations, messages, usage tracking |
-| `convex/notifications/` | Notification create/list/mark-read + preferences |
-| `convex/featureFlags/` | Flag CRUD + resolution logic |
-| `convex/analytics/` | Event tracking + aggregation queries |
-| `convex/admin/` | Super admin queries/mutations + audit log |
-| `app/auth/sign-in/page.tsx` | Sign-in page |
-| `app/auth/sign-up/page.tsx` | Sign-up page |
-| `app/auth/forgot-password/page.tsx` | Password reset page |
-| `app/t/[teamSlug]/notes/page.tsx` | Notes list page |
-| `app/t/[teamSlug]/ai/page.tsx` | AI chat page |
-| `app/t/[teamSlug]/settings/billing/page.tsx` | Billing settings page |
-| `app/t/onboarding/page.tsx` | Onboarding wizard |
-| `app/admin/` | Super admin panel pages |
-| `components/PageHeader.tsx` | Consistent page header with breadcrumbs |
-| `components/DataTable.tsx` | Configurable data table |
-| `components/EmptyState.tsx` | Standardized empty states |
-| `components/StatusBadge.tsx` | Subscription/status indicators |
-| `components/PricingCard.tsx` | Plan comparison cards |
-| `components/UsageMeter.tsx` | Visual usage bars |
-| `components/StepWizard.tsx` | Multi-step form/onboarding |
-| `components/ThemeToggle.tsx` | Dark/light/system toggle |
-| `lib/planConfig.ts` | Configurable tier/entitlement definitions |
+| File | Module | Purpose |
+|------|--------|---------|
+| **Auth (F001-001)** | | |
+| `convex/auth.ts` | F001-001 | Convex Auth provider config (Password + ResendOTP) |
+| `convex/helpers/ResendOTP.ts` | F001-001 | Custom Resend OTP provider with branded email template |
+| `app/auth/sign-in/page.tsx` | F001-001 | Sign-in page (email/password + magic link) |
+| `app/auth/sign-up/page.tsx` | F001-001 | Sign-up page |
+| `app/auth/forgot-password/page.tsx` | F001-001 | Password reset page |
+| **Design System (F001-002)** | | |
+| `components/PageHeader.tsx` | F001-002 | Consistent page header with breadcrumbs |
+| `components/DataTable.tsx` | F001-002 | Configurable data table |
+| `components/EmptyState.tsx` | F001-002 | Standardized empty states |
+| `components/StatusBadge.tsx` | F001-002 | Subscription/status indicators |
+| `components/PricingCard.tsx` | F001-002 | Plan comparison cards |
+| `components/UsageMeter.tsx` | F001-002 | Visual usage bars |
+| `components/StepWizard.tsx` | F001-002 | Multi-step form/onboarding |
+| `components/ThemeToggle.tsx` | F001-002 | Dark/light/system toggle |
+| **Billing (F001-003)** | | |
+| `convex/convex.config.ts` | F001-003 | Component registration (Polar) |
+| `convex/http.ts` | F001-003 | HTTP routes (Polar webhooks, AI streaming alt) |
+| `convex/billing.ts` | F001-003 | Polar integration queries/mutations |
+| `convex/entitlements.ts` | F001-003 | Tier config + entitlement/credit check functions |
+| `convex/rateLimiting.ts` | F001-003 | Token bucket rate limiter |
+| `lib/planConfig.ts` | F001-003 | Configurable tier/entitlement/credit definitions |
+| `app/t/[teamSlug]/settings/billing/page.tsx` | F001-003 | Billing settings page |
+| **AI (F001-005)** | | |
+| `convex/ai/` | F001-005 | AI conversations, messages, credit tracking |
+| `app/api/ai/chat/route.ts` | F001-005 | Next.js API route for AI streaming (default, Vercel Edge) |
+| `app/t/[teamSlug]/ai/page.tsx` | F001-005 | AI chat page |
+| **Other Backend** | | |
+| `convex/notes/` | F001-011 | Notes CRUD (queries, mutations) |
+| `convex/notifications/` | F001-006 | Notification create/list/mark-read + preferences |
+| `convex/featureFlags/` | F001-008 | Flag CRUD + resolution logic |
+| `convex/analytics/` | F001-009 | Event tracking + aggregation queries |
+| `convex/admin/` | F001-010 | Super admin queries/mutations + audit log |
+| `convex/waitlist/` | F001-015 | Waitlist entry CRUD + approval workflow |
+| **Other Frontend** | | |
+| `app/t/[teamSlug]/notes/page.tsx` | F001-011 | Notes list page |
+| `app/t/onboarding/page.tsx` | F001-007 | Onboarding wizard |
+| `app/admin/` | F001-010 | Super admin panel pages |
+| **Marketing Site (F001-012)** | | |
+| `app/(marketing)/page.tsx` | F001-012 | Landing page (hero + features + pricing + FAQ + CTA) |
+| `app/(marketing)/pricing/page.tsx` | F001-012 | Dedicated pricing page (reads from `planConfig.ts`) |
+| `app/(marketing)/contact/page.tsx` | F001-012 | Contact form (sends via Resend) |
+| `app/(marketing)/legal/terms/page.tsx` | F001-012 | Terms of Service (MDX) |
+| `app/(marketing)/legal/privacy/page.tsx` | F001-012 | Privacy Policy (MDX) |
+| `app/(marketing)/legal/cookies/page.tsx` | F001-012 | Cookie Policy (MDX) |
+| `app/(marketing)/layout.tsx` | F001-012 | Marketing layout (nav + footer) |
+| `components/HeroSection.tsx` | F001-012 | Headline + subline + CTA buttons |
+| `components/FeaturesGrid.tsx` | F001-012 | Icon + title + description cards |
+| `components/PricingTable.tsx` | F001-012 | Plan comparison (reads from `planConfig.ts`) |
+| `components/FAQAccordion.tsx` | F001-012 | Configurable Q&A pairs (shadcn Accordion) |
+| `components/CTASection.tsx` | F001-012 | Bottom call-to-action banner |
+| `components/ContactForm.tsx` | F001-012 | Name/email/message + Resend integration |
+| `content/legal/terms.mdx` | F001-012 | Terms of Service template |
+| `content/legal/privacy.mdx` | F001-012 | Privacy Policy template |
+| `content/legal/cookies.mdx` | F001-012 | Cookie Policy template |
+| **Blog & Changelog (F001-013)** | | |
+| `app/blog/page.tsx` | F001-013 | Blog listing page |
+| `app/blog/[slug]/page.tsx` | F001-013 | Individual blog post |
+| `app/changelog/page.tsx` | F001-013 | Changelog listing |
+| `content/blog/` | F001-013 | MDX blog posts directory |
+| `content/changelog/` | F001-013 | MDX changelog entries directory |
+| `lib/mdx.ts` | F001-013 | MDX processing utilities |
+| **Production Infrastructure (F001-014)** | | |
+| `sentry.client.config.ts` | F001-014 | Sentry client-side config |
+| `sentry.server.config.ts` | F001-014 | Sentry server-side config |
+| `sentry.edge.config.ts` | F001-014 | Sentry edge runtime config |
+| `app/monitoring/[[...path]]/route.ts` | F001-014 | Sentry tunnel route (avoids ad-blockers) |
+| `convex/seedPreview.ts` | F001-014 | Preview deploy seed data function |
+| `docs/deployment.md` | F001-014 | Vercel deployment guide |
+| **Waitlist (F001-015)** | | |
+| `app/waitlist/page.tsx` | F001-015 | Public waitlist signup page |
+| `app/admin/waitlist/page.tsx` | F001-015 | Admin waitlist management |
+| **Testing & Quality (F001-016)** | | |
+| `vitest.config.ts` | F001-016 | Vitest configuration |
+| `playwright.config.ts` | F001-016 | Playwright E2E configuration |
+| `tests/setup.ts` | F001-016 | Vitest global setup (jest-dom matchers) |
+| `convex/__tests__/permissions.test.ts` | F001-016 | Seed permission tests |
+| `lib/__tests__/planConfig.test.ts` | F001-016 | Seed plan config tests |
+| `e2e/fixtures/auth.ts` | F001-016 | Reusable auth fixture for E2E |
+| `e2e/auth.spec.ts` | F001-016 | Seed auth E2E tests |
+| `e2e/accessibility.spec.ts` | F001-016 | Accessibility scans (axe-core) |
+| `.github/workflows/ci.yml` | F001-016 | CI pipeline (type-check, lint, test, e2e) |
+| `.husky/pre-commit` | F001-016 | Pre-commit hook (lint-staged) |
+| `ARCHITECTURE.md` | F001-016 | System design, data model, flows |
+| `CONTRIBUTING.md` | F001-016 | Dev setup, testing, PR process |
+| `docs/adrs/` | F001-016 | 7 initial Architecture Decision Records |
 
 ### Modified Files
 
 | File | Changes |
 |------|---------|
-| `convex/schema.ts` | Add authTables integration, new entities, expand roles/permissions |
-| `convex/functions.ts` | Session-based user lookup (replace tokenIdentifier) |
+| `convex/schema.ts` | Add authTables integration, new entities (incl. waitlistEntries), expand roles/permissions |
+| `convex/functions.ts` | Session-based user lookup via `getAuthUserId()` (replace tokenIdentifier) |
 | `convex/permissions.ts` | Add Owner role, 9 new permissions, preserve API surface |
 | `convex/init.ts` | Seed new roles, permissions, default feature flags |
-| `convex/users.ts` | Update store mutation for Convex Auth identity shape |
-| `convex/users/teams.ts` | Add billing fields to team creation |
+| `convex/users.ts` | Update store mutation for Convex Auth identity shape; `afterUserCreatedOrUpdated` callback for auto-team creation |
+| `convex/users/teams.ts` | Add billing fields to team creation; `polarCustomerId` integration |
 | `convex/users/teams/members.ts` | Owner role enforcement |
 | `convex/invites.ts` | Entitlement check on invite acceptance |
-| `app/ConvexClientProvider.tsx` | Replace ClerkProvider with ConvexAuthProvider |
+| `app/ConvexClientProvider.tsx` | Replace ClerkProvider with two-layer ConvexAuth providers |
+| `app/layout.tsx` | Add `@vercel/analytics`, `@vercel/speed-insights`, Sentry providers |
 | `app/t/[teamSlug]/hooks.ts` | Add useFeatureFlag, useTrack hooks |
 | `app/t/[teamSlug]/layout.tsx` | Add navigation for notes, AI, billing |
 | `app/t/TeamMenu.tsx` | Expand navigation items |
-| `middleware.ts` | Replace Clerk middleware with redirect logic |
-| `package.json` | Add @convex-dev/auth, @convex-dev/polar, ai, @ai-sdk/*, next-themes, react-email |
+| `middleware.ts` | Replace Clerk middleware with `createRouteMatcher` redirect logic |
+| `next.config.mjs` | Add `@next/mdx` or `contentlayer2` config; Sentry webpack plugin; source map upload |
+| `package.json` | Add @convex-dev/auth, @convex-dev/polar, ai, @ai-sdk/*, next-themes, react-email, @vercel/analytics, @vercel/speed-insights, @sentry/nextjs, @next/mdx (or contentlayer2) |
 | `tailwind.config.ts` | Dark mode support |
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Foundation (P0)
-- [ ] **F001-001:** Convex Auth Migration
-  - Replace Clerk with Convex Auth
-  - New auth pages (sign-in, sign-up, forgot-password)
+### Phase 1: Foundation (P0) — Batch 1 (parallel)
+- [ ] **F001-001:** Convex Auth Migration + Magic Link
+  - Replace Clerk with Convex Auth (two-layer provider pattern)
+  - Add Password + ResendOTP providers
+  - New auth pages (sign-in with email/password + magic link, sign-up, forgot-password)
+  - `afterUserCreatedOrUpdated` callback for auto personal team creation
+  - `createRouteMatcher` middleware for route protection
   - Update ConvexClientProvider, middleware, user store
   - Verify all existing flows work with new auth
 - [ ] **F001-002:** Design System Expansion
   - Add 10+ shadcn/ui components
-  - Build 8 app-level components
+  - Build 14 app-level components (including marketing components)
   - Dark mode support via next-themes
+- [ ] **F001-014:** Production Infrastructure
+  - Sentry integration (optional, env-var gated) — client, server, edge
+  - Vercel Analytics + Speed Insights (2 components in root layout)
+  - Sentry tunnel route (`/monitoring`) to avoid ad-blockers
+  - Preview seed data function (`convex/seedPreview.ts`)
+  - Deployment documentation (`docs/deployment.md`)
+- [ ] **F001-016:** Testing & Quality Infrastructure
+  - Vitest + convex-test for unit/integration tests
+  - Playwright + axe-playwright for E2E + accessibility tests
+  - GitHub Actions CI pipeline (type-check, lint, test, e2e)
+  - Husky + lint-staged pre-commit hooks
+  - Seed test files for permissions, plan config, auth, accessibility
+  - Tightened ESLint rules (`no-explicit-any: warn`, `no-unused-vars: error`)
 
-### Phase 2: Monetization (P1)
-- [ ] **F001-003:** Polar Billing Integration
+### Phase 2: Monetization + Marketing (P1) — Batch 2 (parallel)
+- [ ] **F001-003:** Polar Billing + Credit System
   - Convex component registration
-  - Webhook handling via HTTP routes
-  - Billing settings page
-  - Configurable entitlement system
+  - Webhook handling via HTTP routes with `onSubscriptionUpdated` callback
+  - `getUserInfo` mapped to team for team-level billing
+  - Billing settings page with `CheckoutLink`/`CustomerPortalLink`
+  - Configurable entitlement system with credit-based consumption
+  - Credit decrement per AI request (model-specific cost)
+- [ ] **F001-009:** Analytics & Event Tracking
+  - track() mutation + useTrack() hook
+  - Time-series aggregation queries
+- [ ] **F001-012:** Marketing Site & Legal Pages
+  - Landing page: HeroSection, FeaturesGrid, PricingTable, FAQAccordion, CTASection
+  - PricingTable auto-populated from `planConfig.ts`
+  - `/pricing` dedicated pricing page
+  - `/contact` form with Resend integration
+  - `/legal/terms`, `/legal/privacy`, `/legal/cookies` (MDX templates)
+  - Marketing layout with nav + footer
+
+### Phase 3: RBAC (P1) — Batch 3
 - [ ] **F001-004:** Enhanced RBAC
   - Owner role + 9 new permissions
   - Custom roles (Enterprise tier)
   - Preserve existing permission API
 
-### Phase 3: Product Features (P2)
-- [ ] **F001-005:** AI/LLM Integration
-  - HTTP actions for streaming
-  - Usage tracking + rate limiting
+### Phase 4: Product Features (P2) — Batch 4 (parallel)
+- [ ] **F001-005:** AI/LLM Integration (Dual Streaming)
+  - **Default:** Next.js API route (`app/api/ai/chat/route.ts`) — Vercel Edge Function
+  - **Alternative:** Convex HTTP action (`convex/http.ts`) — documented as option
+  - Both share Convex mutations for saving messages + tracking credits
+  - Usage tracking + rate limiting + credit decrement
   - AI chat page with useChat
 - [ ] **F001-006:** Notification System
   - In-app notifications (real-time)
@@ -597,23 +792,35 @@ auditLog: defineEnt({
 - [ ] **F001-007:** Onboarding System
   - Multi-step wizard
   - Progress tracking
+- [ ] **F001-008:** Feature Flags
+  - Global + per-team + tier-based flags
+  - useFeatureFlag hook
 - [ ] **F001-011:** Example App (Notes CRUD)
   - Full CRUD with permissions
   - Search, pagination, soft deletion
   - Entitlement gating
+- [ ] **F001-013:** Blog & Changelog (MDX)
+  - MDX files in `content/blog/` and `content/changelog/`
+  - `@next/mdx` or `contentlayer2` for MDX processing
+  - Static generation at build time (zero runtime cost)
+  - Blog listing, individual post, changelog listing pages
+  - Auto-generated sitemap entries
+  - RSS feed generation
 
-### Phase 4: Operations (P3)
-- [ ] **F001-008:** Feature Flags
-  - Global + per-team + tier-based flags
-  - useFeatureFlag hook
-- [ ] **F001-009:** Analytics & Event Tracking
-  - track() mutation + useTrack() hook
-  - Time-series aggregation queries
+### Phase 5: Operations (P3) — Batch 5 (parallel)
 - [ ] **F001-010:** Super Admin Panel
   - Dashboard, user/team management
   - Feature flag management
   - Analytics dashboard
   - Audit log
+  - Waitlist management section
+- [ ] **F001-015:** Waitlist / Pre-Launch Mode
+  - `waitlist_mode` feature flag controls pre-launch mode
+  - `/waitlist` public page with email collection form
+  - `waitlistEntries` table (email, status: pending/approved/rejected)
+  - Admin panel section to review, approve, reject entries
+  - Approved users get email invitation via Resend
+  - When flag is off, app functions normally
 
 ---
 
@@ -622,6 +829,9 @@ auditLog: defineEnt({
 ### Auth (F001-001)
 - [ ] User can sign up with email/password and is redirected to dashboard
 - [ ] User can sign in with existing email/password and is redirected to dashboard
+- [ ] User can sign in via magic link (Resend OTP) — receives branded email, clicks link, is authenticated
+- [ ] Sign-in page shows both options: email/password form and "Sign in with email link" button
+- [ ] `afterUserCreatedOrUpdated` callback auto-creates personal team on first sign-up
 - [ ] User can reset password via forgot-password flow
 - [ ] Existing team/member/invite flows work identically after migration
 - [ ] No Clerk dependencies remain in package.json or codebase
@@ -634,8 +844,12 @@ auditLog: defineEnt({
 ### Billing (F001-003)
 - [ ] Team admin can view billing page with current plan
 - [ ] Polar checkout flow creates subscription and updates team tier
-- [ ] Webhook correctly updates subscriptionTier and subscriptionStatus
+- [ ] `getUserInfo` returns team-level identity for Polar (team._id + owner email)
+- [ ] Webhook `onSubscriptionUpdated` correctly updates subscriptionTier and subscriptionStatus
+- [ ] Idempotent webhook handling (timestamp-based stale detection via `@convex-dev/polar`)
 - [ ] checkEntitlement correctly enforces member limits per tier
+- [ ] Credit-based entitlement: AI requests decrement credits based on model/token usage
+- [ ] Dashboard shows credit usage meter (used/remaining for current period)
 - [ ] Free tier teams have appropriate feature restrictions
 
 ### RBAC (F001-004)
@@ -646,8 +860,11 @@ auditLog: defineEnt({
 
 ### AI (F001-005)
 - [ ] AI chat page renders with streaming responses
-- [ ] Usage is tracked per team per billing period
-- [ ] Rate limiting prevents exceeding tier quota
+- [ ] Default streaming via Next.js API route (`/api/ai/chat`) works on Vercel Edge
+- [ ] Alternative streaming via Convex HTTP action is documented and functional
+- [ ] Both patterns share the same Convex mutations for saving messages and tracking usage
+- [ ] Usage is tracked per team per billing period in credits
+- [ ] Rate limiting prevents exceeding tier credit quota
 - [ ] "Use AI" permission gates access
 
 ### Notifications (F001-006)
@@ -681,15 +898,64 @@ auditLog: defineEnt({
 - [ ] Search works across note titles and content
 - [ ] Entitlement gating limits notes per tier
 
+### Marketing Site & Legal Pages (F001-012)
+- [ ] Landing page renders with hero, features grid, pricing table, FAQ, and CTA sections
+- [ ] PricingTable auto-populates from `planConfig.ts` and highlights recommended plan
+- [ ] `/pricing` page works as standalone pricing comparison
+- [ ] `/contact` form validates input and sends email via Resend
+- [ ] `/legal/terms`, `/legal/privacy`, `/legal/cookies` render MDX content correctly
+- [ ] Marketing pages are fully responsive (mobile/tablet/desktop)
+- [ ] Marketing layout has distinct nav/footer from authenticated app layout
+
+### Blog & Changelog (F001-013)
+- [ ] Blog listing page shows all posts sorted by date
+- [ ] Individual blog posts render MDX content with proper typography
+- [ ] Changelog page shows entries in reverse chronological order
+- [ ] MDX frontmatter validates at build time (title, date, description required)
+- [ ] Blog and changelog pages are statically generated at build time
+- [ ] RSS feed is generated at `/blog/feed.xml`
+
+### Production Infrastructure (F001-014)
+- [ ] Sentry captures client-side and server-side errors when `NEXT_PUBLIC_SENTRY_DSN` is set
+- [ ] App runs without errors when Sentry env vars are not set (graceful degradation)
+- [ ] Sentry tunnel route (`/monitoring`) forwards events to avoid ad-blockers
+- [ ] `@vercel/analytics` tracks page views in Vercel dashboard
+- [ ] `@vercel/speed-insights` reports Core Web Vitals (LCP, FID, CLS, TTFB, INP)
+- [ ] `convex/seedPreview.ts` populates demo data (team, users, notes, sample content)
+- [ ] `docs/deployment.md` covers Vercel setup, env vars, preview deploys, custom domains
+
+### Waitlist / Pre-Launch Mode (F001-015)
+- [ ] When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
+- [ ] Waitlist form accepts email and stores in `waitlistEntries` with status "pending"
+- [ ] Duplicate email submission shows "already on waitlist" message
+- [ ] Admin panel shows pending waitlist entries with approve/reject actions
+- [ ] Approved users receive invitation email via Resend
+- [ ] When `waitlist_mode` flag is disabled, app functions normally (landing page visible)
+
+### Testing & Quality Infrastructure (F001-016)
+- [ ] `npm run test` runs Vitest unit/integration tests and passes
+- [ ] `npm run test:e2e` runs Playwright E2E tests (requires dev server)
+- [ ] `npm run test:coverage` generates V8 coverage report
+- [ ] `npm run type-check` runs TypeScript strict check
+- [ ] Git commit triggers pre-commit hooks (lint-staged with ESLint, Prettier, related tests)
+- [ ] `.github/workflows/ci.yml` runs on push/PR: type-check, lint, unit tests, E2E tests
+- [ ] Seed test files exist for permissions, plan config, auth E2E, and accessibility
+- [ ] ESLint rules tightened: `no-explicit-any: warn`, `no-unused-vars: error`
+- [ ] ARCHITECTURE.md contains system design, data model, and key flows
+- [ ] `docs/adrs/` has 7 initial Architecture Decision Records
+- [ ] CONTRIBUTING.md documents dev setup, testing, PR process
+
 ---
 
 ## Success Definition
 
-1. **Developer clones repo → working SaaS in 30 min:** Auth, billing, teams, and example app work after setting 5 env vars
-2. **All modules are independently removable:** Developer can delete any module (AI, notifications, etc.) without breaking core functionality
+1. **Developer clones repo → working SaaS in 30 min:** Auth, billing, teams, marketing site, and example app work after setting env vars
+2. **All modules are independently removable:** Developer can delete any module (AI, notifications, blog, waitlist, etc.) without breaking core functionality
 3. **Zero security holes:** All mutations check auth, permissions, and entitlements; webhooks verify HMAC; no client-side auth decisions
 4. **TypeScript strict mode passes:** `npm run lint` and `npm run build` succeed with zero errors
 5. **Real-time everything:** All data updates propagate instantly via Convex subscriptions
+6. **Production-ready deployment:** One-click Vercel deploy with error monitoring, performance tracking, and preview environments
+7. **Polished first impression:** Marketing site, pricing page, and blog make the boilerplate look like a finished product from day one
 
 ---
 
@@ -701,8 +967,12 @@ auditLog: defineEnt({
 | Polar | No platform fee | % per transaction |
 | OpenAI/Anthropic | N/A (user provides key) | $0.01-0.10/request |
 | Resend | 3,000 emails/mo | $20/mo at scale |
+| Vercel | Hobby (free) | Pro $20/mo per member |
+| Vercel Analytics | Free (included) | Free (included with Vercel) |
+| Vercel Speed Insights | Free tier available | $10/mo for more data points |
+| Sentry | 5K errors/mo (free) | $26/mo (Team plan) |
 
-AI costs are pass-through — the boilerplate tracks usage but each deployer configures their own API keys and pricing.
+AI costs are pass-through — the boilerplate tracks usage via credits but each deployer configures their own API keys and credit pricing per model. Blog/changelog are static MDX (zero runtime cost).
 
 ---
 
@@ -715,6 +985,11 @@ AI costs are pass-through — the boilerplate tracks usage but each deployer con
 | convex-ents compatibility with authTables | Medium | High | Test schema integration early; fall back to manual auth tables if needed |
 | Feature scope creep per module | Medium | Medium | Strict acceptance criteria; each module is independently shippable |
 | Migration breaks existing deployments | Low | High | Document migration path from v1; provide upgrade script |
+| Resend OTP delivery delays | Medium | Low | Magic link is optional; email/password always available as fallback |
+| MDX build failures on Vercel | Low | Medium | Validate frontmatter schema; use TypeScript-checked content layer |
+| Sentry bundle size impact | Low | Low | Tree-shaking + env-var gating; Sentry is fully optional |
+| Credit calculation accuracy | Medium | Medium | Conservative estimates before streaming; reconcile after completion; audit trail |
+| Preview deploy seed data conflicts | Low | Low | Idempotent seed function; checks for existing data before inserting |
 
 ---
 
@@ -732,6 +1007,21 @@ AI costs are pass-through — the boilerplate tracks usage but each deployer con
 | 2026-02-10 | Owner/Admin/Member (3 fixed roles) | Owner is transferable highest-privilege; custom roles opt-in for Enterprise |
 | 2026-02-10 | Super admin via isSuperAdmin boolean | Simple, orthogonal to team roles, easy to check |
 | 2026-02-10 | First-party analytics (not Mixpanel/Amplitude) | Convex-native; no third-party data sharing; real-time dashboards |
+| 2026-02-10 | Add magic link auth (Resend OTP) | Convex Auth supports it natively; better UX for some users; no additional service needed (Resend already in stack) |
+| 2026-02-10 | Credit-based AI billing (not just request count) | Different models have vastly different costs; credits give developers flexibility to price fairly |
+| 2026-02-10 | Dual AI streaming patterns | Next.js API route is standard Vercel pattern (default); Convex HTTP action is better for teams wanting everything on Convex. Ship both, document trade-offs. |
+| 2026-02-10 | Modular marketing site (not separate repo) | Landing page IS the product for a boilerplate. Developers judge starters by their demo site. Shared components reduce duplication. |
+| 2026-02-10 | MDX for blog/legal (not CMS) | Zero runtime cost; version-controlled; no third-party dependency. Developers can swap for CMS later. |
+| 2026-02-10 | Sentry for error monitoring (optional) | Industry standard; Vercel marketplace integration; AI SDK telemetry support. Env-var gated = zero impact when disabled. |
+| 2026-02-10 | Vercel Analytics + Speed Insights | Free, 2 lines of code, Core Web Vitals. Complements first-party business analytics. |
+| 2026-02-10 | Waitlist as feature-flag-gated mode | Simple toggle for pre-launch; reuses existing feature flag + notification infrastructure; no separate deployment needed. |
+| 2026-02-10 | Deploy on Vercel (not self-hosted) | GitHub auto-deploy; preview deploys per PR; edge functions; marketplace integrations. Standard for Next.js. |
+| 2026-02-10 | Skip i18n, Figma, plugin system, monorepo | Scope control. These add complexity without clear benefit for a boilerplate. Can be added by the developer. |
+| 2026-02-10 | Skip MFA (TOTP) for now | Medium complexity; important for B2B but can be added as future enhancement. |
+| 2026-02-10 | Skip feedback widget for now | Low value for a boilerplate; developers can add their own. |
+| 2026-02-10 | Add F001-016 Testing & Quality Infrastructure as P0 | When AI writes 100% of code, automated testing is the #1 regression prevention tool. Vitest + Playwright + CI/CD + pre-commit hooks. |
+| 2026-02-10 | Vitest over Jest | ESM-native, TypeScript OOTB, faster, better DX. convex-test pairs with Vitest. |
+| 2026-02-10 | Tighten ESLint for AI-generated code | `no-explicit-any: warn` and `no-unused-vars: error` catch common AI code quality issues. |
 
 ---
 
@@ -747,7 +1037,7 @@ export const PLAN_CONFIG = {
     price: 0,
     limits: {
       members: 3,
-      aiRequests: 100,
+      aiCredits: 100,      // credits per billing period
       notes: 50,
     },
     features: ["basic", "notes"],
@@ -757,7 +1047,7 @@ export const PLAN_CONFIG = {
     price: 29,
     limits: {
       members: 20,
-      aiRequests: 5000,
+      aiCredits: 5000,
       notes: -1, // unlimited
     },
     features: ["basic", "notes", "ai", "api", "analytics"],
@@ -767,11 +1057,19 @@ export const PLAN_CONFIG = {
     price: 99,
     limits: {
       members: -1,
-      aiRequests: -1,
+      aiCredits: -1,       // unlimited
       notes: -1,
     },
     features: ["basic", "notes", "ai", "api", "analytics", "custom-roles", "sso"],
   },
+} as const;
+
+// Credit costs per AI model
+export const AI_CREDIT_COSTS = {
+  "gpt-4o": 10,
+  "gpt-4o-mini": 2,
+  "claude-sonnet-4-5-20250929": 8,
+  "claude-haiku-4-5-20251001": 2,
 } as const;
 ```
 
@@ -800,24 +1098,120 @@ export const PLAN_CONFIG = {
 F001-001 (Auth) ──────────┬──→ F001-003 (Billing) ──┬──→ F001-005 (AI)
                           │                          ├──→ F001-006 (Notifications)
 F001-002 (Design System)  │                          ├──→ F001-007 (Onboarding)
-  (parallel, no deps)     │                          ├──→ F001-008 (Feature Flags)
+  (parallel, no deps)     │                          ├──→ F001-008 (Feature Flags) ──→ F001-015 (Waitlist)
                           │                          └──→ F001-011 (Notes)
-                          │
-                          ├──→ F001-004 (RBAC) ──────┬──→ F001-005 (AI)
+F001-014 (Prod Infra)     │
+  (parallel, no deps)     ├──→ F001-004 (RBAC) ──────┬──→ F001-005 (AI)
                           │                          ├──→ F001-011 (Notes)
-                          │                          └──→ F001-010 (Admin)
-                          │
+F001-016 (Testing)        │                          └──→ F001-010 (Admin)
+  (parallel, no deps)     │
                           └──→ F001-009 (Analytics) ─┬──→ F001-010 (Admin)
-                                                     │
-                          F001-008 (Feature Flags) ──┘
+F001-012 (Marketing)                                 │
+  ← depends on F001-002   F001-008 (Feature Flags) ──┘
+
+F001-013 (Blog) ← depends on F001-012
+F001-015 (Waitlist) ← depends on F001-008, F001-006
 ```
 
 ### D. Build Sequence
 
 ```
-Batch 1 (parallel): F001-001 (Auth) + F001-002 (Design System)
-Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics)
-Batch 3 (parallel): F001-004 (RBAC)
-Batch 4 (parallel): F001-005 (AI) + F001-006 (Notifications) + F001-007 (Onboarding) + F001-008 (Feature Flags) + F001-011 (Notes)
-Batch 5:            F001-010 (Super Admin)
+Batch 1 (parallel): F001-001 (Auth) + F001-002 (Design System) + F001-014 (Prod Infra) + F001-016 (Testing)
+Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing Site)
+Batch 3:            F001-004 (RBAC)
+Batch 4 (parallel): F001-005 (AI) + F001-006 (Notifications) + F001-007 (Onboarding)
+                   + F001-008 (Feature Flags) + F001-011 (Notes) + F001-013 (Blog)
+Batch 5 (parallel): F001-010 (Super Admin) + F001-015 (Waitlist)
+```
+
+### E. Vercel Deployment Configuration
+
+**Auto-deploy:** GitHub → Vercel integration (repo connected in Vercel dashboard).
+
+**Build command override (set in Vercel UI):**
+```
+npx convex deploy --cmd 'npm run build'
+```
+
+**Preview deploys:** Each PR gets an isolated Convex backend (auto-cleaned after 5-14 days).
+```
+npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
+```
+
+**Environment Variables — Vercel Dashboard:**
+
+| Variable | Scope | Notes |
+|----------|-------|-------|
+| `CONVEX_DEPLOY_KEY` | Production + Preview (separate keys) | Enables `convex deploy` in CI |
+| `SENTRY_AUTH_TOKEN` | Production + Preview | Source map upload during build |
+| `NEXT_PUBLIC_SENTRY_DSN` | Production + Preview | Optional — Sentry disabled if not set |
+| `NEXT_PUBLIC_CONVEX_URL` | — | Auto-set by `convex deploy` — do NOT set manually |
+
+**Environment Variables — Convex Dashboard:**
+
+| Variable | Notes |
+|----------|-------|
+| `SITE_URL` | Public URL for email links (e.g., `https://yourapp.com`) |
+| `CONVEX_AUTH_PRIVATE_KEY` | Convex Auth signing key |
+| `POLAR_ACCESS_TOKEN` | Polar API access token |
+| `POLAR_WEBHOOK_SECRET` | Polar webhook HMAC secret |
+| `OPENAI_API_KEY` | OpenAI API key (optional) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (optional) |
+| `RESEND_API_KEY` | Resend email API key |
+| `HOSTED_URL` | Public URL for email links (same as SITE_URL) |
+
+**Key notes:**
+- Webhooks (Polar, etc.) hit `.convex.site` directly — not through Vercel
+- AI streaming default is via Next.js API route on Vercel Edge; Convex HTTP action is documented alternative
+- Custom domains configured in Vercel dashboard (Next.js) and Convex dashboard (HTTP actions)
+
+### F. Reference Repos for Implementation
+
+| Module | Primary Reference | License | Key Patterns |
+|--------|------------------|---------|-------------|
+| Auth (F001-001) | `get-convex/template-nextjs-convexauth-shadcn` | Official | Two-layer provider, `createRouteMatcher` middleware, `getAuthUserId()` |
+| Auth callbacks | `arjunkambj/next-convex-saas-starter-kit` | Unlicensed (reference only) | `afterUserCreatedOrUpdated` callback for auto-team creation |
+| Billing (F001-003) | `get-convex/polar` | Apache-2.0 | `registerRoutes`, webhook callbacks, `CheckoutLink`/`CustomerPortalLink`, idempotent webhooks |
+| Billing (F001-003) | `michaelshimeles/react-starter-kit` | Unlicensed (reference only) | Real-world Polar + Convex usage |
+| AI (F001-005) | `Syed-Ahmed02/nextjs-convex-clerk-ai-template` | Unlicensed (reference only) | Vercel AI SDK + Convex streaming patterns |
+| Design System (F001-002) | `ixartz/SaaS-Boilerplate` | MIT | shadcn/ui dashboard layout, data tables, settings pages |
+| Feature Flags (F001-008) | `PostHog/posthog-convex` | MIT | PostHog Convex integration (analytics + flags) |
+| Email (F001-006) | `jordanliu/convex-starter` | Unlicensed (reference only) | React Email + Convex patterns |
+
+**Key Patterns to Adopt:**
+1. Two-layer auth provider — `ConvexAuthNextjsServerProvider` (server) + `ConvexAuthNextjsProvider` (client)
+2. Route matcher middleware — `createRouteMatcher(["/t(.*)"])` for clean protected route definitions
+3. Auth callbacks — `afterUserCreatedOrUpdated` for auto-creating personal team on signup
+4. Polar `getUserInfo` mapped to team — return `{ userId: team._id, email: ownerEmail }` for team-level billing
+5. Polar webhook callbacks — `onSubscriptionUpdated` to sync `subscriptionTier` on teams
+6. Idempotent webhook handling — timestamp-based stale webhook detection (built into `@convex-dev/polar`)
+
+**Patterns to Explicitly AVOID:**
+- `.filter()` instead of `.withIndex()` (causes full table scans)
+- Members stored as array on org (doesn't scale — we correctly use join table)
+- Role stored on user not membership (breaks multi-team roles)
+- Empty middleware with no route protection (causes flash of protected content)
+
+### G. New Package Dependencies
+
+```json
+{
+  "dependencies": {
+    "@convex-dev/auth": "latest",
+    "@convex-dev/polar": "latest",
+    "ai": "latest",
+    "@ai-sdk/openai": "latest",
+    "@ai-sdk/anthropic": "latest",
+    "next-themes": "latest",
+    "@react-email/components": "latest",
+    "resend": "latest",
+    "@vercel/analytics": "latest",
+    "@vercel/speed-insights": "latest",
+    "@next/mdx": "latest",
+    "@mdx-js/react": "latest"
+  },
+  "optionalDependencies": {
+    "@sentry/nextjs": "latest"
+  }
+}
 ```
