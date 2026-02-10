@@ -160,20 +160,25 @@ Commands load skills automatically at appropriate phases. See `.claude/commands/
 
 ## Skill Metadata
 
-Each skill includes frontmatter with:
+Each skill includes YAML frontmatter in `SKILL.md`. These are the valid Claude Code fields:
 
 ```yaml
 ---
-name: skill-name
-description: When to use this skill
-version: "1.0.0"
-phase: 1-5 or null
-triggers: [list of trigger phrases]
-requires: [skills to load first]
-gate_type: decision | verification | none
+name: skill-name                      # Display name / slash command (kebab-case)
+description: When to use this skill   # TRIGGER-ONLY — say when, not how (~200 chars)
+# All fields below are optional — only add what the skill needs:
+argument-hint: "[args]"               # Autocomplete hint shown after /name
+disable-model-invocation: true        # Set true → manual /name only (default: false)
+user-invocable: false                 # Set false → hidden from /menu, Claude-only (default: true)
+allowed-tools: Read, Grep, Glob       # Tool allowlist — restricts to listed tools only
+context: fork                         # Set to "fork" → runs in isolated subagent
+agent: Explore                        # Agent type when forked: Explore, Plan, general-purpose
+model: sonnet                         # Override model: sonnet, opus, haiku
 ---
 ```
 
+Skills can also include supporting files (`reference.md`, `examples.md`, etc.) and a `scripts/` directory in the same folder. See `skill-creator` skill for full documentation.
+
 ---
 
-*Last updated: 2026-01-14 | Vibe System V10*
+*Last updated: 2026-02-10 | Vibe System V10*

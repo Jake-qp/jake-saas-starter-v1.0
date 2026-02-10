@@ -1,17 +1,19 @@
 ---
-name: skill-creator-v2
-description: This skill should be used when creating a new skill, enhancing an existing skill, or documenting reusable expertise. Not for one-off solutions or project-specific conventions.
+name: skill-creator
+description: Use when creating a new skill, enhancing an existing skill, or documenting reusable expertise. Not for one-off solutions or project-specific conventions.
+argument-hint: "[skill-name or topic]"
+allowed-tools: Read, Grep, Glob, Write, Edit, WebFetch, WebSearch
 ---
 
 # Skill Creator
 
 ## Overview
 
-Creating effective skills is TDD for documentation. See Claude fail before knowing what to teach, and BECOME the domain expert before transferring expertise.
+Creating effective skills requires two things: **expert content** (making Claude *think* like a domain expert) and **sound architecture** (using the right Claude Code capabilities for the job). Most skills fail at one or both. This skill teaches you to nail both.
 
 ## How Skill Authors Think
 
-**"What does Claude fail at without this skill?"** 
+**"What does Claude fail at without this skill?"**
 Unable to point to a specific failure? Then a skill isn't needed. Watch Claude fail first.
 
 **"Who is the world-class expert in this domain?"**
@@ -20,9 +22,12 @@ An effective skill cannot be written from the outside. Adopt the persona of some
 **"What rationalizations will Claude use to skip this?"**
 Anticipate shortcuts and close them explicitly. Smart agents find loopholes.
 
+**"What Claude Code capabilities does this skill need?"**
+A prompt-only skill is sometimes right. But skills that need arguments, dynamic context, isolation, or safety checks should use the infrastructure Claude Code provides — not reinvent it.
+
 ## The Expert Persona Process (CRITICAL)
 
-Before writing ANY skill, first BECOME the world's best expert in that domain. This is not optional—it's the difference between documentation and expertise transfer.
+Before writing ANY skill, first BECOME the world's best expert in that domain. This is not optional — it's the difference between documentation and expertise transfer.
 
 ### The 5-Step Persona Process
 
@@ -54,7 +59,7 @@ For each skill domain, ask yourself:
 
 **Questions they always ask:** "Where does the eye go first? Does every pixel earn its place? Would I pay for this?"
 
-**The skill is then written FROM this designer's perspective**—their voice, their concerns, their mental model.
+**The skill is then written FROM this designer's perspective** — their voice, their concerns, their mental model.
 
 ## The 4 Core Truths
 
@@ -75,7 +80,7 @@ Descriptions containing workflow summaries cause Claude to skip reading the full
 
 **GOOD:** `description: Use when implementing any feature or bugfix, before writing implementation code`
 
-**Rule:** Descriptions are TRIGGER-ONLY. Say WHEN to use it, not HOW it works.
+**Rule:** Descriptions are TRIGGER-ONLY. Say WHEN to use it, not HOW it works. Max ~200 characters for best auto-invocation behavior.
 
 ## When to Use This Skill
 
@@ -110,34 +115,79 @@ An effective skill cannot be written without first becoming the expert. This is 
 ### Phase 4: Research
 10. How do real experts think about this domain?
 11. What mental models should transfer?
-12. Cross-reference existing skills (Superpowers, Anthropic) for patterns
+12. Cross-reference existing skills for patterns
 
-### Phase 5: Draft (GREEN)
-13. Write skill FROM THE EXPERT'S PERSPECTIVE using the template below
-14. Check against 4 Core Truths:
+### Phase 5: Architect (NEW — Choose Skill Capabilities)
+
+Before writing content, decide what Claude Code infrastructure the skill needs. Run through the **Capability Decision Framework** below.
+
+13. Walk through each question in the framework
+14. For unfamiliar capabilities, read [reference.md](reference.md)
+15. Pick the matching archetype from [templates.md](templates.md)
+16. Note which supporting files you'll need
+
+### Phase 6: Draft (GREEN)
+17. Write skill FROM THE EXPERT'S PERSPECTIVE using the chosen archetype
+18. Include proper frontmatter based on Phase 5 decisions
+19. Check against 4 Core Truths:
     - [ ] Expertise Transfer?
     - [ ] Flow, Not Friction?
     - [ ] Voice Matches Domain?
     - [ ] Focused?
-15. **Voice Test:** Read aloud. Does it sound like a senior expert sharing wisdom, or like documentation?
+20. **Voice Test:** Read aloud. Does it sound like a senior expert sharing wisdom, or like documentation?
 
-### Phase 6: Validate
-16. Test with pressure scenario—would Claude follow this under time pressure?
-17. Find rationalizations and close them explicitly
-18. Iterate until bulletproof
+### Phase 7: Validate
+21. Test with pressure scenario — would Claude follow this under time pressure?
+22. Find rationalizations and close them explicitly
+23. Verify frontmatter fields are correct (no invented fields)
+24. Iterate until bulletproof
 
-### Phase 7: Finalize (REFACTOR)
-19. Final voice check—would a senior practitioner nod at this?
-20. Save to `.claude/skills/[name]/SKILL.md`
+### Phase 8: Finalize (REFACTOR)
+25. Final voice check — would a senior practitioner nod at this?
+26. Final architecture check — are capabilities used correctly?
+27. Save to `.claude/skills/[name]/SKILL.md` (plus supporting files)
+
+## Capability Decision Framework
+
+Walk through each question. If unsure about a capability, read [reference.md](reference.md) for details.
+
+| Question | If Yes → Do This | If No |
+|----------|-------------------|-------|
+| Does the skill accept arguments? (e.g., issue number, filename) | Add `argument-hint: "[hint]"`, use `$ARGUMENTS` in content | Skip |
+| Should it ONLY run when user explicitly types `/name`? | Add `disable-model-invocation: true` | Default (Claude can auto-invoke) |
+| Should ONLY Claude invoke it (not shown in `/` menu)? | Add `user-invocable: false` | Default |
+| Should it be read-only or have restricted tools? | Add `allowed-tools: Read, Grep, Glob` (or whatever subset) | Skip (all tools available) |
+| Does it need live data injected? (git diff, PR info, etc.) | Use `` !`command` `` dynamic injection in content | Skip |
+| Is it research/exploration that shouldn't pollute main context? | Add `context: fork` + `agent: Explore` | Skip |
+| Is it > 500 lines with reference material? | Split into supporting `.md` files in skill directory | Keep single file |
+| Does it need safety checks before tool use? | Add `hooks` in frontmatter | Skip |
+| Does it generate artifacts or run analysis scripts? | Add `scripts/` directory with executables | Skip |
+
+**Common combinations:**
+
+- **Simple knowledge skill:** Just `name` + `description`. No extras needed.
+- **Parameterized task:** `argument-hint` + `disable-model-invocation: true` + `allowed-tools`
+- **Research agent:** `context: fork` + `agent: Explore` + `argument-hint`
+- **Safety gate:** `user-invocable: false` + `hooks` + `allowed-tools`
+
+For complete archetypes with full frontmatter, see [templates.md](templates.md).
+For real-world examples, see [examples.md](examples.md).
 
 ## The Skill Template
 
-Every skill should follow this structure:
+Every skill should follow this structure. Choose frontmatter fields from the Capability Decision Framework above.
 
 ```markdown
 ---
 name: skill-name-with-hyphens
-description: [TRIGGER-ONLY - when to use, not how it works]. Max 400 chars, third person.
+description: [TRIGGER-ONLY - when to use, not how it works]. Max ~200 chars.
+# Add these ONLY if needed (see Capability Decision Framework):
+# argument-hint: "[what-args-look-like]"
+# disable-model-invocation: true
+# user-invocable: false
+# allowed-tools: Read, Grep, Glob
+# context: fork
+# agent: Explore
 ---
 
 # Skill Name
@@ -154,9 +204,9 @@ description: [TRIGGER-ONLY - when to use, not how it works]. Max 400 chars, thir
 [Why this matters]
 
 ### What Separates Amateurs from Professionals
-[The gap—what do amateurs do that experts never would?]
+[The gap — what do amateurs do that experts never would?]
 
-When catching yourself doing [amateur behavior]—STOP.
+When catching yourself doing [amateur behavior] — STOP.
 
 ## When to Use
 - [Trigger condition 1]
@@ -179,8 +229,8 @@ When catching yourself doing [amateur behavior]—STOP.
 
 ## Common Mistakes
 
-| ❌ Wrong | ✅ Right | Why |
-|----------|----------|-----|
+| Wrong | Right | Why |
+|-------|-------|-----|
 | [Amateur pattern] | [Expert pattern] | [Explanation] |
 
 ## Exit Criteria
@@ -192,46 +242,85 @@ When catching yourself doing [amateur behavior]—STOP.
 
 ## Quick Reference: Skill Quality Checklist
 
+### Content Quality
+
 | Check | Requirement |
 |-------|-------------|
 | Expert Persona | Adopted world-class expert mindset for domain |
-| Description | Trigger-only, 200-400 chars, no workflow |
+| Description | Trigger-only, ~200 chars, no workflow summary |
 | Expert section | Explains HOW experts think (from their POV) |
 | Voice | Sounds like practitioner sharing wisdom |
 | Common Mistakes | Explicitly forbids bad patterns |
 | Exit Criteria | Testable completion conditions |
-| Length | Under 500 lines or split into reference files |
+
+### Architecture Quality
+
+| Check | Requirement |
+|-------|-------------|
+| Frontmatter | Only real Claude Code fields (no `version`, `triggers`, `gate_type`) |
+| Arguments | `argument-hint` + `$ARGUMENTS` if skill accepts input |
+| Tool restrictions | `allowed-tools` set if skill should be constrained |
+| Context isolation | `context: fork` for research/exploration skills |
+| Dynamic context | `` !`command` `` for live data (git diff, PR info, etc.) |
+| File size | Under 500 lines, or split into supporting files |
+| Supporting files | Referenced from SKILL.md, not duplicated |
+| Hooks | Only if safety checks are genuinely needed |
 
 ## Common Mistakes
 
-| ❌ Wrong | ✅ Right | Why |
-|----------|----------|-----|
+### Content Mistakes
+
+| Wrong | Right | Why |
+|-------|-------|-----|
 | Writing skill before seeing failure | Watch Claude fail first | Otherwise, unclear what to teach |
 | Writing without adopting expert persona | BECOME the expert first | Cannot transfer expertise without having it |
 | Description summarizes workflow | Description is trigger-only | Claude skips reading full skill |
 | Documentation voice | Expert practitioner voice | Expertise requires authentic voice |
 | Listing steps only | Explaining how experts think | Steps don't transfer mental models |
 | No anti-patterns section | Explicit Common Mistakes | Claude will make them if not forbidden |
-| Sounds like a manual | Sounds like wisdom being shared | Manuals don't transfer expertise |
+
+### Architecture Mistakes
+
+| Wrong | Right | Why |
+|-------|-------|-----|
+| Inventing frontmatter fields (`version`, `triggers`) | Use only real Claude Code fields | Fake fields are silently ignored |
+| Putting everything in one 800-line file | Split into SKILL.md + reference files | Claude loses focus in long files |
+| No `argument-hint` when skill needs input | Add `argument-hint: "[hint]"` | Users won't know what to pass |
+| Using `context: fork` for guidelines | Only fork for explicit tasks | Forked context can't see conversation |
+| No `allowed-tools` on dangerous workflows | Restrict to necessary tools | Prevents accidental side effects |
+| Hardcoding data that changes | Use `` !`command` `` for live data | Stale data produces wrong results |
+| Every skill gets every capability | Use only what's needed | Complexity without benefit |
 
 ## Rationalization Blockers
 
 Common rationalizations to reject:
 
-- **"I know this domain well enough"** → Has the WORLD-CLASS expert persona actually been adopted? Not "pretty good"—world-class.
+- **"I know this domain well enough"** → Has the WORLD-CLASS expert persona actually been adopted? Not "pretty good" — world-class.
 - **"This skill is straightforward, I can skip the persona step"** → That's exactly when documentation gets produced instead of expertise transfer.
 - **"I'll add the expert thinking section later"** → No. Write FROM the expert's perspective from the start, or rewrite.
 - **"The template is enough"** → The template is structure. The persona is soul. Both required.
+- **"It's just a simple skill, it doesn't need frontmatter decisions"** → Even simple skills benefit from asking "does it need arguments? tool restrictions?" Takes 30 seconds.
+- **"I'll add hooks/scripts/forking because they're cool"** → Only add capabilities the skill actually needs. Simple is better.
+
+## Supporting Files
+
+This skill includes detailed reference material. Load these when needed:
+
+- **[reference.md](reference.md)** — Complete Claude Code skill capabilities documentation (frontmatter fields, dynamic context injection, hooks, scripts, etc.)
+- **[templates.md](templates.md)** — Skill archetypes with complete frontmatter examples and skeletons
+- **[examples.md](examples.md)** — 5 complete real-world skill examples of different types
 
 ## Exit Criteria
 
 - [ ] Watched Claude fail without the skill (RED phase)
 - [ ] Adopted world-class expert persona for this domain
-- [ ] Skill follows template structure
+- [ ] Walked through Capability Decision Framework
+- [ ] Skill follows template structure with correct frontmatter
 - [ ] Passes all 4 Core Truths
 - [ ] Passes voice test (sounds like expert sharing wisdom)
 - [ ] Tested with pressure scenario
 - [ ] Rationalizations identified and blocked
-- [ ] Under 500 lines or properly split
+- [ ] Only real Claude Code frontmatter fields used
+- [ ] Under 500 lines or properly split into supporting files
 
-**Done when:** A senior practitioner in that domain would read the skill and say "yes, that's exactly how I think about it."
+**Done when:** A senior practitioner in that domain would read the skill and say "yes, that's exactly how I think about it" — AND the skill uses the right Claude Code capabilities for its use case.
