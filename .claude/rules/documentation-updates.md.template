@@ -1,0 +1,184 @@
+# Documentation Update Rules
+
+> When completing features, update documentation. Don't wait to be asked.
+
+## Why This Matters: Document Traversability
+
+**Claude Code loads context by traversing document indexes.** If indexes aren't updated, the agent cannot find what was built. This breaks the knowledge graph.
+
+```
+docs/specs/readme.md (The Pin)
+       ↓ links to
+Feature Specs table → individual .spec files
+Source Code Index → implementation files
+       ↓
+ARCHITECTURE.md Feature Index → spec files
+       ↓
+feature_list.json → status, phase, spec_file path
+```
+
+**If you skip index updates:**
+- Future sessions can't find the feature
+- Context loading fails silently
+- The agent "forgets" what exists
+
+### Required Cross-References (MANDATORY)
+
+For EVERY completed feature, these links MUST exist:
+
+| Index | Entry Required | Verification |
+|-------|----------------|--------------|
+| `docs/specs/readme.md` Feature Specs table | Row with status | `grep "F000-001" docs/specs/readme.md` |
+| `docs/specs/readme.md` Source Code Index | Row for new modules | `grep "module-name" docs/specs/readme.md` |
+| `ARCHITECTURE.md` Feature Index | Row with spec link | `grep "F000-001" ARCHITECTURE.md` |
+| `feature_list.json` | status: "complete" | `jq '.features[] | select(.id=="F000-001")' feature_list.json` |
+
+**Gate Verification:** Before marking Phase 5 complete, run these checks. If any fail, fix before proceeding.
+
+---
+
+## Documentation Hierarchy
+
+```
+CLAUDE.md (~200 lines)              → Quick reference, commands, conventions
+ARCHITECTURE.md (~300 lines)        → System overview, data flow, key decisions
+.claude/rules/*.md                  → Domain implementation details
+docs/architecture/features.md       → Feature implementation deep-dives
+docs/architecture/directory-structure.md → Full directory listing
+docs/security/dependencies.md       → Dependency vulnerability decisions
+docs/specs/                         → Feature specifications
+```
+
+**Principle:** Keep ARCHITECTURE.md lean. Move implementation details to specialized docs.
+
+## Trigger: Feature Completion
+
+After completing any feature, check if documentation needs updating.
+
+## What to Update
+
+### CLAUDE.md (Quick Reference)
+
+Update when:
+- New protected function wrappers added
+- New core concepts introduced
+- New key design decisions made
+- Stack changes (new major dependency)
+
+**Keep it brief** — CLAUDE.md is quick reference only. Details go elsewhere.
+
+### ARCHITECTURE.md (System Overview)
+
+Update when:
+- New data flows or pipelines
+- New external integrations
+- Security model changes
+- New key architectural decisions
+
+**Keep it lean** (~300 lines max). Add only:
+- High-level "what" and "why"
+- Links to detailed docs
+- Feature index entries
+
+**Move to docs/architecture/features.md:**
+- Function/API tables
+- Detailed implementation flows
+- Component lists
+- Data model specifics
+
+### docs/architecture/features.md (Feature Details)
+
+Update when:
+- New feature completed
+- Feature implementation changed significantly
+
+**Add here:** Full function tables, data flows, component details.
+
+### .claude/rules/*.md (Domain Rules)
+
+Update when:
+- Domain-specific patterns emerge
+- New domain area added → consider new rule file
+- Existing domain rules need refinement
+
+### docs/security/dependencies.md
+
+Update when:
+- New dependency with known vulnerabilities
+- Vulnerability mitigation decisions made
+- Security audit completed
+
+### progress.md (Session Log)
+
+Update at:
+- Session start (what's being worked on)
+- Phase completions
+- Session end (what's done, what's next)
+
+### CHANGELOG.md (User-Facing)
+
+Always update via changelog skill at Phase 5.
+
+## Checklist for Feature Completion
+
+```markdown
+## Documentation Review
+
+- [ ] docs/specs/readme.md (The Pin) updated:
+  - [ ] Feature Specs table has row with status
+  - [ ] Source Code Index has new modules (if any)
+  - [ ] Concept Index updated (if new concepts)
+- [ ] docs/specs/[feature].spec ACs marked complete
+- [ ] CHANGELOG.md updated (via changelog skill)
+- [ ] progress.md updated with completion status
+- [ ] feature_list.json status updated
+- [ ] ARCHITECTURE.md feature index entry added (if new feature)
+- [ ] docs/architecture/features.md updated with implementation details
+- [ ] .claude/rules/*.md updated if domain rules changed
+- [ ] CLAUDE.md updated only if quick-reference info changed
+```
+
+## Examples
+
+### New Feature Would Update:
+
+1. **docs/specs/readme.md (The Pin)** — Add to Feature Specs table, Source Code Index
+2. **docs/specs/[feature].spec** — Mark ACs as [x] complete
+3. **ARCHITECTURE.md** — Add one row to Feature Index table
+4. **docs/architecture/features.md** — Add full implementation section
+5. **.claude/rules/*.md** — If domain-specific rules emerged
+6. **CHANGELOG.md** — Feature description
+
+### Domain Rule Change Would Update:
+
+1. **.claude/rules/[domain].md** — Update or create rule file
+2. **docs/architecture/features.md** — If implementation details needed
+3. **CHANGELOG.md** — Note the change
+
+## Priority Order
+
+1. **docs/specs/readme.md (The Pin)** — Feature index, source index, concepts
+2. **docs/specs/[feature].spec** — Mark ACs complete
+3. **CHANGELOG.md** — Always (via skill)
+4. **progress.md + feature_list.json** — Always
+5. **docs/architecture/features.md** — Implementation details
+6. **.claude/rules/*.md** — Domain-specific rules
+7. **ARCHITECTURE.md** — Only high-level changes
+8. **CLAUDE.md** — Rarely (only major additions)
+
+## Anti-Patterns
+
+**Don't:**
+- Add full function/API tables to ARCHITECTURE.md
+- Duplicate content between ARCHITECTURE.md and rules files
+- Add 50+ lines to ARCHITECTURE.md for a single feature
+- Forget to update The Pin (docs/specs/readme.md) — it's the primary index
+- Forget to add Feature Index entry for new features
+- Forget to mark spec ACs as complete
+
+**Do:**
+- Keep ARCHITECTURE.md as a navigation hub with links
+- Put implementation details in docs/architecture/features.md
+- Update existing sections rather than adding new ones
+- Use tables for compact information
+- Mark spec acceptance criteria complete when verified

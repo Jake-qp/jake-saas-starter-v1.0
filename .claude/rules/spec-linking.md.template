@@ -1,0 +1,108 @@
+# Spec Linking Rules
+
+> When creating or updating spec files, always include navigation links for context traversal.
+
+## Spec Header Template
+
+Every spec file MUST start with a navigation block:
+
+```markdown
+# Feature: [Feature Name]
+
+## Navigation
+
+| Document | Link |
+|----------|------|
+| **Implementation Plan** | [IMPLEMENTATION_PLAN.md](../../IMPLEMENTATION_PLAN.md#[feature-id-anchor]) |
+| **PRD Section** | [PRD](../prds/[YOUR-PRD].md#[prd-section-anchor]) |
+| **Specs Index** | [readme.md](readme.md) |
+| **Feature List** | [feature_list.json](../../feature_list.json) |
+
+| Metadata | Value |
+|----------|-------|
+| **Feature ID** | [F001-001] |
+| **Build** | [B001 Foundation] |
+| **Dependencies** | [F001-001, F001-002] (if any) |
+| **PRD Section** | [Section Name] |
+
+---
+```
+
+## How to Find Links
+
+### 1. Implementation Plan Link
+
+The feature section in IMPLEMENTATION_PLAN.md uses anchors:
+- `#f001-001-feature-name`
+- `#f002-003-another-feature`
+
+Convert feature ID to anchor: lowercase, replace spaces with hyphens.
+
+### 2. PRD Section Link
+
+Look up `prd_section` in `feature_list.json` for this feature:
+```bash
+cat feature_list.json | jq '.features[] | select(.id == "F001-001") | .prd_section'
+```
+
+PRD section anchors are lowercase with hyphens:
+- "Part II-A: Section Name" → `#part-ii-a-section-name`
+- "Part V: Section Name" → `#part-v-section-name`
+
+### 3. Dependencies
+
+Check the feature's dependencies in IMPLEMENTATION_PLAN.md and link to their specs:
+- `[F001-001](F001-001-feature-name.spec)` (if exists)
+- Or note "(spec pending)" if not yet created
+
+## After Creating Spec
+
+Update `docs/specs/readme.md` Feature Specs table:
+
+```markdown
+| F001-001 Feature Name | [spec](F001-001-feature-name.spec) | Done |
+```
+
+Update `feature_list.json`:
+
+```json
+{
+  "id": "F001-001",
+  "spec_file": "docs/specs/F001-001-feature-name.spec",
+  ...
+}
+```
+
+## Example Complete Spec Header
+
+```markdown
+# Feature: User Authentication
+
+## Navigation
+
+| Document | Link |
+|----------|------|
+| **Implementation Plan** | [IMPLEMENTATION_PLAN.md](../../IMPLEMENTATION_PLAN.md#f001-001-user-authentication) |
+| **PRD Section** | [Part II-A: Authentication](../prds/PRD.md#part-ii-a-authentication) |
+| **Specs Index** | [readme.md](readme.md) |
+| **Feature List** | [feature_list.json](../../feature_list.json) |
+
+| Metadata | Value |
+|----------|-------|
+| **Feature ID** | F001-001 |
+| **Build** | B001 Foundation |
+| **Dependencies** | None (first feature) |
+| **PRD Section** | Part II-A: Authentication |
+
+---
+
+## User Context
+...
+```
+
+## Why This Matters
+
+1. **Claude can traverse** from spec → implementation plan → PRD → back
+2. **Context is always available** without searching
+3. **Dependencies are explicit** so Claude knows what to reference
+4. **Updates are tracked** in feature_list.json and specs index

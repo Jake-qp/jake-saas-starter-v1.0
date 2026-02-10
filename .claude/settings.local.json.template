@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(help)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:registry.npmjs.org)"
+    ]
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllowBashIfSandboxed": false
+  }
+}
