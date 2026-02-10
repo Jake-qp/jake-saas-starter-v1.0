@@ -1,0 +1,541 @@
+{
+  "project": "SaaS Boilerplate V2",
+  "prd": "docs/prds/F001-saas-boilerplate-v2.md",
+  "pending_features": {
+    "count": 11,
+    "ids": [
+      "F001-001",
+      "F001-002",
+      "F001-003",
+      "F001-004",
+      "F001-005",
+      "F001-006",
+      "F001-007",
+      "F001-008",
+      "F001-009",
+      "F001-010",
+      "F001-011"
+    ]
+  },
+  "features": [
+    {
+      "id": "F001-001",
+      "name": "Convex Auth Migration",
+      "type": "backend",
+      "priority": 0,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-001: Convex Auth Migration"],
+        "key_concepts": [
+          "Replace @clerk/nextjs with @convex-dev/auth",
+          "Session-based user lookup instead of tokenIdentifier",
+          "New auth pages: sign-in, sign-up, forgot-password",
+          "ConvexAuthProvider replaces ClerkProvider + ConvexProviderWithClerk",
+          "Convex Auth SSR is beta — use client-side redirects"
+        ]
+      },
+      "description": "Replace Clerk auth with Convex Auth for single source of truth",
+      "dependencies": [],
+      "files_to_create": [
+        "convex/auth.ts",
+        "app/auth/sign-in/page.tsx",
+        "app/auth/sign-up/page.tsx",
+        "app/auth/forgot-password/page.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "convex/functions.ts",
+        "convex/users.ts",
+        "convex/auth.config.js",
+        "app/ConvexClientProvider.tsx",
+        "middleware.ts",
+        "app/t/page.tsx",
+        "app/t/[teamSlug]/settings/DeleteTeamDialog.tsx",
+        "app/t/[teamSlug]/ProfileButton.tsx",
+        "package.json"
+      ],
+      "subtasks": [
+        "Install @convex-dev/auth and configure convex/auth.ts",
+        "Integrate authTables with convex-ents schema",
+        "Update functions.ts for session-based user lookup",
+        "Replace ConvexClientProvider with ConvexAuthProvider",
+        "Create sign-in, sign-up, forgot-password pages",
+        "Replace Clerk middleware with redirect logic",
+        "Update users.ts store mutation for Convex Auth identity",
+        "Remove all Clerk imports and dependencies",
+        "Update all components that use @clerk/nextjs hooks",
+        "Test full auth flow: sign-up, sign-in, password reset"
+      ],
+      "acceptance_criteria": [
+        "User can sign up with email/password",
+        "User can sign in with existing email/password",
+        "User can reset password",
+        "Existing team/member/invite flows work",
+        "No Clerk dependencies in codebase"
+      ]
+    },
+    {
+      "id": "F001-002",
+      "name": "Design System Expansion",
+      "type": "frontend",
+      "priority": 0,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-002: Design System Expansion"],
+        "key_concepts": [
+          "10+ new shadcn/ui components",
+          "8 app-level components (PageHeader, DataTable, etc.)",
+          "Dark/light/system theme via next-themes",
+          "shadcn/ui New York style"
+        ]
+      },
+      "description": "Expand UI component library with shadcn/ui additions and app-level components",
+      "dependencies": [],
+      "files_to_create": [
+        "components/PageHeader.tsx",
+        "components/DataTable.tsx",
+        "components/EmptyState.tsx",
+        "components/StatusBadge.tsx",
+        "components/PricingCard.tsx",
+        "components/UsageMeter.tsx",
+        "components/StepWizard.tsx",
+        "components/ThemeToggle.tsx"
+      ],
+      "files_to_modify": [
+        "package.json",
+        "tailwind.config.ts",
+        "app/layout.tsx"
+      ],
+      "subtasks": [
+        "Install shadcn/ui: data-table, chart, sidebar, breadcrumb, pagination, drawer, sonner, input-otp, toggle-group, resizable",
+        "Install next-themes and configure ThemeProvider",
+        "Build PageHeader component",
+        "Build DataTable component with sorting/filtering/pagination",
+        "Build EmptyState component",
+        "Build StatusBadge component",
+        "Build PricingCard component",
+        "Build UsageMeter component",
+        "Build StepWizard component",
+        "Build ThemeToggle component",
+        "Add dark mode CSS variables"
+      ],
+      "acceptance_criteria": [
+        "All 10 new shadcn/ui components installed and importable",
+        "PageHeader, DataTable, EmptyState, StatusBadge render correctly",
+        "Dark/light/system toggle works across all pages"
+      ]
+    },
+    {
+      "id": "F001-003",
+      "name": "Polar Billing Integration",
+      "type": "backend",
+      "priority": 1,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-003: Polar Billing Integration"],
+        "key_concepts": [
+          "Team-level billing via @convex-dev/polar",
+          "Configurable entitlement system (PLAN_CONFIG)",
+          "Webhook handling via convex/http.ts",
+          "checkEntitlement(ctx, teamId, key) function"
+        ]
+      },
+      "description": "Integrate Polar for team-level billing with configurable entitlements",
+      "dependencies": ["F001-001"],
+      "files_to_create": [
+        "convex/convex.config.ts",
+        "convex/billing.ts",
+        "convex/entitlements.ts",
+        "convex/http.ts",
+        "lib/planConfig.ts",
+        "app/t/[teamSlug]/settings/billing/page.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "convex/users/teams.ts",
+        "package.json"
+      ],
+      "subtasks": [
+        "Install @convex-dev/polar",
+        "Create convex.config.ts with Polar component",
+        "Add billing fields to teams table in schema",
+        "Create lib/planConfig.ts with tier configuration",
+        "Create convex/entitlements.ts with checkEntitlement",
+        "Create convex/billing.ts with subscription queries",
+        "Create convex/http.ts with Polar webhook handler",
+        "Create billing settings page",
+        "Test webhook handling with Polar test events"
+      ],
+      "acceptance_criteria": [
+        "Team admin can view billing page with current plan",
+        "Polar checkout creates subscription and updates team tier",
+        "Webhook updates subscriptionTier and subscriptionStatus",
+        "checkEntitlement enforces member limits per tier",
+        "Free tier has feature restrictions"
+      ]
+    },
+    {
+      "id": "F001-004",
+      "name": "Enhanced RBAC",
+      "type": "backend",
+      "priority": 1,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-004: Enhanced RBAC"],
+        "key_concepts": [
+          "Owner role (highest privilege, transferable)",
+          "9 new permissions (total 14)",
+          "Custom roles for Enterprise tier",
+          "Preserve viewerWithPermission/viewerHasPermissionX API"
+        ]
+      },
+      "description": "Add Owner role, expand permissions to 14, support custom roles",
+      "dependencies": ["F001-001", "F001-003"],
+      "files_to_create": [],
+      "files_to_modify": [
+        "convex/permissions.ts",
+        "convex/schema.ts",
+        "convex/init.ts",
+        "convex/users/teams.ts",
+        "convex/users/teams/members.ts",
+        "convex/users/teams/roles.ts"
+      ],
+      "subtasks": [
+        "Add Owner to vRole union",
+        "Add 9 new permissions to vPermission union",
+        "Update init.ts to seed Owner role and new permissions",
+        "Add ownership transfer mutation",
+        "Enforce Owner cannot leave without transfer",
+        "Add custom role CRUD for Enterprise tier",
+        "Update member management for Owner semantics"
+      ],
+      "acceptance_criteria": [
+        "Owner role exists and can perform all actions",
+        "Owner cannot leave without transferring ownership",
+        "New permissions enforceable via viewerHasPermissionX",
+        "Custom roles creatable on Enterprise tier"
+      ]
+    },
+    {
+      "id": "F001-005",
+      "name": "AI/LLM Integration",
+      "type": "backend",
+      "priority": 2,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-005: AI/LLM Integration"],
+        "key_concepts": [
+          "Vercel AI SDK with @ai-sdk/openai and @ai-sdk/anthropic",
+          "Convex HTTP actions for streaming",
+          "Token bucket rate limiting per team",
+          "Usage tracking tied to subscription tier"
+        ]
+      },
+      "description": "Add AI chat with streaming, usage tracking, and rate limiting",
+      "dependencies": ["F001-003", "F001-004"],
+      "files_to_create": [
+        "convex/ai/conversations.ts",
+        "convex/ai/messages.ts",
+        "convex/ai/usage.ts",
+        "convex/rateLimiting.ts",
+        "app/t/[teamSlug]/ai/page.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "convex/http.ts",
+        "package.json"
+      ],
+      "subtasks": [
+        "Install ai, @ai-sdk/openai, @ai-sdk/anthropic",
+        "Add aiConversations, aiMessages, aiUsage to schema",
+        "Create conversation CRUD mutations",
+        "Create HTTP action for AI streaming",
+        "Implement token bucket rate limiter",
+        "Create usage tracking mutations",
+        "Build AI chat page with useChat",
+        "Gate access with Use AI permission",
+        "Test streaming and rate limiting"
+      ],
+      "acceptance_criteria": [
+        "AI chat page renders with streaming responses",
+        "Usage tracked per team per billing period",
+        "Rate limiting prevents exceeding tier quota",
+        "Use AI permission gates access"
+      ]
+    },
+    {
+      "id": "F001-006",
+      "name": "Notification System",
+      "type": "backend",
+      "priority": 2,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-006: Notification System"],
+        "key_concepts": [
+          "In-app notifications via Convex subscriptions",
+          "Email templates with React Email",
+          "Notification preferences per user"
+        ]
+      },
+      "description": "Full notification system with in-app (real-time) and email channels",
+      "dependencies": ["F001-001", "F001-003"],
+      "files_to_create": [
+        "convex/notifications/notifications.ts",
+        "convex/notifications/preferences.ts",
+        "components/NotificationBell.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "package.json"
+      ],
+      "subtasks": [
+        "Add notifications and notificationPreferences to schema",
+        "Create notification CRUD mutations",
+        "Create notification preferences mutations",
+        "Build NotificationBell component",
+        "Create React Email templates",
+        "Wire notifications into existing flows (invites, billing)"
+      ],
+      "acceptance_criteria": [
+        "Notification bell shows unread count",
+        "Clicking notification marks as read",
+        "Email notifications sent for key events"
+      ]
+    },
+    {
+      "id": "F001-007",
+      "name": "Onboarding System",
+      "type": "frontend",
+      "priority": 2,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-007: Onboarding System"],
+        "key_concepts": [
+          "Multi-step wizard: Welcome > Create team > Invite > Plan > Configure",
+          "onboardingProgress per user",
+          "Skippable steps"
+        ]
+      },
+      "description": "Multi-step onboarding wizard for new users",
+      "dependencies": ["F001-001", "F001-003"],
+      "files_to_create": [
+        "convex/onboarding.ts",
+        "app/t/onboarding/page.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "app/t/page.tsx"
+      ],
+      "subtasks": [
+        "Add onboardingProgress to schema",
+        "Create onboarding mutations (get/update progress)",
+        "Build wizard UI with StepWizard component",
+        "Wire redirect for new users",
+        "Add skip functionality"
+      ],
+      "acceptance_criteria": [
+        "New user sees onboarding after first sign-up",
+        "Wizard tracks completed steps across sessions",
+        "User can skip onboarding"
+      ]
+    },
+    {
+      "id": "F001-008",
+      "name": "Feature Flags",
+      "type": "backend",
+      "priority": 3,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-008: Feature Flags"],
+        "key_concepts": [
+          "Convex-native flags (reactive subscriptions)",
+          "Resolution: team override > tier default > global default",
+          "useFeatureFlag(key) hook"
+        ]
+      },
+      "description": "Server-side feature flags with per-team overrides and reactive updates",
+      "dependencies": ["F001-003"],
+      "files_to_create": [
+        "convex/featureFlags/flags.ts",
+        "convex/featureFlags/teamFlags.ts",
+        "app/t/[teamSlug]/hooks/useFeatureFlag.ts"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts"
+      ],
+      "subtasks": [
+        "Add featureFlags and teamFeatureFlags to schema",
+        "Create flag CRUD mutations",
+        "Create resolution query (team > tier > global)",
+        "Build useFeatureFlag hook",
+        "Seed default feature flags in init.ts"
+      ],
+      "acceptance_criteria": [
+        "useFeatureFlag returns correct value per resolution order",
+        "Admin can toggle flags globally and per-team",
+        "Flag changes propagate reactively"
+      ]
+    },
+    {
+      "id": "F001-009",
+      "name": "Analytics & Event Tracking",
+      "type": "backend",
+      "priority": 3,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-009: Analytics & Event Tracking"],
+        "key_concepts": [
+          "First-party analytics in Convex",
+          "track() mutation + useTrack() hook",
+          "Time-series aggregation queries"
+        ]
+      },
+      "description": "First-party event tracking and analytics stored in Convex",
+      "dependencies": ["F001-001"],
+      "files_to_create": [
+        "convex/analytics/events.ts",
+        "convex/analytics/aggregations.ts",
+        "app/t/[teamSlug]/hooks/useTrack.ts"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts"
+      ],
+      "subtasks": [
+        "Add analyticsEvents to schema",
+        "Create track() mutation",
+        "Create aggregation queries (counts, time-series)",
+        "Build useTrack() hook",
+        "Add TTL cleanup scheduled function"
+      ],
+      "acceptance_criteria": [
+        "useTrack fires events to analyticsEvents table",
+        "Admin can view event counts and time-series data"
+      ]
+    },
+    {
+      "id": "F001-010",
+      "name": "Super Admin Panel",
+      "type": "frontend",
+      "priority": 3,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-010: Super Admin Panel"],
+        "key_concepts": [
+          "isSuperAdmin boolean on users",
+          "adminQuery/adminMutation wrappers",
+          "Dashboard, user/team management, feature flags, analytics, audit log"
+        ]
+      },
+      "description": "Super admin panel for platform operations and oversight",
+      "dependencies": ["F001-003", "F001-004", "F001-008", "F001-009"],
+      "files_to_create": [
+        "convex/admin/dashboard.ts",
+        "convex/admin/users.ts",
+        "convex/admin/teams.ts",
+        "convex/admin/audit.ts",
+        "app/admin/layout.tsx",
+        "app/admin/page.tsx",
+        "app/admin/users/page.tsx",
+        "app/admin/teams/page.tsx",
+        "app/admin/flags/page.tsx",
+        "app/admin/analytics/page.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "convex/functions.ts",
+        "middleware.ts"
+      ],
+      "subtasks": [
+        "Add auditLog to schema",
+        "Create adminQuery/adminMutation wrappers",
+        "Create admin dashboard queries",
+        "Create user management queries/mutations",
+        "Create team management queries",
+        "Create audit log mutations",
+        "Build admin layout and pages",
+        "Wire feature flag management UI",
+        "Wire analytics dashboard UI"
+      ],
+      "acceptance_criteria": [
+        "Super admin can access /admin routes",
+        "Non-super-admin blocked from /admin",
+        "Dashboard shows user/team/revenue metrics",
+        "Admin actions logged to auditLog"
+      ]
+    },
+    {
+      "id": "F001-011",
+      "name": "Example App (Notes CRUD)",
+      "type": "frontend",
+      "priority": 2,
+      "status": "pending",
+      "current_phase": 0,
+      "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
+      "prd_context": {
+        "read_sections": ["Context Summary", "F001-011: Example App (Notes CRUD)"],
+        "key_concepts": [
+          "Replace messages demo with notes CRUD",
+          "Permission-gated: Contribute creates, Manage Content deletes",
+          "Real-time, search, soft deletion, pagination",
+          "Entitlement gating (max notes per tier)"
+        ]
+      },
+      "description": "Rich notes CRUD app demonstrating all boilerplate patterns",
+      "dependencies": ["F001-001", "F001-004", "F001-003"],
+      "files_to_create": [
+        "convex/notes/queries.ts",
+        "convex/notes/mutations.ts",
+        "app/t/[teamSlug]/notes/page.tsx",
+        "app/t/[teamSlug]/notes/NoteList.tsx",
+        "app/t/[teamSlug]/notes/NoteEditor.tsx"
+      ],
+      "files_to_modify": [
+        "convex/schema.ts",
+        "app/t/TeamMenu.tsx"
+      ],
+      "subtasks": [
+        "Add notes entity to schema",
+        "Create notes CRUD queries/mutations",
+        "Implement permission gating",
+        "Implement entitlement gating",
+        "Build notes list page with search/pagination",
+        "Build note editor component",
+        "Add real-time updates",
+        "Remove messages demo"
+      ],
+      "acceptance_criteria": [
+        "Notes CRUD works with real-time updates",
+        "Contribute permission creates, Manage Content deletes others'",
+        "Search works across titles and content",
+        "Entitlement limits notes per tier"
+      ]
+    }
+  ],
+  "implementation_sequence": {
+    "batch_1_parallel": ["F001-001", "F001-002"],
+    "batch_2_parallel": ["F001-003", "F001-009"],
+    "batch_3": ["F001-004"],
+    "batch_4_parallel": ["F001-005", "F001-006", "F001-007", "F001-008", "F001-011"],
+    "batch_5": ["F001-010"]
+  }
+}
