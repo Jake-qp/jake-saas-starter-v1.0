@@ -122,8 +122,8 @@ An effective skill cannot be written without first becoming the expert. This is 
 Before writing content, decide what Claude Code infrastructure the skill needs. Run through the **Capability Decision Framework** below.
 
 13. Walk through each question in the framework
-14. For unfamiliar capabilities, read [reference.md](reference.md)
-15. Pick the matching archetype from [templates.md](templates.md)
+14. For unfamiliar capabilities, read [reference.md](../../../docs/skill-creator-reference/reference.md)
+15. Pick the matching archetype from [templates.md](../../../docs/skill-creator-reference/templates.md)
 16. Note which supporting files you'll need
 
 ### Phase 6: Draft (GREEN)
@@ -149,7 +149,7 @@ Before writing content, decide what Claude Code infrastructure the skill needs. 
 
 ## Capability Decision Framework
 
-Walk through each question. If unsure about a capability, read [reference.md](reference.md) for details.
+Walk through each question. If unsure about a capability, read [reference.md](../../../docs/skill-creator-reference/reference.md) for details.
 
 | Question | If Yes → Do This | If No |
 |----------|-------------------|-------|
@@ -157,7 +157,7 @@ Walk through each question. If unsure about a capability, read [reference.md](re
 | Should it ONLY run when user explicitly types `/name`? | Add `disable-model-invocation: true` | Default (Claude can auto-invoke) |
 | Should ONLY Claude invoke it (not shown in `/` menu)? | Add `user-invocable: false` | Default |
 | Should it be read-only or have restricted tools? | Add `allowed-tools: Read, Grep, Glob` (or whatever subset) | Skip (all tools available) |
-| Does it need live data injected? (git diff, PR info, etc.) | Use `` !`command` `` dynamic injection in content | Skip |
+| Does it need live data injected? (git diff, PR info, etc.) | Use dynamic context injection (see reference.md for syntax) | Skip |
 | Is it research/exploration that shouldn't pollute main context? | Add `context: fork` + `agent: Explore` | Skip |
 | Is it > 500 lines with reference material? | Split into supporting `.md` files in skill directory | Keep single file |
 | Does it need safety checks before tool use? | Add `hooks` in frontmatter | Skip |
@@ -170,8 +170,8 @@ Walk through each question. If unsure about a capability, read [reference.md](re
 - **Research agent:** `context: fork` + `agent: Explore` + `argument-hint`
 - **Safety gate:** `user-invocable: false` + `hooks` + `allowed-tools`
 
-For complete archetypes with full frontmatter, see [templates.md](templates.md).
-For real-world examples, see [examples.md](examples.md).
+For complete archetypes with full frontmatter, see [templates.md](../../../docs/skill-creator-reference/templates.md).
+For real-world examples, see [examples.md](../../../docs/skill-creator-reference/examples.md).
 
 ## The Skill Template
 
@@ -261,7 +261,7 @@ When catching yourself doing [amateur behavior] — STOP.
 | Arguments | `argument-hint` + `$ARGUMENTS` if skill accepts input |
 | Tool restrictions | `allowed-tools` set if skill should be constrained |
 | Context isolation | `context: fork` for research/exploration skills |
-| Dynamic context | `` !`command` `` for live data (git diff, PR info, etc.) |
+| Dynamic context | Dynamic injection for live data — see reference.md for syntax |
 | File size | Under 500 lines, or split into supporting files |
 | Supporting files | Referenced from SKILL.md, not duplicated |
 | Hooks | Only if safety checks are genuinely needed |
@@ -288,7 +288,7 @@ When catching yourself doing [amateur behavior] — STOP.
 | No `argument-hint` when skill needs input | Add `argument-hint: "[hint]"` | Users won't know what to pass |
 | Using `context: fork` for guidelines | Only fork for explicit tasks | Forked context can't see conversation |
 | No `allowed-tools` on dangerous workflows | Restrict to necessary tools | Prevents accidental side effects |
-| Hardcoding data that changes | Use `` !`command` `` for live data | Stale data produces wrong results |
+| Hardcoding data that changes | Use dynamic injection for live data (see reference.md) | Stale data produces wrong results |
 | Every skill gets every capability | Use only what's needed | Complexity without benefit |
 
 ## Rationalization Blockers
@@ -306,9 +306,9 @@ Common rationalizations to reject:
 
 This skill includes detailed reference material. Load these when needed:
 
-- **[reference.md](reference.md)** — Complete Claude Code skill capabilities documentation (frontmatter fields, dynamic context injection, hooks, scripts, etc.)
-- **[templates.md](templates.md)** — Skill archetypes with complete frontmatter examples and skeletons
-- **[examples.md](examples.md)** — 5 complete real-world skill examples of different types
+- **[reference.md](../../../docs/skill-creator-reference/reference.md)** — Complete Claude Code skill capabilities documentation (frontmatter fields, dynamic context injection, hooks, scripts, etc.)
+- **[templates.md](../../../docs/skill-creator-reference/templates.md)** — Skill archetypes with complete frontmatter examples and skeletons
+- **[examples.md](../../../docs/skill-creator-reference/examples.md)** — 5 complete real-world skill examples of different types
 
 ## Exit Criteria
 
