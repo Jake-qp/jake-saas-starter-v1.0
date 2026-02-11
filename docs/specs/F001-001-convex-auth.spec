@@ -45,18 +45,18 @@ I want to sign in with email/password or magic link
 So that I can securely access my team workspace
 
 ## Acceptance Criteria
-- [ ] AC1: User can sign up with email/password and is redirected to dashboard
-- [ ] AC2: User can sign in with existing email/password and is redirected to dashboard
-- [ ] AC3: User can sign in via magic link (Resend OTP) — receives branded email, clicks link, is authenticated
-- [ ] AC4: Sign-in page shows both options: email/password form and "Sign in with email link" button
-- [ ] AC5: `afterUserCreatedOrUpdated` callback auto-creates personal team on first sign-up
-- [ ] AC6: User can reset password via forgot-password flow
-- [ ] AC7: Existing team/member/invite flows work identically after migration
-- [ ] AC8: No Clerk dependencies remain in package.json or codebase
-- [ ] AC9: User can view active sessions (device, last active timestamp) in profile settings
-- [ ] AC10: User can "Log out all other devices" (invalidates all sessions except current)
-- [ ] AC11: User can set timezone preference (IANA timezone dropdown in profile settings)
-- [ ] AC12: Dates throughout the app render in the user's selected timezone
+- [x] AC1: User can sign up with email/password and is redirected to dashboard
+- [x] AC2: User can sign in with existing email/password and is redirected to dashboard
+- [x] AC3: User can sign in via magic link (Resend OTP) — receives branded email, clicks link, is authenticated
+- [x] AC4: Sign-in page shows both options: email/password form and "Sign in with email link" button
+- [x] AC5: `afterUserCreatedOrUpdated` callback auto-creates personal team on first sign-up
+- [x] AC6: User can reset password via forgot-password flow
+- [x] AC7: Existing team/member/invite flows work identically after migration
+- [x] AC8: No Clerk dependencies remain in package.json or codebase
+- [x] AC9: User can view active sessions (device, last active timestamp) in profile settings
+- [x] AC10: User can "Log out all other devices" (invalidates all sessions except current)
+- [x] AC11: User can set timezone preference (IANA timezone dropdown in profile settings)
+- [x] AC12: Dates throughout the app render in the user's selected timezone
 
 ## Edge Cases
 - User tries to sign up with existing email: Show "account exists, try signing in" message

@@ -138,7 +138,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 
 | Module | Priority | Status |
 |--------|----------|--------|
-| Convex Auth + Magic Link (F001-001) | P0 | Pending |
+| Convex Auth + Magic Link (F001-001) | P0 | Done |
 | Design System Expansion (F001-002) | P0 | Done |
 | Testing & Quality Infrastructure (F001-016) | P0 | Done |
 | Polar Billing + Credits (F001-003) | P1 | Pending |
@@ -155,6 +155,15 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Analytics & Event Tracking (F001-009) | P3 | Pending |
 | Super Admin Panel (F001-010) | P3 | Pending |
 | Waitlist / Pre-Launch Mode (F001-015) | P3 | Pending |
+
+## Context Management
+
+When context is compacted (auto or manual `/compact`):
+- **Before compaction:** The `PreCompact` hook auto-saves state to `SCRATCHPAD.md` (git state, feature/phase, modified files)
+- **After compaction:** Read `SCRATCHPAD.md` and `progress.md` to restore working context
+- **During long tasks:** Proactively write decisions, modified files, and next steps to `SCRATCHPAD.md` before heavy operations (Phase 4 implementation is the longest)
+- **What to preserve:** Feature ID, current phase, files modified so far, failing tests, key decisions made, next TODO
+- **Recovery files:** `SCRATCHPAD.md` (session state), `progress.md` (feature tracking), `IMPLEMENTATION_PLAN.md` (build plan)
 
 ## Vibe System
 
