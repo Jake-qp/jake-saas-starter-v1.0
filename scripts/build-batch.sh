@@ -211,6 +211,7 @@ PROMPT_EOF
         --model "$MODEL" \
         --no-session-persistence \
         --output-format stream-json \
+        --verbose \
         2>"${LOG_FILE}.stderr" | tee "$JSONL_FILE" | \
         python3 scripts/parse-build-stream.py 2>&1 | tee "$LOG_FILE"; then
         local CLAUDE_EXIT=${PIPESTATUS[0]}
