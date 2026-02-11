@@ -1,7 +1,22 @@
 # Build Progress
 
 ## Current Feature
-None — F001-004 completed, ready for next batch.
+**ID:** F001-005
+**Phase:** 1 → 2
+**Status:** Spec approved, starting visual design
+
+**Spec:** `docs/specs/F001-005-ai-llm-integration.spec`
+- User: Team member with "Use AI" permission
+- Screens: 1 (AI Chat Page)
+- Flows: 3
+- Acceptance criteria: 7
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-005
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-005 -->/,/<!-- END_FEATURE: F001-005 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+
+---
 
 ## Last Completed
 **ID:** F001-004
@@ -12,14 +27,6 @@ Enhanced RBAC — Owner role (14/14 permissions), ownership transfer dialog, cus
 **Spec:** `docs/specs/F001-004-enhanced-rbac.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 **ACs:** 10/10
-
----
-
-## Previously Completed
-**ID:** F001-017
-**Date:** 2026-02-11
-
-File Storage & Uploads — FileUploader, AvatarUpload, FileAttachment components, Convex storage backend, storage quota enforcement, 34 tests.
 
 ---
 
