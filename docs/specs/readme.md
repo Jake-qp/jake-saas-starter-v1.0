@@ -13,6 +13,7 @@
 | F001-012 | Marketing Site & Legal Pages | ✅ | `docs/specs/F001-012-marketing-legal.spec` |
 | F001-017 | File Storage & Uploads | ✅ | `docs/specs/F001-017-file-storage.spec` |
 | F001-008 | Feature Flags (PostHog) | ✅ | `docs/specs/F001-008-feature-flags.spec` |
+| F001-011 | Example App (Notes CRUD) | ✅ | `docs/specs/F001-011-example-app-notes.spec` |
 
 ## Source Code Index
 
@@ -157,6 +158,22 @@
 | Admin tests | `convex/__tests__/admin.test.ts` | 7 tests: schema, admin functions |
 | Flag hook tests | `lib/__tests__/featureFlags.test.ts` | 7 tests: hooks, graceful degradation |
 | Admin auth tests | `lib/__tests__/adminAuth.test.ts` | 6 tests: API routes, security |
+
+### F001-011 — Example App (Notes CRUD)
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| Notes backend | `convex/notes.ts` | CRUD mutations/queries: list, get, create, update, remove, search, searchMembers, canManageContent |
+| Notes page | `app/t/[teamSlug]/notes/page.tsx` | Notes list with search, create/edit/delete dialogs, permission-aware actions |
+| Command palette | `components/CommandPalette.tsx` | Cmd+K dialog: search notes/members, recent items, navigation shortcuts |
+| Schema (notes) | `convex/schema.ts` | `notes` table with searchIndex, soft deletion, team edge |
+| Permissions | `convex/permissions.ts` | "Manage Content" permission (15th) |
+| RBAC config | `convex/rbacConfig.ts` | Manage Content assigned to Owner + Admin roles |
+| Entitlements | `convex/entitlements.ts` | Notes count query for entitlement enforcement |
+| Plan config | `lib/planConfig.ts` | Notes limits: Free=50, Pro/Enterprise=unlimited |
+| Team menu | `app/t/TeamMenu.tsx` | Added Notes nav link |
+| Team layout | `app/t/[teamSlug]/layout.tsx` | CommandPalette integration |
+| Notes tests | `convex/__tests__/notes.test.ts` | 17 tests: schema, permissions, entitlements, search |
 
 ## Concept Index
 

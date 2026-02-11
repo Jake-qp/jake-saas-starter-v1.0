@@ -34,15 +34,15 @@
 - Collaborative editing
 
 ## Acceptance Criteria (from PRD)
-- [ ] AC1: Notes CRUD works with real-time updates
-- [ ] AC2: Permission-gated — Contribute can create, Manage Content can delete others'
-- [ ] AC3: Search works across note titles and content
-- [ ] AC4: Entitlement gating limits notes per tier (Free: 50, Pro: unlimited, Enterprise: unlimited)
-- [ ] AC5: Notes support file attachments (upload via `<FileUploader>`, stored as `attachmentStorageIds`)
-- [ ] AC6: Command palette (Cmd+K) opens `<CommandPalette>` dialog
-- [ ] AC7: Command palette searches notes, teams, and members via Convex search indexes
-- [ ] AC8: Command palette shows recent items and navigation shortcuts
-- [ ] AC9: Selecting a search result navigates to the appropriate page
+- [x] AC1: Notes CRUD works with real-time updates
+- [x] AC2: Permission-gated — Contribute can create, Manage Content can delete others'
+- [x] AC3: Search works across note titles and content
+- [x] AC4: Entitlement gating limits notes per tier (Free: 50, Pro: unlimited, Enterprise: unlimited)
+- [x] AC5: Notes support file attachments (upload via `<FileUploader>`, stored as `attachmentStorageIds`)
+- [x] AC6: Command palette (Cmd+K) opens `<CommandPalette>` dialog
+- [x] AC7: Command palette searches notes, teams, and members via Convex search indexes
+- [x] AC8: Command palette shows recent items and navigation shortcuts
+- [x] AC9: Selecting a search result navigates to the appropriate page
 
 ## Edge Cases
 - **Empty state:** No notes yet → EmptyState with CTA to create first note
