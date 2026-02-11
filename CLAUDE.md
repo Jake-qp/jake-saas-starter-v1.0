@@ -150,7 +150,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Notification System (F001-006) | P2 | Done |
 | Onboarding System (F001-007) | P2 | Done |
 | Example App - Notes CRUD (F001-011) | P2 | Done |
-| Blog & Changelog (F001-013) | P2 | Pending |
+| Blog & Changelog (F001-013) | P2 | Done |
 | Feature Flags (F001-008) | P3 | Done |
 | Analytics & Event Tracking (F001-009) | P3 | Done |
 | Super Admin Panel (F001-010) | P3 | Pending |

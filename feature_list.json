@@ -1,10 +1,10 @@
 {
   "project": "SaaS Boilerplate V2",
   "pending_features": {
-    "count": 3,
+    "count": 2,
     "ids": [
       "F001-010",
-      "F001-013", "F001-015"
+      "F001-015"
     ]
   },
   "features": [
@@ -217,13 +217,16 @@
       "name": "Blog & Changelog (MDX)",
       "type": "frontend",
       "priority": 2,
-      "status": "in_progress",
-      "current_phase": 1,
+      "status": "complete",
+      "current_phase": 5,
+      "phase_completed": 5,
       "batch": 4,
       "dependencies": ["F001-012"],
       "description": "MDX blog + changelog with email subscription and What's New badge",
       "spec_file": "docs/specs/F001-013-blog-changelog.spec",
       "started_at": "2026-02-11T16:00:00-05:00",
+      "completed_at": "2026-02-11T16:30:00-05:00",
+      "tests_added": 21,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },

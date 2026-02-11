@@ -1,37 +1,46 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-013
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-013-blog-changelog.spec`
-- User: Marketing visitors + logged-in app users
-- Screens: 5 (blog listing, blog post, changelog, RSS feed, WhatsNewBadge)
-- Flows: 4
-- Acceptance criteria: 11
-
-## PRD Anchor (Source of Truth)
-**Feature:** F001-013
-**Source:** docs/prds/F001-saas-boilerplate-v2.md
-**Extract:** `sed -n '/<!-- START_FEATURE: F001-013 -->/,/<!-- END_FEATURE: F001-013 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
-
-<!-- ⚠️ DO NOT INVENT REQUIREMENTS. Re-extract from PRD when needed. -->
+**ID:** (none)
+**Phase:** -
+**Status:** Ready for next build
 
 ---
 
 ## Last Completed
-**ID:** F001-011
+**ID:** F001-013
 **Date:** 2026-02-11
 
-Example App — Notes CRUD — 17 new tests, 9/9 ACs.
+Blog & Changelog (MDX) — 21 new tests, 11/11 ACs.
 
-**Spec:** `docs/specs/F001-011-example-app-notes.spec`
+**Files Created:**
+- `content/blog/*.mdx` (2 sample blog posts)
+- `content/changelog/*.mdx` (3 changelog entries)
+- `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`, `app/blog/layout.tsx`
+- `app/blog/feed.xml/route.ts` (RSS feed)
+- `app/changelog/page.tsx`, `app/changelog/layout.tsx`, `app/changelog/ChangelogSubscribeForm.tsx`
+- `app/changelog/unsubscribe/page.tsx`
+- `components/WhatsNewBadge.tsx`
+- `lib/content.ts`, `lib/rss.ts`, `lib/changelog.ts`
+- `convex/changelog.ts`
+
+**Files Modified:**
+- `convex/schema.ts` (changelogSubscribers table, users.lastSeenChangelogDate)
+- `app/t/[teamSlug]/layout.tsx` (added WhatsNewBadge)
+- `app/(marketing)/layout.tsx` (Blog/Changelog nav + footer links)
+
+**Key Implementation:**
+- MDX content processing via `gray-matter` + `next-mdx-remote`
+- RSS 2.0 feed generation at `/blog/feed.xml`
+- Convex mutations for changelog subscribe/unsubscribe
+- WhatsNewBadge compares user's lastSeenChangelogDate with latest changelog entry
+
+**Spec:** `docs/specs/F001-013-blog-changelog.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
 
 ## Project State
-- **Tests:** 390 passing (6 todo seeds for future features)
+- **Tests:** 411 passing (6 todo seeds for future features)
 - **Build:** ✅ succeeds
-- **Features:** 14 complete | 3 pending
+- **Features:** 15 complete | 2 pending

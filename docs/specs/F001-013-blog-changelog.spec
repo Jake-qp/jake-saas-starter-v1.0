@@ -37,17 +37,17 @@ As a visitor, I want to read blog posts and product changelog so that I stay inf
 As a logged-in user, I want a "What's New" badge so that I notice new product updates.
 
 ## Acceptance Criteria
-- [ ] AC1: Blog listing page shows all posts sorted by date
-- [ ] AC2: Individual blog posts render MDX content with proper typography
-- [ ] AC3: Changelog page shows entries in reverse chronological order
-- [ ] AC4: MDX frontmatter validates at build time (title, date, description required)
-- [ ] AC5: Blog and changelog pages are statically generated at build time
-- [ ] AC6: RSS feed is generated at `/blog/feed.xml`
-- [ ] AC7: Visitors can subscribe to changelog updates via email (stored in `changelogSubscribers` table)
-- [ ] AC8: Duplicate changelog email subscription shows "already subscribed" message
-- [ ] AC9: Subscribers can unsubscribe via link in changelog email
-- [ ] AC10: `<WhatsNewBadge>` in app header shows dot indicator when new changelog entries exist since user last dismissed
-- [ ] AC11: Clicking the badge opens the changelog; dismissing updates user's last-seen timestamp
+- [x] AC1: Blog listing page shows all posts sorted by date
+- [x] AC2: Individual blog posts render MDX content with proper typography
+- [x] AC3: Changelog page shows entries in reverse chronological order
+- [x] AC4: MDX frontmatter validates at build time (title, date, description required)
+- [x] AC5: Blog and changelog pages are statically generated at build time
+- [x] AC6: RSS feed is generated at `/blog/feed.xml`
+- [x] AC7: Visitors can subscribe to changelog updates via email (stored in `changelogSubscribers` table)
+- [x] AC8: Duplicate changelog email subscription shows "already subscribed" message
+- [x] AC9: Subscribers can unsubscribe via link in changelog email
+- [x] AC10: `<WhatsNewBadge>` in app header shows dot indicator when new changelog entries exist since user last dismissed
+- [x] AC11: Clicking the badge opens the changelog; dismissing updates user's last-seen timestamp
 
 ## Edge Cases
 - Empty blog (no MDX files): Blog listing shows EmptyState
