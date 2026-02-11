@@ -6,6 +6,7 @@
 |----|------|--------|-----------|
 | F001-001 | Convex Auth Migration + Magic Link | ✅ | `docs/specs/F001-001-convex-auth.spec` |
 | F001-002 | Design System Expansion | ✅ | (built before spec system) |
+| F001-014 | Production Infrastructure | ✅ | `docs/specs/F001-014-production-infrastructure.spec` |
 | F001-016 | Testing & Quality Infrastructure | ✅ | `docs/specs/F001-016-testing-quality-infrastructure.spec` |
 
 ## Source Code Index
@@ -46,6 +47,30 @@
 | Lib tests | `lib/__tests__/` | Utility function tests |
 | E2E tests | `e2e/` | Playwright E2E + accessibility tests |
 | E2E fixtures | `e2e/fixtures/` | Reusable Playwright test fixtures |
+
+### F001-014 — Production Infrastructure
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| Sentry client config | `sentry.client.config.ts` | Browser-side error capture + replay |
+| Sentry server config | `sentry.server.config.ts` | Server-side error capture |
+| Sentry edge config | `sentry.edge.config.ts` | Edge runtime error capture |
+| Instrumentation | `instrumentation.ts` | Next.js instrumentation hook for Sentry |
+| Global error boundary | `app/global-error.tsx` | App-wide error boundary with Sentry reporting |
+| Next.js config | `next.config.js` | Sentry wrapping, PostHog proxy, instrumentation hook |
+| Middleware | `middleware.ts` | Excludes /monitoring from auth middleware |
+| Root layout | `app/layout.tsx` | Vercel Analytics + SpeedInsights components |
+| Rate limiter | `convex/rateLimit.ts` | @convex-dev/rate-limiter config (sendInvite, aiRequest, failedLogin) |
+| Component config | `convex/convex.config.ts` | Convex app components (rate-limiter) |
+| Cron scheduler | `convex/crons.ts` | 4 recurring cron jobs |
+| Cron handlers | `convex/cronJobs.ts` | Internal mutations for cron execution |
+| Seed data | `convex/seedPreview.ts` | Preview deployment demo data |
+| Deployment docs | `docs/deployment.md` | Vercel + Convex deployment guide |
+| Rate limit tests | `convex/__tests__/rateLimit.test.ts` | Rate limiter config tests |
+| Cron tests | `convex/__tests__/crons.test.ts` | Cron structure tests |
+| Seed tests | `convex/__tests__/seedPreview.test.ts` | Seed data structure tests |
+| Sentry tests | `lib/__tests__/sentry.test.ts` | Sentry config file tests |
+| Analytics tests | `lib/__tests__/analytics.test.ts` | Analytics + PostHog proxy tests |
 
 ## Concept Index
 

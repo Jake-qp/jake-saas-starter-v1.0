@@ -105,7 +105,7 @@ Every new Convex mutation must follow this pattern:
 1. Authenticate: ctx.viewerX() or getAuthUserId()
 2. Authorize: viewerHasPermissionX(ctx, teamId, "Permission Name")
 3. Entitle: checkEntitlement(ctx, teamId, "limitKey")
-4. Rate limit: checkRateLimit(ctx, key, limit) — for expensive operations
+4. Rate limit: rateLimiter.limit(ctx, name, { key, throws: true }) — for expensive operations
 5. Execute: business logic
 6. Audit: auditLog() — for admin actions
 ```
@@ -144,7 +144,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Polar Billing + Credits (F001-003) | P1 | Pending |
 | Enhanced RBAC (F001-004) | P1 | Pending |
 | Marketing Site & Legal Pages (F001-012) | P1 | Pending |
-| Production Infrastructure (F001-014) | P1 | Pending |
+| Production Infrastructure (F001-014) | P1 | Done |
 | File Storage & Uploads (F001-017) | P1 | Pending |
 | AI/LLM Integration (F001-005) | P2 | Pending |
 | Notification System (F001-006) | P2 | Pending |

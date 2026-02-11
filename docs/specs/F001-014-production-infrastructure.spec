@@ -32,19 +32,19 @@ I want production-grade monitoring, analytics, background jobs, and rate limitin
 So that the app is observable, resilient, and ready for production traffic from day one
 
 ## Acceptance Criteria
-- [ ] AC1: Sentry captures client-side and server-side errors when `NEXT_PUBLIC_SENTRY_DSN` is set
-- [ ] AC2: App runs without errors when Sentry env vars are not set (graceful degradation)
-- [ ] AC3: Sentry tunnel route (`/monitoring`) forwards events to avoid ad-blockers
-- [ ] AC4: `@vercel/analytics` tracks page views in Vercel dashboard
-- [ ] AC5: `@vercel/speed-insights` reports Core Web Vitals (LCP, FID, CLS, TTFB, INP)
-- [ ] AC6: PostHog reverse proxy configured in `next.config.js` (`/ph/*` rewrites)
-- [ ] AC7: PostHog gracefully disabled when `NEXT_PUBLIC_POSTHOG_KEY` is not set
-- [ ] AC8: `convex/seedPreview.ts` populates demo data (team, users, notes, sample content)
-- [ ] AC9: `docs/deployment.md` covers Vercel setup, env vars (including PostHog), preview deploys, custom domains
-- [ ] AC10: `convex/crons.ts` exists with 4+ recurring jobs (invite cleanup, credit reset, subscription sync, session cleanup)
-- [ ] AC11: Cron jobs appear in Convex dashboard and execute on schedule
-- [ ] AC12: `@convex-dev/rate-limiter` is installed and configured for team-scoped rate limiting
-- [ ] AC13: Rate limiter used in invite sending and AI request mutations
+- [x] AC1: Sentry captures client-side and server-side errors when `NEXT_PUBLIC_SENTRY_DSN` is set
+- [x] AC2: App runs without errors when Sentry env vars are not set (graceful degradation)
+- [x] AC3: Sentry tunnel route (`/monitoring`) forwards events to avoid ad-blockers
+- [x] AC4: `@vercel/analytics` tracks page views in Vercel dashboard
+- [x] AC5: `@vercel/speed-insights` reports Core Web Vitals (LCP, FID, CLS, TTFB, INP)
+- [x] AC6: PostHog reverse proxy configured in `next.config.js` (`/ph/*` rewrites)
+- [x] AC7: PostHog gracefully disabled when `NEXT_PUBLIC_POSTHOG_KEY` is not set
+- [x] AC8: `convex/seedPreview.ts` populates demo data (team, users, notes, sample content)
+- [x] AC9: `docs/deployment.md` covers Vercel setup, env vars (including PostHog), preview deploys, custom domains
+- [x] AC10: `convex/crons.ts` exists with 4+ recurring jobs (invite cleanup, credit reset, subscription sync, session cleanup)
+- [x] AC11: Cron jobs appear in Convex dashboard and execute on schedule
+- [x] AC12: `@convex-dev/rate-limiter` is installed and configured for team-scoped rate limiting
+- [x] AC13: Rate limiter used in invite sending and AI request mutations
 
 ## Edge Cases
 - Missing Sentry DSN: App loads normally, no errors in console
