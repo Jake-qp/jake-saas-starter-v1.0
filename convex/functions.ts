@@ -81,4 +81,36 @@ async function mutationCtx(baseCtx: BaseMutationCtx) {
   return { ...ctx, viewer, viewerX };
 }
 
+/**
+ * Admin-only query wrapper. Enforces isSuperAdmin before handler runs.
+ * Usage: export const myAdminQuery = adminQuery({ handler: async (ctx) => { ... } });
+ */
+export const adminQuery = customQuery(
+  baseQuery,
+  customCtx(async (baseCtx) => {
+    const ctx = await queryCtx(baseCtx);
+    const viewer = ctx.viewerX();
+    if (!viewer.isSuperAdmin) {
+      throw new Error("Only super admins can access this resource");
+    }
+    return ctx;
+  }),
+);
+
+/**
+ * Admin-only mutation wrapper. Enforces isSuperAdmin before handler runs.
+ * Usage: export const myAdminMutation = adminMutation({ handler: async (ctx) => { ... } });
+ */
+export const adminMutation = customMutation(
+  baseMutation,
+  customCtx(async (baseCtx) => {
+    const ctx = await mutationCtx(baseCtx);
+    const viewer = ctx.viewerX();
+    if (!viewer.isSuperAdmin) {
+      throw new Error("Only super admins can access this resource");
+    }
+    return ctx;
+  }),
+);
+
 export const scheduledDelete = scheduledDeleteFactory(entDefinitions);
