@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "convex/react";
 import { ColumnDef } from "@tanstack/react-table";
+import { api } from "@/convex/_generated/api";
 import { PageHeader, DataTable, EmptyState } from "@/components";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,90 +29,146 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { toast } from "@/components/ui/use-toast";
 import { MixerHorizontalIcon, PlusIcon } from "@radix-ui/react-icons";
 
-// --- MOCK DATA (Phase 2 only — will be replaced with real PostHog API in Phase 4) ---
 interface FeatureFlag {
-  id: string;
+  id: number;
   key: string;
   name: string;
   active: boolean;
   created_at: string;
-  filters: Record<string, unknown>;
 }
 
-const MOCK_FLAGS: FeatureFlag[] = [
-  {
-    id: "1",
-    key: "new-dashboard-v2",
-    name: "New Dashboard V2",
-    active: true,
-    created_at: "2026-02-01T10:00:00Z",
-    filters: {},
-  },
-  {
-    id: "2",
-    key: "ai-chat-beta",
-    name: "AI Chat Beta",
-    active: true,
-    created_at: "2026-02-05T14:30:00Z",
-    filters: {},
-  },
-  {
-    id: "3",
-    key: "dark-mode-experiment",
-    name: "Dark Mode Experiment",
-    active: false,
-    created_at: "2026-01-20T08:00:00Z",
-    filters: {},
-  },
-  {
-    id: "4",
-    key: "waitlist-mode",
-    name: "Waitlist Mode",
-    active: false,
-    created_at: "2026-02-10T16:45:00Z",
-    filters: {},
-  },
-];
-// --- END MOCK DATA ---
-
 export default function AdminFlagsPage() {
-  const [flags, setFlags] = useState<FeatureFlag[]>(MOCK_FLAGS);
+  const isSuperAdmin = useQuery(api.admin.isSuperAdmin);
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FeatureFlag | null>(null);
   const [newFlagKey, setNewFlagKey] = useState("");
   const [newFlagName, setNewFlagName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- real check in Phase 4
-  const posthogConfigured = true; // Mock — will check real env in Phase 4
+  const fetchFlags = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/admin/flags");
+      if (response.status === 403) {
+        toast({
+          title: "Access Denied",
+          description: "You do not have permission to manage feature flags.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (response.status === 503) {
+        setIsLoading(false);
+        return; // PostHog not configured
+      }
+      if (!response.ok) throw new Error("Failed to fetch flags");
+      const data = await response.json();
+      setFlags(data.results ?? []);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to load feature flags.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const handleToggle = (flagId: string) => {
+  useEffect(() => {
+    if (isSuperAdmin === true) {
+      void fetchFlags();
+    } else if (isSuperAdmin === false) {
+      setIsLoading(false);
+    }
+  }, [isSuperAdmin, fetchFlags]);
+
+  const handleToggle = async (flag: FeatureFlag) => {
+    // Optimistic update
     setFlags((prev) =>
-      prev.map((f) => (f.id === flagId ? { ...f, active: !f.active } : f)),
+      prev.map((f) => (f.id === flag.id ? { ...f, active: !f.active } : f)),
     );
+
+    try {
+      const response = await fetch(`/api/admin/flags/${flag.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ active: !flag.active }),
+      });
+      if (!response.ok) throw new Error("Failed to toggle flag");
+    } catch {
+      // Revert optimistic update
+      setFlags((prev) =>
+        prev.map((f) => (f.id === flag.id ? { ...f, active: flag.active } : f)),
+      );
+      toast({
+        title: "Error",
+        description: "Failed to toggle feature flag.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newFlagKey.trim()) return;
-    const flag: FeatureFlag = {
-      id: String(Date.now()),
-      key: newFlagKey.trim(),
-      name: newFlagName.trim() || newFlagKey.trim(),
-      active: false,
-      created_at: new Date().toISOString(),
-      filters: {},
-    };
-    setFlags((prev) => [flag, ...prev]);
-    setNewFlagKey("");
-    setNewFlagName("");
-    setIsCreateOpen(false);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/admin/flags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: newFlagKey.trim(),
+          name: newFlagName.trim() || newFlagKey.trim(),
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to create flag");
+      setNewFlagKey("");
+      setNewFlagName("");
+      setIsCreateOpen(false);
+      await fetchFlags();
+      toast({
+        title: "Flag created",
+        description: `Created flag "${newFlagKey.trim()}"`,
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to create feature flag.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
-    setFlags((prev) => prev.filter((f) => f.id !== deleteTarget.id));
-    setDeleteTarget(null);
+    const flagKey = deleteTarget.key;
+
+    try {
+      const response = await fetch(`/api/admin/flags/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete flag");
+      setDeleteTarget(null);
+      await fetchFlags();
+      toast({
+        title: "Flag deleted",
+        description: `Deleted flag "${flagKey}"`,
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to delete feature flag.",
+        variant: "destructive",
+      });
+    }
   };
 
   const columns: ColumnDef<FeatureFlag>[] = [
@@ -142,7 +200,7 @@ export default function AdminFlagsPage() {
       cell: ({ row }) => (
         <Switch
           checked={row.original.active}
-          onCheckedChange={() => handleToggle(row.original.id)}
+          onCheckedChange={() => void handleToggle(row.original)}
         />
       ),
     },
@@ -167,8 +225,27 @@ export default function AdminFlagsPage() {
     },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- will be dynamic in Phase 4
-  if (!posthogConfigured) {
+  // Loading state
+  if (isSuperAdmin === undefined || isLoading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Feature Flags"
+          description="Manage PostHog feature flags"
+          breadcrumbs={[
+            { label: "Admin", href: "/admin" },
+            { label: "Feature Flags" },
+          ]}
+        />
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not a super admin
+  if (!isSuperAdmin) {
     return (
       <div className="space-y-6">
         <PageHeader
@@ -181,8 +258,8 @@ export default function AdminFlagsPage() {
         />
         <EmptyState
           icon={<MixerHorizontalIcon className="h-12 w-12" />}
-          title="PostHog not configured"
-          description="Set NEXT_PUBLIC_POSTHOG_KEY and POSTHOG_PERSONAL_API_KEY environment variables to enable feature flag management."
+          title="Access Denied"
+          description="You must be a super admin to manage feature flags."
         />
       </div>
     );
@@ -244,8 +321,11 @@ export default function AdminFlagsPage() {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleCreate} disabled={!newFlagKey.trim()}>
-                  Create
+                <Button
+                  onClick={() => void handleCreate()}
+                  disabled={!newFlagKey.trim() || isSubmitting}
+                >
+                  {isSubmitting ? "Creating..." : "Create"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -292,7 +372,7 @@ export default function AdminFlagsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
+              onClick={() => void handleDelete()}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
