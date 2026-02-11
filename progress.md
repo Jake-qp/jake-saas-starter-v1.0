@@ -1,35 +1,37 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-007
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-007-onboarding-system.spec`
-- User: New SaaS user after sign-up
-- Screens: 1 (onboarding wizard + dashboard redirect)
-- Flows: 3 (complete, resume, skip)
-- Acceptance criteria: 3
-
-## PRD Anchor (Source of Truth)
-**Feature:** F001-007
-**Source:** docs/prds/F001-saas-boilerplate-v2.md
-**Extract:** `sed -n '/<!-- START_FEATURE: F001-007 -->/,/<!-- END_FEATURE: F001-007 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+None — ready for next feature
 
 ---
 
 ## Last Completed
-**ID:** F001-006
+**ID:** F001-007
 **Date:** 2026-02-11
 
-Notification System — 21 new tests.
+Onboarding System — 15 new tests (schema, config, status helpers, step validation).
+Multi-step wizard (Profile, Team, Get Started) using existing StepWizard component.
+Progress tracked in DB (onboardingStatus + onboardingStep on users table).
+Dashboard auto-redirects new users; skip button on every step.
 
-**Spec:** `docs/specs/F001-006-notification-system.spec`
+**Files Created:**
+- `convex/onboarding.ts` — getStatus, updateStep, complete, skip
+- `convex/__tests__/onboarding.test.ts` — 15 tests
+- `lib/onboardingConfig.ts` — steps, status helpers, validation
+- `app/t/[teamSlug]/onboarding/page.tsx` — wizard UI
+
+**Files Modified:**
+- `convex/schema.ts` — onboardingStatus + onboardingStep fields
+- `convex/users.ts` — expose onboardingStatus in viewer query
+- `convex/users/teams.ts` — added teams.update mutation
+- `app/t/[teamSlug]/page.tsx` — onboarding redirect
+
+**Spec:** `docs/specs/F001-007-onboarding-system.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
 
 ## Project State
-- **Tests:** 337 passing (6 todo seeds for future features)
+- **Tests:** 352 passing (6 todo seeds for future features)
 - **Build:** ✅ succeeds
-- **Features:** 11 complete | 6 pending
+- **Features:** 12 complete | 5 pending

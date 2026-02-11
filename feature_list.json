@@ -1,9 +1,9 @@
 {
   "project": "SaaS Boilerplate V2",
   "pending_features": {
-    "count": 6,
+    "count": 5,
     "ids": [
-      "F001-007", "F001-008", "F001-010", "F001-011",
+      "F001-008", "F001-010", "F001-011",
       "F001-013", "F001-015"
     ]
   },
@@ -115,13 +115,16 @@
       "name": "Onboarding System",
       "type": "frontend",
       "priority": 2,
-      "status": "in_progress",
-      "current_phase": 2,
+      "status": "complete",
+      "current_phase": 5,
+      "phase_completed": 5,
       "batch": 4,
       "dependencies": ["F001-001", "F001-003"],
       "description": "Multi-step onboarding wizard for new users with progress tracking",
       "spec_file": "docs/specs/F001-007-onboarding-system.spec",
       "started_at": "2026-02-11T14:30:00-05:00",
+      "completed_at": "2026-02-11T15:00:00-05:00",
+      "tests_added": 15,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },

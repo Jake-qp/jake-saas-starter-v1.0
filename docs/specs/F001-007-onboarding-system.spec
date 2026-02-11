@@ -38,9 +38,9 @@ I want to be guided through initial setup steps
 So that I can configure my account and understand the product quickly
 
 ## Acceptance Criteria
-- [ ] AC1: New user sees onboarding wizard after first sign-up
-- [ ] AC2: Wizard tracks completed steps across sessions
-- [ ] AC3: User can skip onboarding
+- [x] AC1: New user sees onboarding wizard after first sign-up
+- [x] AC2: Wizard tracks completed steps across sessions
+- [x] AC3: User can skip onboarding
 
 ## Edge Cases
 - User has no name set (email-only signup): Show profile step first, pre-fill from email

@@ -148,7 +148,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | File Storage & Uploads (F001-017) | P1 | Done |
 | AI/LLM Integration (F001-005) | P2 | Done |
 | Notification System (F001-006) | P2 | Done |
-| Onboarding System (F001-007) | P2 | Pending |
+| Onboarding System (F001-007) | P2 | Done |
 | Example App - Notes CRUD (F001-011) | P2 | Pending |
 | Blog & Changelog (F001-013) | P2 | Pending |
 | Feature Flags (F001-008) | P3 | Pending |
