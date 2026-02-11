@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/convex/_generated/api";
 import { PageHeader } from "@/components";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,59 +15,127 @@ import { Textarea } from "@/components/ui/textarea";
 import { UsageMeter } from "@/components";
 import { EmptyState } from "@/components";
 import { cn } from "@/lib/utils";
-import { ChatBubbleIcon, PaperPlaneIcon } from "@radix-ui/react-icons";
-import { useState, useRef, useEffect } from "react";
-
-// ─── Mock data for Phase 2 visual validation ───────────────────
-const MOCK_MODELS = [
-  { id: "gpt-4o", label: "GPT-4o", credits: 10 },
-  { id: "gpt-4o-mini", label: "GPT-4o Mini", credits: 2 },
-  { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet", credits: 8 },
-  { id: "claude-haiku-4-5-20251001", label: "Claude Haiku", credits: 2 },
-];
-
-const MOCK_MESSAGES = [
-  {
-    id: "1",
-    role: "user" as const,
-    content: "Can you explain how our billing system works?",
-  },
-  {
-    id: "2",
-    role: "assistant" as const,
-    content:
-      "Your billing system uses a credit-based model with three tiers:\n\n1. **Free tier** — 100 AI credits per month, up to 3 team members\n2. **Pro tier** — 5,000 AI credits per month, up to 20 members\n3. **Enterprise** — Unlimited credits and members\n\nEach AI model costs a different number of credits per request. For example, GPT-4o costs 10 credits while GPT-4o Mini costs only 2 credits.\n\nCredits reset at the beginning of each calendar month. You can track your usage on the billing settings page.",
-  },
-  {
-    id: "3",
-    role: "user" as const,
-    content: "What happens when I run out of credits?",
-  },
-  {
-    id: "4",
-    role: "assistant" as const,
-    content:
-      "When you run out of credits, you'll see a notification suggesting you upgrade your plan. You won't be able to send new AI messages until:\n\n- Your credits reset at the start of the next month, or\n- You upgrade to a higher tier with more credits\n\nYou can check your current usage at any time using the credit meter shown in the AI chat sidebar.",
-  },
-];
-
-const MOCK_USAGE = { current: 42, limit: 100 };
-// ────────────────────────────────────────────────────────────────
+import { SUPPORTED_AI_MODELS } from "@/lib/aiModels";
+import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
+import {
+  ChatBubbleIcon,
+  PaperPlaneIcon,
+  StopIcon,
+} from "@radix-ui/react-icons";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useChat } from "@ai-sdk/react";
 
 export default function AIChatPage() {
-  const [messages] = useState(MOCK_MESSAGES);
-  const [input, setInput] = useState("");
+  const team = useCurrentTeam();
   const [model, setModel] = useState("gpt-4o");
-  const [isLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Convex queries for persisted data
+  const creditUsage = useQuery(
+    api.ai.getCreditUsage,
+    team ? { teamId: team._id } : "skip",
+  );
+  const savedMessages = useQuery(
+    api.ai.listMessages,
+    team ? { teamId: team._id } : "skip",
+  );
+
+  // Convex mutations for saving messages
+  const saveUserMessage = useMutation(api.ai.saveUserMessage);
+  const saveAssistantMessage = useMutation(api.ai.saveAssistantMessage);
+
+  // Vercel AI SDK useChat for streaming
+  const {
+    messages: chatMessages,
+    sendMessage,
+    status,
+    error,
+    stop,
+  } = useChat({
+    api: "/api/ai/chat",
+    body: { model, teamId: team?._id },
+    onFinish: ({ message }) => {
+      if (!team) return;
+      // Extract text from message parts
+      const text = message.parts
+        .filter((p): p is { type: "text"; text: string } => p.type === "text")
+        .map((p) => p.text)
+        .join("");
+      // Save assistant response and track credits
+      void saveAssistantMessage({
+        teamId: team._id,
+        content: text,
+        model,
+        // Approximate token count from character length (rough estimate)
+        tokenCount: Math.ceil(text.length / 4),
+      });
+    },
+    onError: (err) => {
+      console.error("[AI Chat] Error:", err.message);
+    },
+  });
+
+  const isLoading = status === "streaming" || status === "submitted";
+
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [chatMessages, savedMessages]);
 
-  const selectedModel = MOCK_MODELS.find((m) => m.id === model);
+  const selectedModel = SUPPORTED_AI_MODELS.find((m) => m.id === model);
+
+  // Combine persisted messages with current chat session messages
+  // If chatMessages has items, show those (they include current session);
+  // otherwise show saved messages from Convex
+  const displayMessages =
+    chatMessages.length > 0
+      ? chatMessages.map((msg) => ({
+          id: msg.id,
+          role: msg.role as "user" | "assistant",
+          content: msg.parts
+            .filter(
+              (p): p is { type: "text"; text: string } => p.type === "text",
+            )
+            .map((p) => p.text)
+            .join(""),
+        }))
+      : (savedMessages ?? []).map((msg) => ({
+          id: msg._id,
+          role: msg.role,
+          content: msg.content,
+        }));
+
+  const [input, setInput] = useState("");
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!input.trim() || isLoading || !team) return;
+
+      const text = input.trim();
+      setInput("");
+
+      // Save user message to Convex (auth + permission + entitlement + rate limit)
+      // then send to AI for streaming
+      void saveUserMessage({ teamId: team._id, content: text })
+        .then(() => sendMessage({ text }))
+        .catch((err: unknown) => {
+          console.error("[AI Chat] Failed to save user message:", err);
+        });
+    },
+    [input, isLoading, team, saveUserMessage, sendMessage],
+  );
+
+  if (!team) {
+    return (
+      <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
+        <div className="text-muted-foreground">Loading team...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col p-4">
@@ -75,18 +144,25 @@ export default function AIChatPage() {
         description="Chat with AI models using your team's credits"
         actions={
           <div className="flex items-center gap-3">
-            <UsageMeter
-              current={MOCK_USAGE.current}
-              limit={MOCK_USAGE.limit}
-              label="Credits"
-              className="w-40"
-            />
+            {creditUsage && creditUsage.limit !== -1 && (
+              <UsageMeter
+                current={creditUsage.current}
+                limit={creditUsage.limit}
+                label="Credits"
+                className="w-40"
+              />
+            )}
+            {creditUsage && creditUsage.limit === -1 && (
+              <span className="text-xs text-muted-foreground">
+                Unlimited credits
+              </span>
+            )}
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MOCK_MODELS.map((m) => (
+                {SUPPORTED_AI_MODELS.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     <span className="flex items-center justify-between gap-2">
                       {m.label}
@@ -103,7 +179,7 @@ export default function AIChatPage() {
       />
 
       <div className="mt-4 flex flex-1 flex-col overflow-hidden rounded-lg border bg-background">
-        {messages.length === 0 ? (
+        {displayMessages.length === 0 ? (
           <EmptyState
             icon={<ChatBubbleIcon className="h-12 w-12" />}
             title="Start a conversation"
@@ -113,7 +189,7 @@ export default function AIChatPage() {
         ) : (
           <ScrollArea ref={scrollRef} className="flex-1 p-4">
             <div className="mx-auto max-w-3xl space-y-6">
-              {messages.map((message) => (
+              {displayMessages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
@@ -138,30 +214,35 @@ export default function AIChatPage() {
                   </div>
                 </div>
               ))}
-              {isLoading && (
-                <div className="flex justify-start gap-3">
-                  <div className="max-w-[80%] rounded-lg bg-muted px-4 py-3 text-sm">
-                    <div className="mb-1 text-xs font-medium text-muted-foreground">
-                      {selectedModel?.label ?? "AI"}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+              {isLoading &&
+                displayMessages[displayMessages.length - 1]?.role ===
+                  "user" && (
+                  <div className="flex justify-start gap-3">
+                    <div className="max-w-[80%] rounded-lg bg-muted px-4 py-3 text-sm">
+                      <div className="mb-1 text-xs font-medium text-muted-foreground">
+                        {selectedModel?.label ?? "AI"}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
+                        <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </ScrollArea>
         )}
 
+        {error && (
+          <div className="border-t border-destructive bg-destructive/10 px-4 py-2 text-center text-sm text-destructive">
+            {error.message}
+          </div>
+        )}
+
         <div className="border-t p-4">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              // Mock - no action in Phase 2
-            }}
+            onSubmit={handleSubmit}
             className="mx-auto flex max-w-3xl items-end gap-2"
           >
             <Textarea
@@ -173,18 +254,26 @@ export default function AIChatPage() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  // Mock - no action in Phase 2
+                  handleSubmit(e);
                 }
               }}
             />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!input.trim() || isLoading}
-            >
-              <PaperPlaneIcon className="h-4 w-4" />
-              <span className="sr-only">Send message</span>
-            </Button>
+            {isLoading ? (
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={() => void stop()}
+              >
+                <StopIcon className="h-4 w-4" />
+                <span className="sr-only">Stop generating</span>
+              </Button>
+            ) : (
+              <Button type="submit" size="icon" disabled={!input.trim()}>
+                <PaperPlaneIcon className="h-4 w-4" />
+                <span className="sr-only">Send message</span>
+              </Button>
+            )}
           </form>
           <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-muted-foreground">
             Using {selectedModel?.label} ({selectedModel?.credits} credits per
