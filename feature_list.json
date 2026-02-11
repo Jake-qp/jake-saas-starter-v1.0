@@ -241,11 +241,14 @@
       "name": "File Storage & Uploads",
       "type": "backend",
       "priority": 1,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 1,
       "batch": 2,
       "dependencies": ["F001-002"],
       "description": "Convex file storage, FileUploader component, avatar uploads, storage quotas per tier",
+      "spec_file": "docs/specs/F001-017-file-storage.spec",
+      "started_at": "2026-02-11T21:00:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     }
   ],
