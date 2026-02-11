@@ -13,50 +13,58 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircledIcon } from "@radix-ui/react-icons";
+import { contactFormSchema } from "@/lib/contact-schema";
 
-// Phase 2: Mock form submission — will be wired to Resend API route in Phase 4
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  function validateForm(formData: FormData): Record<string, string> {
-    const newErrors: Record<string, string> = {};
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const message = formData.get("message") as string;
-
-    if (!name || name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
-    }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-    if (!message || message.trim().length < 10) {
-      newErrors.message = "Message must be at least 10 characters";
-    }
-    return newErrors;
-  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const validationErrors = validateForm(formData);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      message: formData.get("message") as string,
+    };
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    // Client-side validation using shared Zod schema
+    const result = contactFormSchema.safeParse(data);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const field = issue.path[0] as string;
+        if (!fieldErrors[field]) {
+          fieldErrors[field] = issue.message;
+        }
+      }
+      setErrors(fieldErrors);
       return;
     }
 
     setErrors({});
+    setApiError(null);
     setLoading(true);
 
-    // Phase 2 mock: simulate API call
-    // Phase 4 will wire this to POST /api/contact
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-    }, 1000);
+    fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result.data),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to send message");
+        }
+        setSubmitted(true);
+      })
+      .catch(() => {
+        setApiError("Failed to send message. Please try again later.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }
 
   if (submitted) {
@@ -91,6 +99,9 @@ export default function ContactPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {apiError && (
+                <p className="text-sm text-destructive">{apiError}</p>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" name="name" placeholder="Your name" required />

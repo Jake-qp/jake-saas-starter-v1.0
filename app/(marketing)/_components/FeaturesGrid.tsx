@@ -1,57 +1,10 @@
 import {
-  RocketIcon,
-  LockClosedIcon,
-  PersonIcon,
-  LightningBoltIcon,
-  BarChartIcon,
-  GlobeIcon,
-} from "@radix-ui/react-icons";
-import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-
-// Phase 2 mock data — will be replaced with static config in Phase 4
-const MOCK_FEATURES = [
-  {
-    icon: RocketIcon,
-    title: "Ready to Ship",
-    description:
-      "Production-ready with CI/CD, error tracking, and analytics built in. Deploy to Vercel in minutes.",
-  },
-  {
-    icon: LockClosedIcon,
-    title: "Auth & Teams",
-    description:
-      "Email/password and magic link auth with multi-tenant teams, roles, and permissions.",
-  },
-  {
-    icon: LightningBoltIcon,
-    title: "AI Integration",
-    description:
-      "Vercel AI SDK with dual streaming, credit-based billing, and support for OpenAI + Anthropic models.",
-  },
-  {
-    icon: PersonIcon,
-    title: "Billing & Credits",
-    description:
-      "Team-level billing via Polar with configurable plan tiers, usage limits, and AI credit tracking.",
-  },
-  {
-    icon: BarChartIcon,
-    title: "Analytics & Flags",
-    description:
-      "PostHog product analytics and feature flags, fully integrated with env-var gated graceful degradation.",
-  },
-  {
-    icon: GlobeIcon,
-    title: "Real-time Backend",
-    description:
-      "Convex provides real-time database, serverless functions, and file storage — no API layer to build.",
-  },
-];
+import { FEATURES } from "@/lib/marketing-content";
 
 export function FeaturesGrid() {
   return (
@@ -66,7 +19,7 @@ export function FeaturesGrid() {
           </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {MOCK_FEATURES.map((feature) => (
+          {FEATURES.map((feature) => (
             <Card key={feature.title} className="border-border">
               <CardHeader>
                 <feature.icon className="h-8 w-8 text-primary" />
