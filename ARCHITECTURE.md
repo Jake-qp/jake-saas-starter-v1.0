@@ -167,10 +167,11 @@ docs/
 | Entity | Key Fields | Edges |
 |--------|-----------|-------|
 | users | email (unique), fullName, isSuperAdmin, timezone, avatarStorageId | members |
-| teams | name, slug (unique), isPersonal, polarCustomerId, subscriptionTier, subscriptionStatus, avatarStorageId | messages, members, invites |
+| teams | name, slug (unique), isPersonal, polarCustomerId, subscriptionTier, subscriptionStatus, avatarStorageId | messages, members, invites, customRoles |
 | members | searchable | team, user, role, messages |
 | roles | name (Owner/Admin/Member), isDefault | permissions, members |
 | permissions | name (14 permissions, unique) | roles |
+| customRoles | name, description, permissionNames[] (Enterprise-tier) | team |
 | invites | email (unique), inviterEmail | team, role |
 
 ### Feature Entities
@@ -196,26 +197,26 @@ docs/
 
 ### Permissions (14)
 
-`Manage Team`, `Delete Team`, `Read Members`, `Manage Members`, `Contribute`, `Manage Billing`, `View Billing`, `Use AI`, `Manage AI Settings`, `View Analytics`, `Manage Integrations`, `Manage Feature Flags`, `Manage Content`, `View Content`
+`Manage Team`, `Delete Team`, `Read Members`, `Manage Members`, `Contribute`, `Transfer Ownership`, `View Billing`, `Manage Billing`, `Upload Files`, `Delete Files`, `Use AI`, `View Analytics`, `Manage Integrations`, `Invite Members`
 
 ### Role → Permission Mapping
 
 | Permission | Owner | Admin | Member |
 |-----------|-------|-------|--------|
 | Manage Team | Yes | Yes | — |
-| Delete Team | Yes | — | — |
+| Delete Team | Yes | Yes | — |
 | Read Members | Yes | Yes | Yes |
 | Manage Members | Yes | Yes | — |
 | Contribute | Yes | Yes | Yes |
-| Manage Billing | Yes | — | — |
+| Transfer Ownership | Yes | — | — |
 | View Billing | Yes | Yes | — |
+| Manage Billing | Yes | — | — |
+| Upload Files | Yes | Yes | Yes |
+| Delete Files | Yes | Yes | — |
 | Use AI | Yes | Yes | Yes |
-| Manage AI Settings | Yes | Yes | — |
 | View Analytics | Yes | Yes | — |
-| Manage Integrations | Yes | — | — |
-| Manage Feature Flags | Yes | — | — |
-| Manage Content | Yes | Yes | — |
-| View Content | Yes | Yes | Yes |
+| Manage Integrations | Yes | Yes | — |
+| Invite Members | Yes | Yes | — |
 
 ---
 

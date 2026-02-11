@@ -33,16 +33,16 @@ I want granular role-based access control with Owner, Admin, and Member roles
 So that I can manage team permissions, transfer ownership, and control invites
 
 ## Acceptance Criteria
-- [ ] AC1: Owner role exists and can perform all actions
-- [ ] AC2: Owner cannot leave team without transferring ownership
-- [ ] AC3: New permissions are enforceable via existing viewerHasPermissionX API
-- [ ] AC4: Custom roles can be created on Enterprise tier
-- [ ] AC5: Ownership transfer: Owner can transfer to any existing team member via confirmation dialog
-- [ ] AC6: Ownership transfer triggers email notification to both old and new owner
-- [ ] AC7: Invites expire after 7 days (auto-deleted via scheduled function)
-- [ ] AC8: Admin can revoke pending invites and resend expired invites
-- [ ] AC9: Invite sending is rate-limited (via `@convex-dev/rate-limiter`)
-- [ ] AC10: Team avatar can be uploaded and displays in sidebar and invite pages
+- [x] AC1: Owner role exists and can perform all actions
+- [x] AC2: Owner cannot leave team without transferring ownership
+- [x] AC3: New permissions are enforceable via existing viewerHasPermissionX API
+- [x] AC4: Custom roles can be created on Enterprise tier
+- [x] AC5: Ownership transfer: Owner can transfer to any existing team member via confirmation dialog
+- [x] AC6: Ownership transfer triggers email notification to both old and new owner
+- [x] AC7: Invites expire after 7 days (auto-deleted via scheduled function)
+- [x] AC8: Admin can revoke pending invites and resend expired invites
+- [x] AC9: Invite sending is rate-limited (via `@convex-dev/rate-limiter`)
+- [x] AC10: Team avatar can be uploaded and displays in sidebar and invite pages
 
 ## Edge Cases
 - Owner tries to leave team: Must transfer ownership first
