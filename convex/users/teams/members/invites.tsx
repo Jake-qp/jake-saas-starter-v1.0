@@ -9,6 +9,7 @@ import {
   viewerHasPermission,
   viewerHasPermissionX,
 } from "../../../permissions";
+import { rateLimiter } from "../../../rateLimit";
 
 export const list = query({
   args: {
@@ -17,6 +18,7 @@ export const list = query({
   async handler(ctx, { teamId }) {
     if (
       teamId === undefined ||
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       ctx.viewer === null ||
       !(await viewerHasPermission(ctx, teamId, "Read Members"))
     ) {
@@ -64,11 +66,11 @@ export const send = action({
   async handler(ctx, { teamId, email, roleId }) {
     const { inviterEmail, teamName } = await ctx.runMutation(
       internal.users.teams.members.invites.prepare,
-      { teamId }
+      { teamId },
     );
     const inviteId = await ctx.runMutation(
       internal.users.teams.members.invites.create,
-      { teamId, email, roleId, inviterEmail }
+      { teamId, email, roleId, inviterEmail },
     );
     try {
       await sendInviteEmail({ email, inviteId, inviterEmail, teamName });
@@ -87,6 +89,11 @@ export const prepare = internalMutation({
   },
   async handler(ctx, { teamId }) {
     await viewerHasPermissionX(ctx, teamId, "Manage Members");
+    // Rate limit: team-scoped invite sending
+    await rateLimiter.limit(ctx, "sendInvite", {
+      key: teamId,
+      throws: true,
+    });
     return {
       inviterEmail: ctx.viewerX().email,
       teamName: (await ctx.table("teams").getX(teamId)).name,
@@ -127,7 +134,7 @@ async function sendInviteEmail({
     process.env.HOSTED_URL === undefined
   ) {
     console.error(
-      "Set up `RESEND_API_KEY` and `HOSTED_URL` to send invite emails"
+      "Set up `RESEND_API_KEY` and `HOSTED_URL` to send invite emails",
     );
     return;
   }
