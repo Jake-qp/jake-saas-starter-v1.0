@@ -29,6 +29,7 @@ const schema = defineEntSchema(
       .edges("members", { ref: true })
       .edges("invites", { ref: true })
       .edges("aiUsage", { ref: true })
+      .edges("aiMessages", { ref: true })
       .edges("files", { ref: true })
       .edges("customRoles", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
@@ -121,6 +122,15 @@ const schema = defineEntSchema(
       .edge("team")
       .index("teamPurpose", ["teamId", "purpose"])
       .index("uploadedBy", ["uploadedBy"]),
+
+    // AI chat messages (F001-005)
+    aiMessages: defineEnt({
+      role: v.union(v.literal("user"), v.literal("assistant")),
+      content: v.string(),
+      model: v.optional(v.string()),
+    })
+      .edge("team")
+      .index("teamCreation", ["teamId"]),
 
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({
