@@ -154,6 +154,17 @@ build_feature() {
     echo "  Started:  $(date '+%H:%M:%S')"
     echo "============================================"
 
+    # Fresh scratchpad per feature — preserves old one if retrying a failed build
+    if [ -f "SCRATCHPAD.md" ]; then
+        # Check if scratchpad has content from a previous attempt at THIS feature
+        if grep -q "${FEATURE_ID}" SCRATCHPAD.md 2>/dev/null; then
+            echo "  [INFO] Recovery state found for ${FEATURE_ID} in SCRATCHPAD.md"
+        else
+            # Different feature's state — start fresh
+            rm -f SCRATCHPAD.md
+        fi
+    fi
+
     local PROMPT
     read -r -d '' PROMPT <<PROMPT_EOF || true
 You are building feature ${FEATURE_ID} from the PRD at ${PRD_FILE}.
@@ -190,6 +201,7 @@ CRITICAL RULES:
 - All decision gates (Phases 1-3) are auto-decided from PRD content. Do NOT wait for user confirmation.
 - If ambiguous, make a reasonable decision and document in the commit message
 - If partial work exists from a previous session, continue from where it left off
+- RECOVERY: If SCRATCHPAD.md exists, read it FIRST — it contains state from a prior failed attempt (branch, commit, dirty files, phase reached). Use it to skip completed phases and resume from where the previous session stopped.
 
 MOCK DATA RULES (ENFORCED BY HOOK):
 - Phase 2: CREATE mock data for visual validation

@@ -30,6 +30,14 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": ".claude/hooks/pre-compact.sh" }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",

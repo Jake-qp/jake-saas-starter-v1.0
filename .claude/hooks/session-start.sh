@@ -96,6 +96,30 @@ if [ -f "progress.md" ]; then
     echo "📋 Session notes: progress.md"
 fi
 
+# Recovery detection — check if SCRATCHPAD.md has recent entries (within last hour)
+if [ -f "SCRATCHPAD.md" ]; then
+    # Get file modification time and current time
+    if [ "$(uname)" = "Darwin" ]; then
+        FILE_MOD=$(stat -f %m SCRATCHPAD.md 2>/dev/null)
+    else
+        FILE_MOD=$(stat -c %Y SCRATCHPAD.md 2>/dev/null)
+    fi
+    NOW=$(date +%s)
+    if [ -n "$FILE_MOD" ]; then
+        AGE=$(( NOW - FILE_MOD ))
+        if [ "$AGE" -lt 3600 ]; then
+            MINS_AGO=$(( AGE / 60 ))
+            echo ""
+            echo "┌─────────────────────────────────────────┐"
+            echo "│  🔄 RECOVERY STATE AVAILABLE             │"
+            echo "│                                         │"
+            echo "│  SCRATCHPAD.md updated ${MINS_AGO}m ago         │"
+            echo "│  Read it to restore previous context    │"
+            echo "└─────────────────────────────────────────┘"
+        fi
+    fi
+fi
+
 # Show pending tasks
 if [ -f ".tasks" ]; then
     TASK_PENDING=$(grep -c "^\[ \]" .tasks 2>/dev/null | tr -d '\n' || echo "0")
