@@ -311,6 +311,32 @@ If phase-gate.sh escalates (3 failed attempts):
 
 ---
 
+## BACKEND-ONLY FEATURES
+
+Features with `type: "backend"` (no UI) may skip Phases 2-3:
+- **Phase 2 (Design):** Skip — no UI to design, no mock data needed
+- **Phase 3 (Data Model):** Skip if no new tables — document in commit message
+
+The feature still requires Phase 1 (Spec), Phase 4 (Build/TDD), and Phase 5 (Verify).
+Commit sequence for backend-only: `spec:` → `feat:` → `verify:` (3 commits instead of 5).
+
+---
+
+## MULTI-SESSION MODE (Batch Orchestrator)
+
+For building all PRD features at scale, use `scripts/build-batch.sh` instead of `/build-auto`:
+
+```bash
+scripts/build-batch.sh                    # All features, fresh session per feature
+scripts/build-batch.sh --feature F001-XXX # Single feature (dry run / retry)
+```
+
+**Why:** A single session hits context compaction after ~3 features. The batch orchestrator spawns a fresh `claude -p` session per feature, preserving quality.
+
+**Docs:** `docs/build-batch-orchestrator.md`
+
+---
+
 ## CRITICAL RULES
 
 ### PRD Compliance (Non-Negotiable)

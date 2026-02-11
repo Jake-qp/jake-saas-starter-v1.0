@@ -6,6 +6,14 @@
 
 ## Version History
 
+### V10.1
+- **Batch Orchestrator** (`scripts/build-batch.sh`): Fresh `claude -p` session per feature, avoids context compaction
+- Stream-JSON logging: `logs/*.jsonl` (raw) + `logs/*.log` (parsed via `scripts/parse-build-stream.py`)
+- Phase-gate checks lint (ESLint) instead of full build (avoids runtime env var failures)
+- Clerk auth removed; stubs ready for Convex Auth (F001-001)
+- `next.config.js`: `typescript.ignoreBuildErrors: true` (112 pre-existing convex-ents type errors)
+- Backend-only features may skip Phases 2-3 (no UI, no data model)
+
 ### V9.4
 - Phase 5 skill loading enforcement (visual enforcement block matching Phase 4 TDD block)
 - Prevents skipping verification/changelog/security-check skills

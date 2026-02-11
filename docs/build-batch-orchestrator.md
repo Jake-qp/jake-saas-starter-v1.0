@@ -135,6 +135,19 @@ All prerequisites are created by the implementation steps below.
 | `--dangerously-skip-permissions` | Bypasses permission prompts for autonomous execution |
 | `--model opus` | Best quality for complex multi-phase builds (overridable via `CLAUDE_MODEL`) |
 | `--no-session-persistence` | Prevents session files from accumulating on disk |
+| `--output-format stream-json` | Captures all tool calls and intermediate steps as JSONL for debugging |
+
+### Log Format
+
+Each feature produces three log files:
+
+| File | Format | Purpose |
+|------|--------|---------|
+| `logs/build-F001-XXX.log` | Human-readable | Tool calls (`[READ]`, `[EDIT]`, `[BASH]`), text output, result summary |
+| `logs/build-F001-XXX.jsonl` | Raw JSONL | Every streaming event from the session — for debugging failures |
+| `logs/build-F001-XXX.log.stderr` | Text | Stderr from the Claude CLI itself (errors, warnings) |
+
+The JSONL is parsed by `scripts/parse-build-stream.py` into the readable `.log` file. The parser extracts tool names, file paths, bash commands, and the final cost/duration/turn count.
 
 ### Flags NOT Used (Validated as Non-existent)
 
@@ -161,7 +174,10 @@ In normal `/build`, Phases 1-3 are "decision gates" requiring human approval. In
 
 ```
 scripts/build-batch.sh          # Main orchestrator (bash)
-logs/build-F001-XXX.log         # Per-feature output (one per feature)
+scripts/parse-build-stream.py   # Stream-JSON → human-readable log parser
+logs/build-F001-XXX.log         # Human-readable per-feature log
+logs/build-F001-XXX.jsonl       # Raw stream-json per-feature log (for debugging)
+logs/build-F001-XXX.log.stderr  # Stderr from Claude CLI
 progress.md                     # Current session state (Vibe System)
 feature_list.json               # Feature completion tracking
 .claude/hooks/phase-gate.sh     # Quality gate enforcement (Stop hook)

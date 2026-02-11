@@ -135,16 +135,28 @@ PROMPT_EOF
     local START_SECS
     START_SECS=$(date +%s)
 
+    local JSONL_FILE="${LOG_DIR}/build-${FEATURE_ID}.jsonl"
+
+    # Stream JSON captures all tool calls and intermediate steps.
+    # The parser extracts a human-readable log; raw JSONL is kept for debugging.
     if claude -p "$PROMPT" \
         --dangerously-skip-permissions \
         --model "$MODEL" \
         --no-session-persistence \
-        2>&1 | tee "$LOG_FILE"; then
+        --output-format stream-json \
+        2>"${LOG_FILE}.stderr" | tee "$JSONL_FILE" | \
+        python3 scripts/parse-build-stream.py 2>&1 | tee "$LOG_FILE"; then
+        local CLAUDE_EXIT=${PIPESTATUS[0]}
         local END_SECS
         END_SECS=$(date +%s)
         local DURATION_MINS=$(( (END_SECS - START_SECS) / 60 ))
-        echo "  [PASS] ${FEATURE_ID} (${DURATION_MINS}min)"
-        PASSED+=("$FEATURE_ID")
+        if [ "${CLAUDE_EXIT:-0}" -ne 0 ]; then
+            echo "  [FAIL] ${FEATURE_ID} (${DURATION_MINS}min) — see ${LOG_FILE}"
+            FAILED+=("$FEATURE_ID")
+        else
+            echo "  [PASS] ${FEATURE_ID} (${DURATION_MINS}min)"
+            PASSED+=("$FEATURE_ID")
+        fi
     else
         local END_SECS
         END_SECS=$(date +%s)

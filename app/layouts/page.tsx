@@ -8,9 +8,9 @@ export default function Layouts() {
         Sticky header, sticky footer
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
-            <div className="h-32 w-full bg-blue-400"></div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
+            <div className="h-32 w-full bg-primary"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>
@@ -19,10 +19,10 @@ export default function Layouts() {
         Sticky header, footer below fold
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
-            <div className="h-32 w-full bg-blue-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
+            <div className="h-32 w-full bg-primary"></div>
           </div>
-          <div className="h-4 w-full bg-yellow-400"></div>
+          <div className="h-4 w-full bg-warning"></div>
         </div>
       </Link>
 
@@ -30,13 +30,13 @@ export default function Layouts() {
         Sticky header, sticky sidebar, footer below fold
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
             <div className="flex">
-              <div className="h-32 w-20 bg-green-400"></div>
-              <div className="h-32 w-full bg-blue-400"></div>
+              <div className="h-32 w-20 bg-success"></div>
+              <div className="h-32 w-full bg-primary"></div>
             </div>
           </div>
-          <div className="h-4 w-full bg-yellow-400"></div>
+          <div className="h-4 w-full bg-warning"></div>
         </div>
       </Link>
 
@@ -44,15 +44,15 @@ export default function Layouts() {
         Sticky header, sticky sidebar, footer inside & below fold
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
             <div className="flex">
-              <div className="h-32 w-20 bg-green-400"></div>
-              <div className="h-32 w-full bg-blue-400"></div>
+              <div className="h-32 w-20 bg-success"></div>
+              <div className="h-32 w-full bg-primary"></div>
             </div>
           </div>
           <div className="flex">
             <div className="w-[82px]"></div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>
@@ -61,12 +61,12 @@ export default function Layouts() {
         Sticky header, sticky sidebar, sticky footer
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
             <div className="flex">
-              <div className="h-32 w-20 bg-green-400"></div>
-              <div className="h-32 w-full bg-blue-400"></div>
+              <div className="h-32 w-20 bg-success"></div>
+              <div className="h-32 w-full bg-primary"></div>
             </div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>
@@ -75,14 +75,14 @@ export default function Layouts() {
         Sticky header & sidebar & footer, full-screen content
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
             <div className="flex">
-              <div className="h-32 w-20 bg-green-400"></div>
-              <div className="h-32 w-full bg-blue-400 p-2">
-                <div className="h-full w-full bg-blue-200"></div>
+              <div className="h-32 w-20 bg-success"></div>
+              <div className="h-32 w-full bg-primary p-2">
+                <div className="h-full w-full bg-muted"></div>
               </div>
             </div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>
@@ -91,14 +91,14 @@ export default function Layouts() {
         Sticky header & sidebar & footer, full-screen content (simple)
         <div className="pt-2">
           <div className="border-2 border-primary">
-            <div className="h-4 w-full bg-red-400"></div>
+            <div className="h-4 w-full bg-destructive"></div>
             <div className="flex">
-              <div className="h-32 w-20 bg-green-400"></div>
-              <div className="h-32 w-full bg-blue-400 p-2">
-                <div className="h-full w-full bg-blue-200"></div>
+              <div className="h-32 w-20 bg-success"></div>
+              <div className="h-32 w-full bg-primary p-2">
+                <div className="h-full w-full bg-muted"></div>
               </div>
             </div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>
@@ -108,33 +108,33 @@ export default function Layouts() {
         <div className="pt-2 grid grid-cols-[4rem,4rem,1fr] gap-2">
           <div>
             <div className="border-2 border-primary">
-              <div className="h-4 w-full bg-red-400 flex items-center justify-end p-1">
-                <div className="h-2 w-2 bg-red-200" />
+              <div className="h-4 w-full bg-destructive flex items-center justify-end p-1">
+                <div className="h-2 w-2 bg-muted" />
               </div>
               <div className="flex">
-                <div className="h-32 w-full bg-blue-400"></div>
+                <div className="h-32 w-full bg-primary"></div>
               </div>
             </div>
           </div>
           <div>
             <div className="border-2 border-primary">
-              <div className="h-4 w-full bg-red-400 flex items-center justify-end p-1">
-                <div className="h-2 w-2 bg-red-200" />
+              <div className="h-4 w-full bg-destructive flex items-center justify-end p-1">
+                <div className="h-2 w-2 bg-muted" />
               </div>
               <div className="flex">
-                <div className="h-32 w-full bg-green-400"></div>
+                <div className="h-32 w-full bg-success"></div>
               </div>
             </div>
           </div>
           <div>
             <div className="border-2 border-primary">
-              <div className="h-4 w-full bg-red-400"></div>
+              <div className="h-4 w-full bg-destructive"></div>
               <div className="flex">
-                <div className="h-32 w-20 bg-green-400"></div>
-                <div className="h-32 w-full bg-blue-400"></div>
+                <div className="h-32 w-20 bg-success"></div>
+                <div className="h-32 w-full bg-primary"></div>
               </div>
             </div>
-            <div className="h-4 w-full bg-yellow-400"></div>
+            <div className="h-4 w-full bg-warning"></div>
           </div>
         </div>
       </Link>

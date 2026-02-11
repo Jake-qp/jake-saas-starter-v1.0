@@ -3,7 +3,7 @@
 ## Project Overview
 
 Multi-tenant SaaS boilerplate: Next.js 14 (App Router) + Convex (backend + auth) + shadcn/ui + Resend (email).
-Migrating from V1 (Clerk) to V2 (Convex Auth, Polar billing, AI, admin). See `docs/prds/F001-saas-boilerplate-v2.md` for PRD.
+Clerk auth removed; Convex Auth stubs in place (F001-001 pending). See `docs/prds/F001-saas-boilerplate-v2.md` for PRD.
 
 ## Tech Stack
 

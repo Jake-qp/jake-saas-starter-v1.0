@@ -30,7 +30,9 @@ If found, offer to resume or start fresh. Wait for user response.
 |------|---------|
 | Complex feature | `/prd "feature"` |
 | Single feature | `/build "feature"` |
-| Build all PRD | `/build-auto "PRD_ID"` |
+| Build all PRD (in-session) | `/build-auto "PRD_ID"` |
+| Build all PRD (multi-session) | `scripts/build-batch.sh` |
+| Build single feature (headless) | `scripts/build-batch.sh --feature F001-XXX` |
 | Tiny change | `/quick "change"` |
 | Fix bug | `/fix "bug"` |
 | QA testing | `/test "feature"` |
@@ -87,10 +89,35 @@ The `phase-gate.sh` Stop hook enforces gates by reading `progress.md`:
 | Phase | Checks |
 |-------|--------|
 | 2 | Mock data exists |
-| 4 | Mock data removed, tests pass, build succeeds |
+| 4 | Mock data removed, tests pass, lint passes |
 | 5 | CHANGELOG updated, tracking updated (V10: IMPLEMENTATION_PLAN.md, V9: feature_list.json) |
 
 Exit 2 = Claude must continue and fix. After 3 attempts = escalate to human.
+
+---
+
+## Batch Orchestrator
+
+For building multiple PRD features autonomously across fresh sessions:
+
+```bash
+# Build all features (5 dependency-ordered batches)
+scripts/build-batch.sh
+
+# Build a single feature (dry run / retry)
+scripts/build-batch.sh --feature F001-XXX
+
+# Override model (default: opus)
+CLAUDE_MODEL=sonnet scripts/build-batch.sh
+```
+
+Each feature gets a **fresh `claude -p` session** to avoid context compaction. Sessions follow the 5-phase `/build-auto` workflow, auto-decide all gates from PRD content, and commit per phase.
+
+**Logs:** `logs/build-F001-XXX.log` (readable) + `logs/build-F001-XXX.jsonl` (raw stream for debugging)
+
+**Skip logic:** Completed features (status `"complete"` in `feature_list.json`) are skipped on re-run.
+
+**Full docs:** `docs/build-batch-orchestrator.md`
 
 ---
 

@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
-import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +22,6 @@ export function DeleteTeamDialog({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) {
-  const { user: clerkUser } = useUser();
   const router = useRouter();
   const deleteTeam = useMutation(api.users.teams.deleteTeam);
   const team = useCurrentTeam();
@@ -32,10 +30,8 @@ export function DeleteTeamDialog({
   }
   const handleDelete = handleFailure(async () => {
     await deleteTeam({ teamId: team._id });
-    if (team.isPersonal) {
-      await clerkUser!.delete();
-      router.push("/");
-    }
+    // TODO: F001-001 will add Convex Auth account deletion for personal teams
+    router.push("/");
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -103,10 +103,18 @@ Batch 5: F001-010 (Admin) + F001-015 (Waitlist)
 ### Monitor
 
 ```bash
-tail -f logs/build-F001-XXX.log    # Current feature
-git log --oneline -20               # Commits landing
+tail -f logs/build-F001-XXX.log      # Human-readable log (tool calls, text, results)
+tail -f logs/build-F001-XXX.jsonl    # Raw stream-json (full Claude session data)
+git log --oneline -20                 # Commits landing
 cat feature_list.json | python3 -m json.tool  # Status
 ```
+
+### Log Files
+
+Each feature produces two log files:
+- `logs/build-F001-XXX.log` — Human-readable: tool calls (`[READ]`, `[EDIT]`, `[BASH]`), assistant text, final result summary
+- `logs/build-F001-XXX.jsonl` — Raw stream-json: every event from the Claude session for detailed debugging
+- `logs/build-F001-XXX.log.stderr` — Stderr output (errors from the Claude CLI itself)
 
 ### Mock Data Enforcement
 
