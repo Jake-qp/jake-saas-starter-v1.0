@@ -1,10 +1,8 @@
 {
   "project": "SaaS Boilerplate V2",
   "pending_features": {
-    "count": 1,
-    "ids": [
-      "F001-015"
-    ]
+    "count": 0,
+    "ids": []
   },
   "features": [
     {
@@ -258,13 +256,16 @@
       "name": "Waitlist / Pre-Launch Mode",
       "type": "frontend",
       "priority": 3,
-      "status": "in_progress",
-      "current_phase": 2,
+      "status": "complete",
+      "current_phase": 5,
+      "phase_completed": 5,
       "batch": 5,
       "dependencies": ["F001-008", "F001-006"],
       "description": "Waitlist page, admin approval workflow, feature-flag gated pre-launch mode",
       "spec_file": "docs/specs/F001-015-waitlist.spec",
       "started_at": "2026-02-11T16:00:00-05:00",
+      "completed_at": "2026-02-11T16:45:00-05:00",
+      "tests_added": 22,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },

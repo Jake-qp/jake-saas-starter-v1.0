@@ -1,30 +1,37 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-015
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-015-waitlist.spec`
-- User: SaaS operator (admin) + unauthenticated visitors
-- Screens: 2 (Waitlist page, Admin waitlist section)
-- Flows: 5
-- Acceptance criteria: 6
+**ID:** (none)
+**Phase:** -
+**Status:** Ready for next build
 
 ---
 
 ## Last Completed
-**ID:** F001-010
+**ID:** F001-015
 **Date:** 2026-02-11
 
-Super Admin Panel — 23 new tests, 11/11 ACs.
+Waitlist / Pre-Launch Mode — 22 new tests, 6/6 ACs.
 
-**Spec:** `docs/specs/F001-010-super-admin.spec`
+**Files Created:**
+- `convex/waitlist.ts` — joinWaitlist, getWaitlistCount, listWaitlistEntries, approveEntry, rejectEntry
+- `convex/__tests__/waitlist.test.ts` — 22 tests
+- `app/(marketing)/waitlist/page.tsx` — public waitlist page
+- `app/(marketing)/_components/WaitlistGate.tsx` — feature flag redirect
+- `app/admin/waitlist/page.tsx` — admin waitlist management
+- `app/api/waitlist/send-invite/route.ts` — Resend invitation email
+
+**Files Modified:**
+- `convex/schema.ts` — waitlistEntries table
+- `app/(marketing)/page.tsx` — added WaitlistGate
+- `app/admin/layout.tsx` — added Waitlist nav item
+
+**Spec:** `docs/specs/F001-015-waitlist.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
 
 ## Project State
-- **Tests:** 434 passing (6 todo seeds for future features)
+- **Tests:** 456 passing (6 todo seeds)
 - **Build:** ✅ succeeds
-- **Features:** 16 complete | 1 in progress | 0 pending
+- **Features:** 17 complete | 0 in progress | 0 pending

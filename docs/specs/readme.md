@@ -14,6 +14,7 @@
 | F001-017 | File Storage & Uploads | ✅ | `docs/specs/F001-017-file-storage.spec` |
 | F001-008 | Feature Flags (PostHog) | ✅ | `docs/specs/F001-008-feature-flags.spec` |
 | F001-011 | Example App (Notes CRUD) | ✅ | `docs/specs/F001-011-example-app-notes.spec` |
+| F001-015 | Waitlist / Pre-Launch Mode | ✅ | `docs/specs/F001-015-waitlist.spec` |
 
 ## Source Code Index
 

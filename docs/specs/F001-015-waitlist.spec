@@ -40,12 +40,12 @@ I want to gate access to my product behind a waitlist
 So that I can control the onboarding pace during pre-launch
 
 ## Acceptance Criteria
-- [ ] AC1: When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
-- [ ] AC2: Waitlist form accepts email and stores in `waitlistEntries` with status "pending"
-- [ ] AC3: Duplicate email submission shows "already on waitlist" message
-- [ ] AC4: Admin panel shows pending waitlist entries with approve/reject actions
-- [ ] AC5: Approved users receive invitation email via Resend
-- [ ] AC6: When `waitlist_mode` flag is disabled, app functions normally (landing page visible)
+- [x] AC1: When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
+- [x] AC2: Waitlist form accepts email and stores in `waitlistEntries` with status "pending"
+- [x] AC3: Duplicate email submission shows "already on waitlist" message
+- [x] AC4: Admin panel shows pending waitlist entries with approve/reject actions
+- [x] AC5: Approved users receive invitation email via Resend
+- [x] AC6: When `waitlist_mode` flag is disabled, app functions normally (landing page visible)
 
 ## Edge Cases
 - **Duplicate email:** Shows friendly "already on waitlist" message (AC3)

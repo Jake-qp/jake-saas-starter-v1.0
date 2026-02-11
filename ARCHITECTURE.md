@@ -370,7 +370,7 @@ Batch 2 (parallel): F001-003 (DONE) + F001-009 (DONE) + F001-012 (DONE) + F001-0
 Batch 3:            F001-004 (RBAC)
 Batch 4 (parallel): F001-005 (AI DONE) + F001-006 (Notifications DONE) + F001-007 (Onboarding DONE)
                    + F001-008 (Feature Flags DONE) + F001-011 (Notes DONE) + F001-013 (Blog)
-Batch 5 (parallel): F001-010 (Super Admin) + F001-015 (Waitlist)
+Batch 5 (parallel): F001-010 (Super Admin DONE) + F001-015 (Waitlist DONE)
 ```
 
 ---
