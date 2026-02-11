@@ -181,11 +181,14 @@
       "name": "Example App (Notes CRUD)",
       "type": "frontend",
       "priority": 2,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 2,
       "batch": 4,
       "dependencies": ["F001-001", "F001-004", "F001-003"],
       "description": "Rich notes CRUD with permissions, search, entitlements, file attachments, command palette",
+      "spec_file": "docs/specs/F001-011-example-app-notes.spec",
+      "started_at": "2026-02-11T15:30:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
