@@ -16,11 +16,17 @@ const schema = defineEntSchema(
     teams: defineEnt({
       name: v.string(),
       isPersonal: v.boolean(),
+      // Billing fields (F001-003)
+      polarCustomerId: v.optional(v.string()),
+      subscriptionTier: v.optional(v.string()),
+      subscriptionStatus: v.optional(v.string()),
     })
       .field("slug", v.string(), { unique: true })
+      .index("polarCustomerId", ["polarCustomerId"])
       .edges("messages", { ref: true })
       .edges("members", { ref: true })
       .edges("invites", { ref: true })
+      .edges("aiUsage", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
 
     // Users table: merges Convex Auth required fields with app-specific fields.
@@ -87,6 +93,16 @@ const schema = defineEntSchema(
     })
       .edge("team")
       .edge("member"),
+
+    // AI usage tracking for credit-based billing (F001-003)
+    aiUsage: defineEnt({
+      model: v.string(),
+      creditsUsed: v.number(),
+      tokenCount: v.number(),
+      timestamp: v.number(),
+    })
+      .edge("team")
+      .index("teamTimestamp", ["teamId", "timestamp"]),
 
     // Convex Auth tables (converted from standard defineTable to ent format)
     authSessions: defineEntFromTable(

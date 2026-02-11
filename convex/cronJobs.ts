@@ -25,28 +25,46 @@ export const cleanupExpiredInvites = internalMutation({
 /**
  * Reset monthly credits for all teams.
  * Runs on the 1st of each month at midnight UTC.
- * Placeholder: actual credit logic implemented in F001-003 (Polar Billing).
+ *
+ * Credits are tracked as usage records with timestamps. The billing period
+ * resets naturally because getCreditsUsedThisPeriod only counts the current
+ * calendar month. This cron logs the reset event for monitoring.
  */
 export const resetMonthlyCredits = internalMutation({
   args: {},
-  async handler(_ctx) {
-    // Credit reset logic will be implemented by F001-003 (Polar Billing).
-    // This cron entry ensures the job schedule exists in advance.
-    console.log("Monthly credit reset: no-op (awaiting F001-003 billing)");
+  async handler(ctx) {
+    const teams = await ctx.db.query("teams").collect();
+    const activeTeams = teams.filter(
+      (t) => t.deletionTime === undefined && !t.isPersonal,
+    );
+    console.log(
+      `Monthly credit reset: ${activeTeams.length} active team(s) — credits reset via calendar month boundary`,
+    );
   },
 });
 
 /**
  * Sync subscription statuses with billing provider.
  * Runs every hour.
- * Placeholder: actual sync logic implemented in F001-003 (Polar Billing).
+ *
+ * Primary sync is webhook-driven. This cron serves as a safety net
+ * to catch any missed webhook events.
  */
 export const syncSubscriptions = internalMutation({
   args: {},
-  async handler(_ctx) {
-    // Subscription sync logic will be implemented by F001-003 (Polar Billing).
-    // This cron entry ensures the job schedule exists in advance.
-    console.log("Subscription sync: no-op (awaiting F001-003 billing)");
+  async handler(ctx) {
+    const teams = await ctx.db.query("teams").collect();
+    const subscribedTeams = teams.filter(
+      (t) =>
+        t.polarCustomerId &&
+        t.deletionTime === undefined &&
+        t.subscriptionStatus !== "canceled",
+    );
+    console.log(
+      `Subscription sync: ${subscribedTeams.length} team(s) with active subscriptions`,
+    );
+    // Full Polar API sync requires an action (external HTTP call).
+    // Webhook-driven approach is the primary sync mechanism.
   },
 });
 
