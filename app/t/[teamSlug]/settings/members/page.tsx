@@ -4,6 +4,7 @@ import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
 import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
 import { AddMember } from "@/app/t/[teamSlug]/settings/members/AddMember";
 import { MembersList } from "@/app/t/[teamSlug]/settings/members/MemberList";
+import { CustomRolesCard } from "@/app/t/[teamSlug]/settings/members/CustomRolesCard";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -24,6 +25,7 @@ export default function MembersPage() {
 
       <AddMember />
       <MembersList />
+      <CustomRolesCard />
     </>
   );
 }
