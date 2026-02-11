@@ -132,6 +132,27 @@ const schema = defineEntSchema(
       .edge("team")
       .index("teamCreation", ["teamId"]),
 
+    // In-app notifications (F001-006)
+    notifications: defineEnt({
+      userId: v.id("users"),
+      type: v.string(), // NotificationType from lib/notificationTypes.ts
+      title: v.string(),
+      body: v.string(),
+      isRead: v.boolean(),
+      metadata: v.optional(v.any()), // type-specific data (teamId, amount, etc.)
+    })
+      .index("userId", ["userId"])
+      .index("userIdRead", ["userId", "isRead"]),
+
+    // Notification preferences per user (F001-006)
+    notificationPreferences: defineEnt({
+      userId: v.id("users"),
+      // JSON object: { [NotificationType]: { email: boolean, inApp: boolean } }
+      preferences: v.any(),
+    })
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
+      .index("userId", ["userId"]),
+
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({
       model: v.string(),
