@@ -13,6 +13,7 @@ const adminNavItems = [
   { href: "/admin", label: "Dashboard", exact: true },
   { href: "/admin/users", label: "Users", exact: false },
   { href: "/admin/teams", label: "Teams", exact: false },
+  { href: "/admin/waitlist", label: "Waitlist", exact: false },
   { href: "/admin/flags", label: "Feature Flags", exact: false },
   { href: "/admin/analytics", label: "Analytics", exact: false },
   { href: "/admin/audit", label: "Audit Log", exact: false },
