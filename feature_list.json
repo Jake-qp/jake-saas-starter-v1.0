@@ -98,11 +98,14 @@
       "name": "Notification System",
       "type": "backend",
       "priority": 2,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 1,
       "batch": 4,
       "dependencies": ["F001-001", "F001-003"],
       "description": "In-app notifications (real-time) + 8-12 React Email templates, notification preferences",
+      "spec_file": "docs/specs/F001-006-notification-system.spec",
+      "started_at": "2026-02-11T14:10:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {

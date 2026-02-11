@@ -1,9 +1,20 @@
 # Build Progress
 
 ## Current Feature
-**ID:** (none)
-**Phase:** -
-**Status:** Ready for next build
+**ID:** F001-006
+**Phase:** 1 → 2
+**Status:** Spec approved, starting visual design
+
+**Spec:** `docs/specs/F001-006-notification-system.spec`
+- User: Team member receiving notifications
+- Screens: 3 (bell dropdown, preferences, email preview)
+- Flows: 3 (view, email delivery, manage preferences)
+- Acceptance criteria: 7
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-006
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-006 -->/,/<!-- END_FEATURE: F001-006 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
 
 ---
 
@@ -11,24 +22,10 @@
 **ID:** F001-005
 **Date:** 2026-02-11
 
-AI/LLM Integration (Dual Streaming) — Vercel AI SDK v6 with dual streaming patterns (Next.js Edge API route default + Convex HTTP action alternative). AI chat page with useChat streaming, model selector (4 models), credit usage meter. Shared Convex mutations with full auth → permission → entitlement → rate limit → execute pattern. 28 new tests.
-
-**Files Created:**
-- `app/api/ai/chat/route.ts` — Next.js Edge streaming endpoint
-- `app/t/[teamSlug]/ai/page.tsx` — AI chat page
-- `convex/ai.ts` — Shared mutations (saveUserMessage, saveAssistantMessage, listMessages)
-- `lib/aiModels.ts` — Model configuration
-- `convex/__tests__/ai.test.ts` — 21 backend tests
-- `lib/__tests__/aiModels.test.ts` — 7 model config tests
-
-**Files Modified:**
-- `convex/schema.ts` — Added aiMessages table
-- `convex/http.ts` — Added alternative Convex HTTP action (documented)
-- `app/t/TeamMenu.tsx` — Added "AI Chat" nav link
+AI/LLM Integration (Dual Streaming) — 28 new tests.
 
 **Spec:** `docs/specs/F001-005-ai-llm-integration.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
-**ACs:** 7/7
 
 ---
 
