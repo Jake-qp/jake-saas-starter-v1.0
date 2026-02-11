@@ -20,12 +20,12 @@ describe("F001-005: AI/LLM Integration", () => {
       expect(schema.tables.aiMessages).toBeDefined();
     });
 
-    it("should have teamCreation index on aiMessages", () => {
+    it("should have teamId index from team edge on aiMessages", () => {
       const table = schema.tables.aiMessages;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
-      expect(indexNames).toContain("teamCreation");
+      expect(indexNames).toContain("teamId");
     });
 
     it("aiMessages table has teamId field for team edge", () => {
@@ -34,8 +34,7 @@ describe("F001-005: AI/LLM Integration", () => {
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
-      // teamCreation index uses teamId — confirms the edge exists
-      expect(indexNames).toContain("teamCreation");
+      expect(indexNames).toContain("teamId");
     });
   });
 
