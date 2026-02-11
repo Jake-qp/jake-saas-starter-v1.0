@@ -55,6 +55,9 @@ const schema = defineEntSchema(
       timezone: v.optional(v.string()),
       // Avatar storage (F001-017)
       avatarStorageId: v.optional(v.id("_storage")),
+      // Onboarding tracking (F001-007)
+      onboardingStatus: v.optional(v.string()), // "in_progress" | "completed" | "skipped" (undefined = new user)
+      onboardingStep: v.optional(v.number()), // 0-indexed current step
     })
       .field("email", v.optional(v.string()))
       .index("email", ["email"])
