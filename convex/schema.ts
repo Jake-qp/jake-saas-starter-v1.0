@@ -61,6 +61,8 @@ const schema = defineEntSchema(
       // Onboarding tracking (F001-007)
       onboardingStatus: v.optional(v.string()), // "in_progress" | "completed" | "skipped" (undefined = new user)
       onboardingStep: v.optional(v.number()), // 0-indexed current step
+      // Changelog tracking (F001-013) — ISO date string of last-seen changelog entry
+      lastSeenChangelogDate: v.optional(v.string()),
     })
       .field("email", v.optional(v.string()))
       .index("email", ["email"])
@@ -174,6 +176,15 @@ const schema = defineEntSchema(
     })
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
       .index("userId", ["userId"]),
+
+    // Changelog email subscribers (F001-013)
+    changelogSubscribers: defineEnt({
+      unsubscribeToken: v.string(),
+      subscribedAt: v.number(),
+    })
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
+      .field("email", v.string(), { unique: true })
+      .index("unsubscribeToken", ["unsubscribeToken"]),
 
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({
