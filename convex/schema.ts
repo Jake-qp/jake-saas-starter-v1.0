@@ -1,4 +1,10 @@
-import { defineEnt, defineEntSchema, getEntDefinitions } from "convex-ents";
+import {
+  defineEnt,
+  defineEntFromTable,
+  defineEntSchema,
+  getEntDefinitions,
+} from "convex-ents";
+import { defineTable } from "convex/server";
 import { v } from "convex/values";
 import { vPermission, vRole } from "./permissions";
 
@@ -17,14 +23,29 @@ const schema = defineEntSchema(
       .edges("invites", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
 
+    // Users table: merges Convex Auth required fields with app-specific fields.
+    // Convex Auth requires: name, image, email, emailVerificationTime,
+    // phone, phoneVerificationTime, isAnonymous (all optional).
+    // App fields: fullName, firstName, lastName, pictureUrl, timezone.
+    // tokenIdentifier removed — Convex Auth uses session-based auth via getAuthUserId().
     users: defineEnt({
+      // Convex Auth required fields
+      name: v.optional(v.string()),
+      image: v.optional(v.string()),
+      emailVerificationTime: v.optional(v.number()),
+      phone: v.optional(v.string()),
+      phoneVerificationTime: v.optional(v.number()),
+      isAnonymous: v.optional(v.boolean()),
+      // App-specific fields
       firstName: v.optional(v.string()),
       lastName: v.optional(v.string()),
-      fullName: v.string(),
+      fullName: v.optional(v.string()),
       pictureUrl: v.optional(v.string()),
+      timezone: v.optional(v.string()),
     })
-      .field("email", v.string(), { unique: true })
-      .field("tokenIdentifier", v.string(), { unique: true })
+      .field("email", v.optional(v.string()))
+      .index("email", ["email"])
+      .index("phone", ["phone"])
       .edges("members", { ref: true, deletion: "soft" })
       .deletion("soft"),
 
@@ -66,6 +87,71 @@ const schema = defineEntSchema(
     })
       .edge("team")
       .edge("member"),
+
+    // Convex Auth tables (converted from standard defineTable to ent format)
+    authSessions: defineEntFromTable(
+      defineTable({
+        userId: v.id("users"),
+        expirationTime: v.number(),
+      }).index("userId", ["userId"]),
+    ),
+
+    authAccounts: defineEntFromTable(
+      defineTable({
+        userId: v.id("users"),
+        provider: v.string(),
+        providerAccountId: v.string(),
+        secret: v.optional(v.string()),
+        emailVerified: v.optional(v.string()),
+        phoneVerified: v.optional(v.string()),
+      })
+        .index("userIdAndProvider", ["userId", "provider"])
+        .index("providerAndAccountId", ["provider", "providerAccountId"]),
+    ),
+
+    authRefreshTokens: defineEntFromTable(
+      defineTable({
+        sessionId: v.id("authSessions"),
+        expirationTime: v.number(),
+        firstUsedTime: v.optional(v.number()),
+        parentRefreshTokenId: v.optional(v.id("authRefreshTokens")),
+      })
+        .index("sessionId", ["sessionId"])
+        .index("sessionIdAndParentRefreshTokenId", [
+          "sessionId",
+          "parentRefreshTokenId",
+        ]),
+    ),
+
+    authVerificationCodes: defineEntFromTable(
+      defineTable({
+        accountId: v.id("authAccounts"),
+        provider: v.string(),
+        code: v.string(),
+        expirationTime: v.number(),
+        verifier: v.optional(v.string()),
+        emailVerified: v.optional(v.string()),
+        phoneVerified: v.optional(v.string()),
+      })
+        .index("accountId", ["accountId"])
+        .index("code", ["code"]),
+    ),
+
+    authVerifiers: defineEntFromTable(
+      defineTable({
+        sessionId: v.optional(v.id("authSessions")),
+        signature: v.optional(v.string()),
+      }).index("signature", ["signature"]),
+    ),
+
+    authRateLimits: defineEntFromTable(
+      defineTable({
+        identifier: v.string(),
+        lastAttemptTime: v.number(),
+        attemptsLeft: v.number(),
+      }).index("identifier", ["identifier"]),
+    ),
+
     as: defineEnt({ ["b"]: v.any() }).index("b", ["b"]),
   },
   { schemaValidation: false },

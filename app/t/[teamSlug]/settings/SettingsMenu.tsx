@@ -11,6 +11,7 @@ export function SettingsMenu() {
   return (
     <div className="flex flex-col gap-2 items-stretch">
       <NavLink relativeHref="">General</NavLink>
+      <NavLink relativeHref="/profile">Profile</NavLink>
       {team?.isPersonal ? null : (
         <NavLink relativeHref="/members">Members</NavLink>
       )}
@@ -37,7 +38,7 @@ function NavLink({
       href={linkPath}
       className={cn(
         "text-sm rounded-md bg-background px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
-        active ? "text-foreground" : "text-foreground/60"
+        active ? "text-foreground" : "text-foreground/60",
       )}
     >
       {children}

@@ -1,4 +1,5 @@
-// Auth token retrieval — will be wired to Convex Auth in F001-001
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
+
 export async function getAuthToken() {
-  return undefined;
+  return await convexAuthNextjsToken();
 }

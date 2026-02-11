@@ -1,57 +1,78 @@
-import { internalMutation, mutation } from "./functions";
-import { getRole } from "./permissions";
-import { defaultToAccessTeamSlug, getUniqueSlug } from "./users/teams";
-import { createMember } from "./users/teams/members";
+import { v } from "convex/values";
+import { internalMutation, mutation, query } from "./functions";
+import { defaultToAccessTeamSlug } from "./users/teams";
 
-export const store = mutation({
+// Called after sign-in to get the team slug for redirect.
+// User and personal team creation is handled by the afterUserCreatedOrUpdated
+// callback in convex/auth.ts.
+export const getTeamSlug = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) {
-      throw new Error("Called api.users.store without valid auth token");
-    }
-
-    const existingUser = await ctx
-      .table("users")
-      .get("tokenIdentifier", identity.tokenIdentifier);
-    if (existingUser !== null) {
-      return defaultToAccessTeamSlug(existingUser);
-    }
-    if (identity.email === undefined) {
-      throw new Error("User does not have an email address");
-    }
-    let user = await ctx.table("users").get("email", identity.email);
-    const nameFallback = emailUserName(identity.email);
-    const userFields = {
-      fullName: identity.name ?? nameFallback,
-      tokenIdentifier: identity.tokenIdentifier,
-      email: identity.email,
-      pictureUrl: identity.pictureUrl,
-      firstName: identity.givenName,
-      lastName: identity.familyName,
-    };
-    if (user !== null) {
-      await user.patch({ ...userFields, deletionTime: undefined });
-    } else {
-      user = await ctx.table("users").insert(userFields).get();
-    }
-    const name = `${user.firstName ?? nameFallback}'s Team`;
-    const slug = await getUniqueSlug(ctx, identity.nickname ?? name);
-    const teamId = await ctx
-      .table("teams")
-      .insert({ name, slug, isPersonal: true });
-    await createMember(ctx, {
-      teamId,
-      user,
-      roleId: (await getRole(ctx, "Admin"))._id,
-    });
-    return slug;
+    const viewer = ctx.viewerX();
+    return defaultToAccessTeamSlug(viewer);
   },
 });
 
-function emailUserName(email: string) {
-  return email.split("@")[0];
-}
+// Alias for backward compatibility — app/t/page.tsx calls api.users.store
+export const store = getTeamSlug;
+
+// Get current user profile data
+export const viewer = query({
+  args: {},
+  handler: async (ctx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (ctx.viewer === null) return null;
+    return {
+      _id: ctx.viewer._id,
+      email: ctx.viewer.email,
+      fullName: ctx.viewer.fullName,
+      firstName: ctx.viewer.firstName,
+      lastName: ctx.viewer.lastName,
+      pictureUrl: ctx.viewer.pictureUrl,
+      timezone: ctx.viewer.timezone,
+    };
+  },
+});
+
+// Update user profile
+export const updateProfile = mutation({
+  args: {
+    fullName: v.optional(v.string()),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    timezone: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const viewer = ctx.viewerX();
+    const updates: Record<string, string | undefined> = {};
+    if (args.fullName !== undefined) updates.fullName = args.fullName;
+    if (args.firstName !== undefined) updates.firstName = args.firstName;
+    if (args.lastName !== undefined) updates.lastName = args.lastName;
+    if (args.timezone !== undefined) updates.timezone = args.timezone;
+    await viewer.patch(updates);
+  },
+});
+
+// List active sessions for the current user
+export const listSessions = query({
+  args: {},
+  handler: async (ctx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (ctx.viewer === null) return null;
+    // Query authSessions table via raw db (it's an auth table, not an ent)
+    const sessions = await ctx.table("authSessions", "userId", (q) =>
+      q.eq("userId", ctx.viewer!._id),
+    );
+    const now = Date.now();
+    return sessions
+      .filter((s) => s.expirationTime > now)
+      .map((s) => ({
+        _id: s._id,
+        _creationTime: s._creationTime,
+        expirationTime: s.expirationTime,
+      }));
+  },
+});
 
 export const foo = internalMutation({
   args: {},
