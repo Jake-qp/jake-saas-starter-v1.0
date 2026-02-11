@@ -115,7 +115,24 @@ components/
   FAQAccordion.tsx          Configurable Q&A pairs
   CTASection.tsx            Call-to-action banner
   ContactForm.tsx           Contact form with Resend
+  FileUploader.tsx          Drag-drop file uploader (progress, type/size validation)
+  CommandPalette.tsx        Cmd+K global search (shadcn Command + Convex search)
+  ImpersonationBanner.tsx   "Viewing as [Name] — Exit" banner
+  WhatsNewBadge.tsx         "What's New" changelog badge (dismissible)
 convex/                     Convex backend (see schema below)
+  crons.ts                  Cron jobs (invite cleanup, credit reset, subscription sync, session cleanup)
+  storage.ts                File storage mutations (generateUploadUrl, deleteFile, getFileUrl)
+  storage/avatars.ts        Avatar upload/crop mutations (user + team)
+  admin/impersonation.ts    Super admin user impersonation (start/stop + audit)
+  changelog.ts              Changelog subscriber mutations (subscribe/unsubscribe)
+emails/                     React Email templates (8-12 transactional emails)
+  layout.tsx                Shared email layout (brand header + footer)
+  welcome.tsx               Welcome email
+  invite-sent.tsx           Team invite
+  subscription-changed.tsx  Plan upgrade/downgrade
+  payment-failed.tsx        Failed payment notification
+  approaching-limit.tsx     80% usage warning
+  ...                       (see F001-006 for full list)
 content/
   blog/                     MDX blog posts
   changelog/                MDX changelog entries
@@ -149,8 +166,8 @@ docs/
 
 | Entity | Key Fields | Edges |
 |--------|-----------|-------|
-| users | email (unique), fullName, isSuperAdmin | members |
-| teams | name, slug (unique), isPersonal, polarCustomerId, subscriptionTier, subscriptionStatus | messages, members, invites |
+| users | email (unique), fullName, isSuperAdmin, timezone, avatarStorageId | members |
+| teams | name, slug (unique), isPersonal, polarCustomerId, subscriptionTier, subscriptionStatus, avatarStorageId | messages, members, invites |
 | members | searchable | team, user, role, messages |
 | roles | name (Owner/Admin/Member), isDefault | permissions, members |
 | permissions | name (14 permissions, unique) | roles |
@@ -160,7 +177,7 @@ docs/
 
 | Entity | Purpose | Edges |
 |--------|---------|-------|
-| notes | Example CRUD app | team, member |
+| notes | Example CRUD app (with attachmentStorageIds) | team, member |
 | aiConversations | AI chat sessions | team, member |
 | aiMessages | Individual AI messages | conversation |
 | aiUsage | Credit tracking per team/period | team |
@@ -169,6 +186,7 @@ docs/
 | onboardingProgress | Wizard step tracking | user |
 | auditLog | Admin action audit trail | user |
 | waitlistEntries | Pre-launch email collection | — |
+| changelogSubscribers | Changelog email subscription | — |
 
 ### Key Constraints
 
@@ -273,6 +291,28 @@ Client `useChat()` → POST to `.convex.site/api/ai/chat` → same checks → st
 
 Both share the same Convex mutations for message saving and credit tracking.
 
+### File Upload (Convex Built-in)
+
+```
+User drags file into <FileUploader>
+  → Client calls generateUploadUrl mutation
+  → Mutation checks auth + permission + storage quota entitlement
+  → ctx.storage.generateUploadUrl() returns signed URL
+  → Browser POSTs file directly to Convex storage
+  → Client receives storageId, calls mutation to save on entity
+  → Rendering: ctx.storage.getUrl(storageId) returns public URL
+```
+
+### Cron Jobs
+
+```
+convex/crons.ts runs automatically:
+  → daily: clean expired invites (3:00 AM UTC)
+  → monthly: reset AI credits (1st, midnight UTC)
+  → hourly: sync subscription status with Polar
+  → daily: clean stale auth sessions (4:00 AM UTC)
+```
+
 ---
 
 ## Security Architecture
@@ -305,17 +345,18 @@ Three-layer enforcement:
 F001-001 (Auth) ──────────┬──→ F001-003 (Billing) ──┬──→ F001-005 (AI)
                           │                          ├──→ F001-006 (Notifications)
 F001-002 (Design System)  │                          ├──→ F001-007 (Onboarding)
-  (parallel, no deps)     │                          ├──→ F001-008 (Feature Flags) ──→ F001-015 (Waitlist)
-                          │                          └──→ F001-011 (Notes)
+  (DONE, no deps)         │                          ├──→ F001-008 (Feature Flags) ──→ F001-015 (Waitlist)
+                          │                          └──→ F001-011 (Notes) ← also depends on F001-017
 F001-014 (Prod Infra)     │
   (parallel, no deps)     ├──→ F001-004 (RBAC) ──────┬──→ F001-005 (AI)
-                          │                          ├──→ F001-011 (Notes)
+                          │     ↑ also F001-017       ├──→ F001-011 (Notes)
 F001-016 (Testing)        │                          └──→ F001-010 (Admin)
   (parallel, no deps)     │
                           └──→ F001-009 (Analytics) ─┬──→ F001-010 (Admin)
 F001-012 (Marketing)                                 │
   ← depends on F001-002   F001-008 (Feature Flags) ──┘
 
+F001-017 (File Storage) ← depends on F001-002
 F001-013 (Blog) ← depends on F001-012
 F001-015 (Waitlist) ← depends on F001-008, F001-006
 ```
@@ -323,8 +364,8 @@ F001-015 (Waitlist) ← depends on F001-008, F001-006
 ### Build Sequence
 
 ```
-Batch 1 (parallel): F001-001 (Auth) + F001-002 (Design System) + F001-014 (Prod Infra) + F001-016 (Testing)
-Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing Site)
+Batch 1 (parallel): F001-001 (Auth) + F001-002 (DONE) + F001-014 (Prod Infra) + F001-016 (Testing)
+Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing Site) + F001-017 (File Storage)
 Batch 3:            F001-004 (RBAC)
 Batch 4 (parallel): F001-005 (AI) + F001-006 (Notifications) + F001-007 (Onboarding)
                    + F001-008 (Feature Flags) + F001-011 (Notes) + F001-013 (Blog)

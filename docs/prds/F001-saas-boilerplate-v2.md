@@ -31,31 +31,33 @@
 - Waitlist/pre-launch mode toggled via feature flag
 
 **Schema Changes:**
-- `users`: Remove `tokenIdentifier`, add `isSuperAdmin`; integrate `authTables`
-- `teams`: Add `polarCustomerId`, `subscriptionTier`, `subscriptionStatus`
-- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `auditLog`, `waitlistEntries`
+- `users`: Remove `tokenIdentifier`, add `isSuperAdmin`, `timezone`, `avatarStorageId`; integrate `authTables`
+- `teams`: Add `polarCustomerId`, `subscriptionTier`, `subscriptionStatus`, `avatarStorageId`
+- `notes`: Add `attachmentStorageIds` for file attachments
+- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `auditLog`, `waitlistEntries`, `changelogSubscribers`
 - Removed tables (replaced by PostHog — see [ADR-008](../adrs/008-posthog-analytics-flags.md)): `featureFlags`, `teamFeatureFlags`, `analyticsEvents`
 
 ### Child Features
 
 | ID | Name | Priority | Status | Dependencies | Notes |
 |----|------|----------|--------|--------------|-------|
-| F001-001 | Convex Auth Migration + Magic Link | P0 | pending | None | **Enhanced** — add Resend OTP magic link |
-| F001-002 | Design System Expansion | P0 | pending | None | |
+| F001-001 | Convex Auth Migration + Magic Link | P0 | pending | None | **Enhanced** — add Resend OTP magic link, session management, timezone preference |
+| F001-002 | Design System Expansion | P0 | done | None | |
 | F001-003 | Polar Billing + Credit System | P1 | pending | F001-001 | **Enhanced** — add credit-based AI consumption |
-| F001-004 | Enhanced RBAC | P1 | pending | F001-001, F001-003 | |
+| F001-004 | Enhanced RBAC | P1 | pending | F001-001, F001-003 | **Enhanced** — add ownership transfer, invite expiration/revoke/resend, team avatar |
 | F001-005 | AI/LLM Integration (Dual Streaming) | P2 | pending | F001-003, F001-004 | **Enhanced** — ship Next.js API route + Convex HTTP action |
-| F001-006 | Notification System | P2 | pending | F001-001, F001-003 | |
+| F001-006 | Notification System | P2 | pending | F001-001, F001-003 | **Enhanced** — add 8-12 React Email templates, email preview dev route |
 | F001-007 | Onboarding System | P2 | pending | F001-001, F001-003 | |
 | F001-008 | Feature Flags | P3 | pending | F001-003 | |
 | F001-009 | Analytics & Event Tracking | P3 | pending | F001-001 | |
-| F001-010 | Super Admin Panel | P3 | pending | F001-003, F001-004, F001-008, F001-009 | |
-| F001-011 | Example App (Notes CRUD) | P2 | pending | F001-001, F001-004, F001-003 | |
+| F001-010 | Super Admin Panel | P3 | pending | F001-003, F001-004, F001-008, F001-009 | **Enhanced** — add user impersonation with audit trail |
+| F001-011 | Example App (Notes CRUD) | P2 | pending | F001-001, F001-004, F001-003 | **Enhanced** — add command palette (Cmd+K), file attachments |
 | F001-012 | Marketing Site & Legal Pages | P1 | pending | F001-002 | **NEW** |
-| F001-013 | Blog & Changelog (MDX) | P2 | pending | F001-012 | **NEW** |
-| F001-014 | Production Infrastructure | P1 | pending | None | **NEW** |
+| F001-013 | Blog & Changelog (MDX) | P2 | pending | F001-012 | **Enhanced** — add changelog email subscription, "What's New" badge |
+| F001-014 | Production Infrastructure | P1 | pending | None | **Enhanced** — add cron jobs (`convex/crons.ts`), rate limiter setup |
 | F001-015 | Waitlist / Pre-Launch Mode | P3 | pending | F001-008, F001-006 | **NEW** |
 | F001-016 | Testing & Quality Infrastructure | P0 | pending | None | **NEW** — Vitest, Playwright, CI/CD, pre-commit hooks |
+| F001-017 | File Storage & Uploads | P1 | pending | F001-002 | **NEW** — Convex built-in file storage, avatar uploads, `<FileUploader>` component |
 
 ---
 
@@ -92,6 +94,8 @@ Developers think of this as "the last boilerplate I need." It should feel like a
 - "How do I deploy this to production?" (F001-014)
 - "How do I add a blog post?" (F001-013)
 - "How do I run a waitlist before launch?" (F001-015)
+- "How do I handle file uploads?" (F001-017)
+- "How do I search across my app?" (F001-011 — command palette)
 
 ---
 
@@ -99,11 +103,11 @@ Developers think of this as "the last boilerplate I need." It should feel like a
 
 This PRD defines the transformation of an existing SaaS starter kit into a comprehensive, production-grade boilerplate. The current codebase provides multi-tenant foundations (teams, RBAC, invites, soft deletion) built on Next.js 14, Convex, Clerk, and shadcn/ui. It needs to evolve into a complete platform with native auth, billing, AI integration, admin tooling, feature flags, analytics, onboarding, a polished marketing site, content marketing infrastructure, and production deployment tooling.
 
-The upgrade is structured as 15 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, audit logging, entitlements) where transactional integrity matters, and uses PostHog for product analytics and feature flags where a mature platform provides better value than custom code (see [ADR-008](../adrs/008-posthog-analytics-flags.md)).
+The upgrade is structured as 17 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, audit logging, entitlements, file storage, cron jobs) where transactional integrity matters, and uses PostHog for product analytics and feature flags where a mature platform provides better value than custom code (see [ADR-008](../adrs/008-posthog-analytics-flags.md)).
 
 **Before:** A starter with auth (Clerk), teams, and basic RBAC. Developers must build billing, AI, admin, notifications, analytics, marketing pages, and deployment infrastructure from scratch.
 
-**After:** A complete SaaS platform with Convex Auth (email/password + magic link), Polar billing with credit-based AI consumption, dual AI/LLM streaming patterns, super admin panel, feature flags, in-app notifications, onboarding wizard, analytics, a polished marketing site with legal pages, MDX blog/changelog, Sentry error monitoring, Vercel Analytics, preview seed data, waitlist mode, and a rich example app — all following consistent patterns and ready for customization.
+**After:** A complete SaaS platform with Convex Auth (email/password + magic link), Polar billing with credit-based AI consumption, dual AI/LLM streaming patterns, super admin panel with impersonation, feature flags, in-app notifications with transactional email templates, onboarding wizard, analytics, file storage with avatar uploads, cron jobs for housekeeping, command palette (Cmd+K), a polished marketing site with legal pages, MDX blog/changelog, Sentry error monitoring, Vercel Analytics, preview seed data, waitlist mode, and a rich example app — all following consistent patterns and ready for customization.
 
 ---
 
@@ -132,17 +136,20 @@ Existing starters optimize for demo-ability over production-readiness. They show
 ## Vision: The Complete SaaS Foundation
 
 A boilerplate where cloning the repo and setting environment variables gives you:
-- User auth with email/password + magic link via Convex Auth
-- Multi-tenant teams with Owner/Admin/Member roles
+- User auth with email/password + magic link via Convex Auth, session management, timezone support
+- Multi-tenant teams with Owner/Admin/Member roles, ownership transfer, invite management
 - Billing per team via Polar with configurable tiers, entitlements, and credit-based AI consumption
 - AI chat with dual streaming patterns (Next.js API route + Convex HTTP action), usage tracking, and rate limiting
-- In-app + email notifications
+- File storage with drag-drop uploader, avatar uploads, and per-tier storage quotas (Convex built-in)
+- In-app + email notifications with 8-12 branded transactional email templates
 - Guided onboarding for new users and teams
 - Feature flags via PostHog with admin management UI
 - Product analytics and feature flags via PostHog (see [ADR-008](../adrs/008-posthog-analytics-flags.md))
-- Super admin panel for platform operations
+- Super admin panel with user impersonation and audit trail
+- Global search / command palette (Cmd+K) with Convex full-text search
+- Cron jobs for housekeeping (invite cleanup, credit resets, subscription sync)
 - A polished marketing site with hero, features, pricing, FAQ, contact form, and legal pages
-- MDX-based blog and changelog for content marketing
+- MDX-based blog and changelog with email subscription and "What's New" badge
 - Sentry error monitoring, Vercel Analytics, and Speed Insights
 - Preview deployment seed data for PR reviews
 - Waitlist/pre-launch mode with admin approval workflow
@@ -171,6 +178,14 @@ A boilerplate where cloning the repo and setting environment variables gives you
 | Feature flags | None | PostHog feature flags with admin proxy (see [ADR-008](../adrs/008-posthog-analytics-flags.md)) |
 | Analytics | None | PostHog product analytics with `useTrack()` wrapper (see [ADR-008](../adrs/008-posthog-analytics-flags.md)) |
 | Admin | None | Super admin panel (`/admin`) |
+| File storage | None | Convex built-in file storage, `<FileUploader>` component, avatar uploads, storage quotas |
+| Cron jobs | None | `convex/crons.ts` — invite cleanup, credit resets, subscription sync, stale session cleanup |
+| Command palette | None | Cmd+K global search via shadcn `Command` + Convex search indexes |
+| Session management | None | Active sessions list, "Log out all devices", session-based auth |
+| Invite management | Basic invites | Invite expiration (7-day TTL), revoke/resend, rate limiting |
+| Email templates | Invite email only | 8-12 branded transactional emails (welcome, invite, billing, limits, etc.) |
+| Impersonation | None | Super admin "View as User" with audit trail, read-only mode |
+| Ownership transfer | None | Transfer team ownership mutation + confirmation flow |
 | Demo content | Messages (basic chat) | Notes CRUD (rich reference implementation) |
 | Landing page | Bare `/` route | Modular marketing site: hero, features, pricing, FAQ, CTA |
 | Legal pages | None | ToS, Privacy Policy, Cookie Policy (MDX) |
@@ -189,19 +204,21 @@ A boilerplate where cloning the repo and setting environment variables gives you
 4. **Admin oversight:** Super admin logs in > `/admin` dashboard > Views user/team metrics, manages feature flags, reviews audit log
 5. **Marketing funnel:** Visitor lands on `/` > Reads features/pricing/FAQ > Clicks CTA to sign up or submits contact form
 6. **Waitlist flow:** `waitlist_mode` flag enabled > Visitors see `/waitlist` > Submit email > Admin approves > Approved user gets invite email via Resend
+7. **File upload:** User drags file into `<FileUploader>` > Client calls `generateUploadUrl()` mutation > Browser POSTs file to Convex storage > Storage ID saved to entity > `getUrl()` renders file
+8. **Command palette:** User presses Cmd+K > `<Command>` dialog opens > Types search query > Convex search indexes return matching notes/teams/members > User selects result > Navigates to page
 
 ### Out of Scope (This Build)
 
 - Mobile app / React Native
 - Multi-language / i18n
 - Custom domain per team
-- File upload / storage
 - Real-time collaboration (beyond Convex subscriptions)
 - SSO / SAML / OAuth providers (can be added later)
-- Webhook management UI for end users
-- Public API with API keys
-- MFA / TOTP (deferred — future enhancement for B2B security)
-- Feedback widget (developers can add their own)
+- Public API with API keys (post-V2 — uses Convex `httpRouter` when ready)
+- Outbound webhook management for end users (post-V2 — enterprise feature)
+- MFA / TOTP (Convex Auth v0.0.90 doesn't support TOTP; revisit when available)
+- Data export / GDPR portability (post-V2 — straightforward with Convex `ctx.storage` + `ctx.scheduler`)
+- In-app feedback widget (post-V2 — low effort, easy to add later)
 - Figma UI kit (not code — out of scope)
 - Plugin / extension system (modular architecture already allows removing modules)
 - Turborepo monorepo (single Next.js app is simpler for a boilerplate)
@@ -222,6 +239,7 @@ A boilerplate where cloning the repo and setting environment variables gives you
 | Marketing (F001-012) | Billing, Design System | Pricing table reads from `planConfig.ts`; uses design system components |
 | Blog (F001-013) | Marketing | Shares layout/navigation with marketing site |
 | Prod Infra (F001-014) | Everything | Error monitoring, analytics, and deployment tooling for all modules |
+| File Storage (F001-017) | RBAC, Notes, Design System | Avatar uploads (user + team), note attachments, `<FileUploader>` component, storage quotas per tier |
 | Waitlist (F001-015) | Feature Flags, Notifications | Controlled by feature flag; sends emails via Resend |
 
 ---
@@ -338,6 +356,8 @@ User attempts action (e.g., "Delete Note")
 ```
 - REMOVE: tokenIdentifier (Clerk-specific)
 - ADD: isSuperAdmin: v.optional(v.boolean())
+- ADD: timezone: v.optional(v.string()) — IANA timezone (e.g., "America/New_York")
+- ADD: avatarStorageId: v.optional(v.id("_storage")) — Convex file storage reference
 - Integration with authTables from @convex-dev/auth
 ```
 
@@ -346,6 +366,7 @@ User attempts action (e.g., "Delete Note")
 - ADD: polarCustomerId: v.optional(v.string())
 - ADD: subscriptionTier: v.optional(v.union(v.literal("free"), v.literal("pro"), v.literal("enterprise")))
 - ADD: subscriptionStatus: v.optional(v.union(v.literal("active"), v.literal("canceled"), v.literal("past_due"), v.literal("trialing")))
+- ADD: avatarStorageId: v.optional(v.id("_storage")) — Convex file storage reference
 ```
 
 #### `roles`
@@ -370,6 +391,7 @@ notes: defineEnt({
   title: v.string(),
   content: v.string(),
   priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
+  attachmentStorageIds: v.optional(v.array(v.id("_storage"))),
   searchable: v.string(),
 })
   .edge("team")
@@ -474,6 +496,14 @@ waitlistEntries: defineEnt({
   .index("status", ["status"])
 ```
 
+#### `changelogSubscribers`
+```typescript
+changelogSubscribers: defineEnt({
+  email: v.string(),
+})
+  .field("email", v.string(), { unique: true })
+```
+
 ---
 
 ## Data Flow
@@ -550,6 +580,29 @@ waitlistEntries: defineEnt({
 
 Both patterns share the same Convex mutations for saving messages, tracking usage, and checking entitlements. Only the streaming transport differs.
 
+### File Upload Flow (Convex Built-in)
+```
+1. User drags file into <FileUploader> component
+2. Client calls generateUploadUrl mutation
+   a. Authenticate user
+   b. Check permission: "Contribute"
+   c. Check entitlement: storage quota remaining
+   d. ctx.storage.generateUploadUrl() returns signed URL
+3. Browser POSTs file directly to Convex storage (signed URL)
+4. Client receives storageId
+5. Client calls mutation to save storageId on entity (note, user avatar, team avatar)
+6. Rendering: ctx.storage.getUrl(storageId) returns public URL
+```
+
+### Cron Jobs (Convex Built-in)
+```
+convex/crons.ts:
+- daily "clean expired invites" → internal.invites.cleanExpired (3:00 AM UTC)
+- monthly "reset credits" → internal.billing.resetCredits (1st, midnight UTC)
+- hourly "sync subscriptions" → internal.billing.syncSubscriptionStatus
+- daily "clean stale sessions" → internal.auth.cleanStaleSessions (4:00 AM UTC)
+```
+
 ---
 
 ## Edge Cases & Error Handling
@@ -578,6 +631,14 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | 20 | Preview deploy seed data conflicts with real data | Data corruption | Low | Seed only runs in preview deployments; checks for existing data first |
 | 21 | Dual AI streaming pattern confusion | Developer uses wrong pattern | Low | Default is Next.js API route; Convex HTTP action documented as alternative with clear trade-offs |
 | 22 | Duplicate waitlist email submission | Confusion or spam | Low | Unique constraint on email; show "already on waitlist" message |
+| 23 | File upload exceeds size limit | Large file consumes storage | Medium | Client-side size validation + server-side check; reject with clear error + tier upgrade prompt |
+| 24 | File upload of disallowed type | Security risk (executable uploads) | High | Allowlist of MIME types (images, PDFs, CSVs); reject others before upload |
+| 25 | Storage quota exceeded | Team can't upload more files | Medium | Check entitlement before `generateUploadUrl()`; show usage meter + upgrade prompt |
+| 26 | Expired invite still accessible | User joins after invite TTL | Medium | `ctx.scheduler.runAt()` auto-deletes after 7 days; acceptance checks expiry timestamp |
+| 27 | Ownership transfer to non-admin | Privilege escalation risk | Medium | Only current Owner can transfer; target must be existing team member; confirm via dialog |
+| 28 | Impersonation session persists | Admin acts as user permanently | Medium | Impersonation auto-expires after 30 min; read-only flag prevents mutations; audit log every action |
+| 29 | Cron job fails silently | Expired invites accumulate | Low | Cron failures appear in Convex dashboard; add Sentry capture in action wrapper |
+| 30 | Command palette returns too many results | Slow search, poor UX | Low | Limit search results to 10 per category; debounce input; prefix matching |
 
 ---
 
@@ -617,6 +678,16 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | **Other Backend** | | |
 | `convex/notes/` | F001-011 | Notes CRUD (queries, mutations) |
 | `convex/notifications/` | F001-006 | Notification create/list/mark-read + preferences |
+| `emails/welcome.tsx` | F001-006 | Welcome email template (React Email) |
+| `emails/invite-sent.tsx` | F001-006 | Team invite email template |
+| `emails/invite-accepted.tsx` | F001-006 | Invite accepted notification email |
+| `emails/subscription-changed.tsx` | F001-006 | Plan upgrade/downgrade email |
+| `emails/payment-failed.tsx` | F001-006 | Failed payment notification email |
+| `emails/payment-received.tsx` | F001-006 | Payment confirmation email |
+| `emails/approaching-limit.tsx` | F001-006 | 80% usage warning email (credits, storage, members) |
+| `emails/member-removed.tsx` | F001-006 | Team member removal notification email |
+| `emails/layout.tsx` | F001-006 | Shared email layout (brand header + footer) |
+| `app/dev/emails/page.tsx` | F001-006 | Email preview dev route (dev only) |
 | `lib/posthog/client.ts` | F001-008/009 | PostHog browser singleton (env-var gated) |
 | `lib/posthog/server.ts` | F001-008/009 | PostHog server-side singleton (serverless-compatible) |
 | `app/PostHogProvider.tsx` | F001-008/009 | PostHog React provider wrapper (no-op when unconfigured) |
@@ -628,11 +699,14 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `app/api/posthog/flags/[id]/route.ts` | F001-008 | Admin flag toggle/update/delete |
 | `convex/posthog.ts` | F001-009 | Server-side PostHog tracking from Convex mutations |
 | `convex/admin/` | F001-010 | Super admin queries/mutations + audit log |
+| `convex/admin/impersonation.ts` | F001-010 | Impersonation mutations (start/stop) + audit logging |
 | `convex/waitlist/` | F001-015 | Waitlist entry CRUD + approval workflow |
 | **Other Frontend** | | |
 | `app/t/[teamSlug]/notes/page.tsx` | F001-011 | Notes list page |
+| `components/CommandPalette.tsx` | F001-011 | Cmd+K command palette (shadcn `Command` + Convex search) |
 | `app/t/onboarding/page.tsx` | F001-007 | Onboarding wizard |
 | `app/admin/` | F001-010 | Super admin panel pages |
+| `components/ImpersonationBanner.tsx` | F001-010 | "Viewing as [Name] — Exit" banner during impersonation |
 | **Marketing Site (F001-012)** | | |
 | `app/(marketing)/page.tsx` | F001-012 | Landing page (hero + features + pricing + FAQ + CTA) |
 | `app/(marketing)/pricing/page.tsx` | F001-012 | Dedicated pricing page (reads from `planConfig.ts`) |
@@ -657,11 +731,14 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `content/blog/` | F001-013 | MDX blog posts directory |
 | `content/changelog/` | F001-013 | MDX changelog entries directory |
 | `lib/mdx.ts` | F001-013 | MDX processing utilities |
+| `convex/changelog.ts` | F001-013 | Changelog subscriber mutations (subscribe/unsubscribe) |
+| `components/WhatsNewBadge.tsx` | F001-013 | "What's New" badge in app header (dismissible, tracks last seen) |
 | **Production Infrastructure (F001-014)** | | |
 | `sentry.client.config.ts` | F001-014 | Sentry client-side config |
 | `sentry.server.config.ts` | F001-014 | Sentry server-side config |
 | `sentry.edge.config.ts` | F001-014 | Sentry edge runtime config |
 | `app/monitoring/[[...path]]/route.ts` | F001-014 | Sentry tunnel route (avoids ad-blockers) |
+| `convex/crons.ts` | F001-014 | Cron jobs (invite cleanup, credit reset, subscription sync, session cleanup) |
 | `convex/seedPreview.ts` | F001-014 | Preview deploy seed data function |
 | `docs/deployment.md` | F001-014 | Vercel deployment guide |
 | **Waitlist (F001-015)** | | |
@@ -681,19 +758,24 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `ARCHITECTURE.md` | F001-016 | System design, data model, flows |
 | `CONTRIBUTING.md` | F001-016 | Dev setup, testing, PR process |
 | `docs/adrs/` | F001-016 | 8 Architecture Decision Records |
+| **File Storage & Uploads (F001-017)** | | |
+| `components/FileUploader.tsx` | F001-017 | Drag-drop file uploader with progress bar, type validation, size limit |
+| `convex/storage.ts` | F001-017 | File storage mutations (generateUploadUrl, deleteFile, getFileUrl) |
+| `convex/storage/avatars.ts` | F001-017 | Avatar-specific upload/crop mutations (user + team) |
+| `app/t/[teamSlug]/settings/page.tsx` | F001-017 | Team settings with avatar upload |
 
 ### Modified Files
 
 | File | Changes |
 |------|---------|
-| `convex/schema.ts` | Add authTables integration, new entities (incl. waitlistEntries), expand roles/permissions. Remove `featureFlags`, `teamFeatureFlags`, `analyticsEvents` tables (replaced by PostHog). |
+| `convex/schema.ts` | Add authTables integration, new entities (incl. waitlistEntries, changelogSubscribers), expand roles/permissions, add `avatarStorageId` to users/teams, `timezone` to users, `attachmentStorageIds` to notes. Remove `featureFlags`, `teamFeatureFlags`, `analyticsEvents` tables (replaced by PostHog). |
 | `convex/functions.ts` | Session-based user lookup via `getAuthUserId()` (replace tokenIdentifier) |
 | `convex/permissions.ts` | Add Owner role, 9 new permissions, preserve API surface |
 | `convex/init.ts` | Seed new roles, permissions, default feature flags |
 | `convex/users.ts` | Update store mutation for Convex Auth identity shape; `afterUserCreatedOrUpdated` callback for auto-team creation |
 | `convex/users/teams.ts` | Add billing fields to team creation; `polarCustomerId` integration |
 | `convex/users/teams/members.ts` | Owner role enforcement |
-| `convex/invites.ts` | Entitlement check on invite acceptance |
+| `convex/invites.ts` | Entitlement check on invite acceptance; add invite expiration (7-day TTL via `ctx.scheduler.runAt()`); add revoke/resend mutations; rate limit invite sending |
 | `app/ConvexClientProvider.tsx` | Replace ClerkProvider with two-layer ConvexAuth providers; add `PostHogIdentifyUser` inside `Authenticated` |
 | `app/layout.tsx` | Add `@vercel/analytics`, `@vercel/speed-insights`, Sentry providers, `PostHogProvider`, `PostHogPageView` |
 | `app/t/[teamSlug]/hooks.ts` | Re-export `useTrack`, `useFeatureFlag` from `lib/hooks/` |
@@ -702,8 +784,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `middleware.ts` | Replace Clerk middleware with `createRouteMatcher` redirect logic |
 | `next.config.mjs` | Add `@next/mdx` or `contentlayer2` config; Sentry webpack plugin; source map upload; PostHog reverse proxy rewrites (`/ph/*`) |
 | `app/t/[teamSlug]/layout.tsx` | Add `PostHogTeamIdentify` for team-level group analytics |
-| `package.json` | Add @convex-dev/auth, @convex-dev/polar, ai, @ai-sdk/*, next-themes, react-email, @vercel/analytics, @vercel/speed-insights, @sentry/nextjs, @next/mdx (or contentlayer2), posthog-js, posthog-node, @samhoque/convex-posthog |
+| `convex/users/teams/members.ts` | Add `transferOwnership` mutation (confirm → update role edges → audit log → notify via email) |
+| `package.json` | Add @convex-dev/auth, @convex-dev/polar, @convex-dev/rate-limiter, ai, @ai-sdk/*, next-themes, react-email, @vercel/analytics, @vercel/speed-insights, @sentry/nextjs, @next/mdx (or contentlayer2), posthog-js, posthog-node, @samhoque/convex-posthog |
 | `tailwind.config.ts` | Dark mode support |
+| `lib/planConfig.ts` | Add `storageQuotaMB` to tier limits |
 
 ---
 
@@ -717,17 +801,21 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - `afterUserCreatedOrUpdated` callback for auto personal team creation
   - `createRouteMatcher` middleware for route protection
   - Update ConvexClientProvider, middleware, user store
+  - Session management: query `authSessions` table, "Active sessions" list, "Log out all devices"
+  - Timezone preference: `user.timezone` field (IANA), dropdown in profile settings
   - Verify all existing flows work with new auth
-- [ ] **F001-002:** Design System Expansion
-  - Add 10+ shadcn/ui components
-  - Build 14 app-level components (including marketing components)
-  - Dark mode support via next-themes
+- [ ] **F001-002:** Design System Expansion — **DONE**
+  - ~~Add 10+ shadcn/ui components~~
+  - ~~Build 14 app-level components (including marketing components)~~
+  - ~~Dark mode support via next-themes~~
 - [ ] **F001-014:** Production Infrastructure
   - Sentry integration (optional, env-var gated) — client, server, edge
   - Vercel Analytics + Speed Insights (2 components in root layout)
   - Sentry tunnel route (`/monitoring`) to avoid ad-blockers
   - Preview seed data function (`convex/seedPreview.ts`)
   - Deployment documentation (`docs/deployment.md`)
+  - `convex/crons.ts`: expired invite cleanup (daily), monthly credit resets, hourly subscription sync, stale session cleanup (daily)
+  - `@convex-dev/rate-limiter` setup: token bucket + fixed window, team-scoped
 - [ ] **F001-016:** Testing & Quality Infrastructure
   - Vitest + convex-test for unit/integration tests
   - Playwright + axe-playwright for E2E + accessibility tests
@@ -756,12 +844,21 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - `/contact` form with Resend integration
   - `/legal/terms`, `/legal/privacy`, `/legal/cookies` (MDX templates)
   - Marketing layout with nav + footer
+- [ ] **F001-017:** File Storage & Uploads
+  - `<FileUploader>` component: drag-drop, progress bar, type validation, size limit
+  - `convex/storage.ts`: `generateUploadUrl`, `deleteFile`, `getFileUrl` mutations
+  - Avatar uploads for user profile + team settings (via `avatarStorageId`)
+  - Storage quota per tier in `planConfig.ts` (`storageQuotaMB`)
+  - Entitlement check before upload
 
 ### Phase 3: RBAC (P1) — Batch 3
 - [ ] **F001-004:** Enhanced RBAC
   - Owner role + 9 new permissions
   - Custom roles (Enterprise tier)
   - Preserve existing permission API
+  - Ownership transfer: `transferOwnership` mutation + confirmation dialog + email notification
+  - Invite management: 7-day TTL (via `ctx.scheduler.runAt()`), revoke/resend buttons, rate limiting
+  - Team avatar upload (uses F001-017 file storage)
 
 ### Phase 4: Product Features (P2) — Batch 4 (parallel)
 - [ ] **F001-005:** AI/LLM Integration (Dual Streaming)
@@ -772,7 +869,9 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - AI chat page with useChat
 - [ ] **F001-006:** Notification System
   - In-app notifications (real-time)
-  - Email templates (React Email)
+  - 8-12 branded React Email templates: welcome, invite sent/accepted, subscription changed, payment failed/received, approaching limit, member removed
+  - Shared email layout component (brand header + footer)
+  - Email preview dev route (`/dev/emails`) for local development
   - Notification preferences
 - [ ] **F001-007:** Onboarding System
   - Multi-step wizard
@@ -785,6 +884,8 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - Full CRUD with permissions
   - Search, pagination, soft deletion
   - Entitlement gating
+  - File attachments on notes (uses F001-017 file storage)
+  - Command palette (Cmd+K): `<CommandPalette>` via shadcn `Command` + Convex search indexes on notes, teams, members
 - [ ] **F001-013:** Blog & Changelog (MDX)
   - MDX files in `content/blog/` and `content/changelog/`
   - `@next/mdx` or `contentlayer2` for MDX processing
@@ -792,6 +893,8 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - Blog listing, individual post, changelog listing pages
   - Auto-generated sitemap entries
   - RSS feed generation
+  - Changelog email subscription: `changelogSubscribers` table, subscribe/unsubscribe mutations, email on new entry
+  - "What's New" badge: `<WhatsNewBadge>` in app header, dismissible, tracks last-seen changelog date
 
 ### Phase 5: Operations (P3) — Batch 5 (parallel)
 - [ ] **F001-010:** Super Admin Panel
@@ -800,6 +903,7 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - Analytics page links to PostHog dashboard (no custom analytics UI)
   - Audit log (Convex-native `auditLog` table)
   - Waitlist management section
+  - User impersonation: "View as User" button, `<ImpersonationBanner>` with "Viewing as [Name] — Exit", read-only mode, 30-min auto-expire, audit log every impersonation
 - [ ] **F001-015:** Waitlist / Pre-Launch Mode
   - `waitlist_mode` feature flag controls pre-launch mode
   - `/waitlist` public page with email collection form
@@ -821,6 +925,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] User can reset password via forgot-password flow
 - [ ] Existing team/member/invite flows work identically after migration
 - [ ] No Clerk dependencies remain in package.json or codebase
+- [ ] User can view active sessions (device, last active timestamp) in profile settings
+- [ ] User can "Log out all other devices" (invalidates all sessions except current)
+- [ ] User can set timezone preference (IANA timezone dropdown in profile settings)
+- [ ] Dates throughout the app render in the user's selected timezone
 
 ### Design System (F001-002)
 - [ ] All 10 new shadcn/ui components are installed and importable
@@ -843,6 +951,12 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] Owner cannot leave team without transferring ownership
 - [ ] New permissions are enforceable via existing viewerHasPermissionX API
 - [ ] Custom roles can be created on Enterprise tier
+- [ ] Ownership transfer: Owner can transfer to any existing team member via confirmation dialog
+- [ ] Ownership transfer triggers email notification to both old and new owner
+- [ ] Invites expire after 7 days (auto-deleted via scheduled function)
+- [ ] Admin can revoke pending invites and resend expired invites
+- [ ] Invite sending is rate-limited (via `@convex-dev/rate-limiter`)
+- [ ] Team avatar can be uploaded and displays in sidebar and invite pages
 
 ### AI (F001-005)
 - [ ] AI chat page renders with streaming responses
@@ -857,6 +971,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] In-app notification bell shows unread count
 - [ ] Clicking notification marks as read
 - [ ] Email notifications sent for key events (invite, subscription change)
+- [ ] 8+ React Email templates exist: welcome, invite sent, invite accepted, subscription changed, payment failed, payment received, approaching limit, member removed
+- [ ] All emails use shared layout with brand header and footer
+- [ ] Email preview route (`/dev/emails`) renders all templates with sample data (dev only)
+- [ ] Notification preferences allow users to toggle email vs in-app per notification type
 
 ### Onboarding (F001-007)
 - [ ] New user sees onboarding wizard after first sign-up
@@ -887,12 +1005,22 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] Admin actions are logged to auditLog table (Convex-native)
 - [ ] Feature flag management at `/admin/flags` proxies PostHog REST API
 - [ ] Analytics page links to PostHog dashboard (no custom charts)
+- [ ] Admin can impersonate any user via "View as User" button in user list
+- [ ] Impersonation shows `<ImpersonationBanner>`: "Viewing as [Name] — Exit"
+- [ ] Impersonation is read-only (mutations blocked or flagged)
+- [ ] Impersonation auto-expires after 30 minutes
+- [ ] Every impersonation start/stop is logged to auditLog
 
 ### Example App (F001-011)
 - [ ] Notes CRUD works with real-time updates
 - [ ] Permission-gated: Contribute can create, Manage Content can delete others'
 - [ ] Search works across note titles and content
 - [ ] Entitlement gating limits notes per tier
+- [ ] Notes support file attachments (upload via `<FileUploader>`, stored as `attachmentStorageIds`)
+- [ ] Command palette (Cmd+K) opens `<CommandPalette>` dialog
+- [ ] Command palette searches notes, teams, and members via Convex search indexes
+- [ ] Command palette shows recent items and navigation shortcuts
+- [ ] Selecting a search result navigates to the appropriate page
 
 ### Marketing Site & Legal Pages (F001-012)
 - [ ] Landing page renders with hero, features grid, pricing table, FAQ, and CTA sections
@@ -910,6 +1038,11 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] MDX frontmatter validates at build time (title, date, description required)
 - [ ] Blog and changelog pages are statically generated at build time
 - [ ] RSS feed is generated at `/blog/feed.xml`
+- [ ] Visitors can subscribe to changelog updates via email (stored in `changelogSubscribers` table)
+- [ ] Duplicate changelog email subscription shows "already subscribed" message
+- [ ] Subscribers can unsubscribe via link in changelog email
+- [ ] `<WhatsNewBadge>` in app header shows dot indicator when new changelog entries exist since user last dismissed
+- [ ] Clicking the badge opens the changelog; dismissing updates user's last-seen timestamp
 
 ### Production Infrastructure (F001-014)
 - [ ] Sentry captures client-side and server-side errors when `NEXT_PUBLIC_SENTRY_DSN` is set
@@ -921,6 +1054,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] PostHog gracefully disabled when `NEXT_PUBLIC_POSTHOG_KEY` is not set
 - [ ] `convex/seedPreview.ts` populates demo data (team, users, notes, sample content)
 - [ ] `docs/deployment.md` covers Vercel setup, env vars (including PostHog), preview deploys, custom domains
+- [ ] `convex/crons.ts` exists with 4+ recurring jobs (invite cleanup, credit reset, subscription sync, session cleanup)
+- [ ] Cron jobs appear in Convex dashboard and execute on schedule
+- [ ] `@convex-dev/rate-limiter` is installed and configured for team-scoped rate limiting
+- [ ] Rate limiter used in invite sending and AI request mutations
 
 ### Waitlist / Pre-Launch Mode (F001-015)
 - [ ] When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
@@ -942,6 +1079,18 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] ARCHITECTURE.md contains system design, data model, and key flows
 - [ ] `docs/adrs/` has 8 Architecture Decision Records
 - [ ] CONTRIBUTING.md documents dev setup, testing, PR process
+
+### File Storage & Uploads (F001-017)
+- [ ] `<FileUploader>` component renders with drag-drop zone, progress bar, and type/size validation
+- [ ] Files upload directly to Convex storage via signed URL (no server relay)
+- [ ] User can upload/change their profile avatar; avatar displays in sidebar and profile
+- [ ] Team admin can upload/change team avatar; team avatar displays in sidebar, emails, and invite pages
+- [ ] Notes support adding file attachments (images, PDFs, CSVs)
+- [ ] File attachments display inline or as download links depending on type
+- [ ] Storage quota is enforced per tier (via `checkEntitlement` with `storageQuotaMB`)
+- [ ] Upload rejected with clear error when file type is not in allowlist
+- [ ] Upload rejected with clear error when file exceeds size limit
+- [ ] Files can be deleted (removes from Convex storage and entity reference)
 
 ---
 
@@ -1021,6 +1170,15 @@ AI costs are pass-through — the boilerplate tracks usage via credits but each 
 | 2026-02-10 | Add F001-016 Testing & Quality Infrastructure as P0 | When AI writes 100% of code, automated testing is the #1 regression prevention tool. Vitest + Playwright + CI/CD + pre-commit hooks. |
 | 2026-02-10 | Vitest over Jest | ESM-native, TypeScript OOTB, faster, better DX. convex-test pairs with Vitest. |
 | 2026-02-10 | Tighten ESLint for AI-generated code | `no-explicit-any: warn` and `no-unused-vars: error` catch common AI code quality issues. |
+| 2026-02-11 | Add F001-017 File Storage & Uploads as P1 | Convex has built-in file storage (`ctx.storage.*`) — no S3/Cloudinary needed. Avatar uploads and note attachments are table stakes. Low backend effort, mostly UI (`<FileUploader>` component). |
+| 2026-02-11 | Add cron jobs to F001-014 | Convex `cronJobs()` is built-in — just needs a file. Every SaaS needs recurring housekeeping (invite cleanup, credit resets, subscription sync). ~30 min of work. |
+| 2026-02-11 | Add rate limiter to F001-014 | `@convex-dev/rate-limiter` provides type-safe, transactional rate limiting (token bucket + fixed window). Better than Redis-based solutions for Convex. |
+| 2026-02-11 | Expand F001-006 with email template library | Production SaaS needs 8-12 transactional emails. React Email templates with shared brand layout. Email preview dev route for DX. |
+| 2026-02-11 | Add command palette to F001-011 | shadcn `Command` component already installed + Convex built-in search. Expected UX in 2026. Low effort to wire up. |
+| 2026-02-11 | Add impersonation to F001-010 | #1 most-requested admin feature in competing boilerplates. Read-only with audit trail. Critical for customer support. |
+| 2026-02-11 | Expand F001-004 with ownership transfer + invite management | Ownership transfer is mentioned in edge cases but had no UI/mutation. Invite expiration/revoke/resend improves invite lifecycle management. |
+| 2026-02-11 | Expand F001-013 with changelog subscriptions | "What's New" badge + email subscription improves user re-engagement. `changelogSubscribers` table is trivial. |
+| 2026-02-11 | ~~File upload out of scope~~ → F001-017 | Moved from "Out of Scope" because Convex built-in storage makes it low-effort. Avatar uploads are baseline for any SaaS. |
 
 ---
 
@@ -1038,6 +1196,7 @@ export const PLAN_CONFIG = {
       members: 3,
       aiCredits: 100,      // credits per billing period
       notes: 50,
+      storageQuotaMB: 100, // 100 MB file storage
     },
     features: ["basic", "notes"],
   },
@@ -1048,6 +1207,7 @@ export const PLAN_CONFIG = {
       members: 20,
       aiCredits: 5000,
       notes: -1, // unlimited
+      storageQuotaMB: 5000, // 5 GB
     },
     features: ["basic", "notes", "ai", "api", "analytics"],
   },
@@ -1058,6 +1218,7 @@ export const PLAN_CONFIG = {
       members: -1,
       aiCredits: -1,       // unlimited
       notes: -1,
+      storageQuotaMB: -1,  // unlimited
     },
     features: ["basic", "notes", "ai", "api", "analytics", "custom-roles", "sso"],
   },
@@ -1097,17 +1258,18 @@ export const AI_CREDIT_COSTS = {
 F001-001 (Auth) ──────────┬──→ F001-003 (Billing) ──┬──→ F001-005 (AI)
                           │                          ├──→ F001-006 (Notifications)
 F001-002 (Design System)  │                          ├──→ F001-007 (Onboarding)
-  (parallel, no deps)     │                          ├──→ F001-008 (Feature Flags) ──→ F001-015 (Waitlist)
-                          │                          └──→ F001-011 (Notes)
+  (DONE, no deps)         │                          ├──→ F001-008 (Feature Flags) ──→ F001-015 (Waitlist)
+                          │                          └──→ F001-011 (Notes) ← also depends on F001-017
 F001-014 (Prod Infra)     │
   (parallel, no deps)     ├──→ F001-004 (RBAC) ──────┬──→ F001-005 (AI)
-                          │                          ├──→ F001-011 (Notes)
+                          │     ↑ also F001-017       ├──→ F001-011 (Notes)
 F001-016 (Testing)        │                          └──→ F001-010 (Admin)
   (parallel, no deps)     │
                           └──→ F001-009 (Analytics) ─┬──→ F001-010 (Admin)
 F001-012 (Marketing)                                 │
   ← depends on F001-002   F001-008 (Feature Flags) ──┘
 
+F001-017 (File Storage) ← depends on F001-002
 F001-013 (Blog) ← depends on F001-012
 F001-015 (Waitlist) ← depends on F001-008, F001-006
 ```
@@ -1115,8 +1277,8 @@ F001-015 (Waitlist) ← depends on F001-008, F001-006
 ### D. Build Sequence
 
 ```
-Batch 1 (parallel): F001-001 (Auth) + F001-002 (Design System) + F001-014 (Prod Infra) + F001-016 (Testing)
-Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing Site)
+Batch 1 (parallel): F001-001 (Auth) + F001-002 (DONE) + F001-014 (Prod Infra) + F001-016 (Testing)
+Batch 2 (parallel): F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing Site) + F001-017 (File Storage)
 Batch 3:            F001-004 (RBAC)
 Batch 4 (parallel): F001-005 (AI) + F001-006 (Notifications) + F001-007 (Onboarding)
                    + F001-008 (Feature Flags) + F001-011 (Notes) + F001-013 (Blog)
@@ -1205,6 +1367,7 @@ npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
   "dependencies": {
     "@convex-dev/auth": "latest",
     "@convex-dev/polar": "latest",
+    "@convex-dev/rate-limiter": "latest",
     "ai": "latest",
     "@ai-sdk/openai": "latest",
     "@ai-sdk/anthropic": "latest",
