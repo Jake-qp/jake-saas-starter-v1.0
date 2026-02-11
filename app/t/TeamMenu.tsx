@@ -9,6 +9,7 @@ export function TeamMenu() {
   return (
     <div className="flex gap-2">
       <NavLink relativeHref="">Projects</NavLink>
+      <NavLink relativeHref="/notes">Notes</NavLink>
       <NavLink relativeHref="/ai">AI Chat</NavLink>
       <NavLink relativeHref="/settings">Settings</NavLink>
     </div>

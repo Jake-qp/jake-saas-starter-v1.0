@@ -6,6 +6,7 @@ import { ProfileButton } from "@/app/t/[teamSlug]/ProfileButton";
 import { StickyHeader } from "@/components/layout/sticky-header";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TeamSwitcher } from "@/app/t/TeamSwitcher";
+import { CommandPalette } from "@/components/CommandPalette";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 
@@ -30,6 +31,7 @@ export default function DashboardLayout({
         </StickyHeader>
         {children}
         <AcceptInviteDialog />
+        <CommandPalette />
         <Toaster />
       </ConvexClientProvider>
     </Suspense>
