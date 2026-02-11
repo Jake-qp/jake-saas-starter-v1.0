@@ -9,6 +9,7 @@ import {
   ImageIcon,
   TableIcon,
 } from "@radix-ui/react-icons";
+import { formatFileSize } from "@/lib/fileConfig";
 
 export interface FileAttachmentData {
   id: string;
@@ -27,31 +28,6 @@ export interface FileAttachmentProps {
   className?: string;
 }
 
-// Mock data for Phase 2 visual validation
-export const MOCK_ATTACHMENTS: FileAttachmentData[] = [
-  {
-    id: "mock-att-1",
-    fileName: "project-mockup.png",
-    fileType: "image/png",
-    fileSize: 245760,
-    url: "https://placehold.co/600x400/1a1a2e/e0e0e0?text=Mockup",
-  },
-  {
-    id: "mock-att-2",
-    fileName: "quarterly-report-Q4-2025.pdf",
-    fileType: "application/pdf",
-    fileSize: 1048576,
-    url: "#",
-  },
-  {
-    id: "mock-att-3",
-    fileName: "user-analytics-export.csv",
-    fileType: "text/csv",
-    fileSize: 52428,
-    url: "#",
-  },
-];
-
 function isImageType(fileType: string): boolean {
   return fileType.startsWith("image/");
 }
@@ -60,13 +36,6 @@ function getFileIcon(fileType: string) {
   if (isImageType(fileType)) return <ImageIcon className="h-4 w-4" />;
   if (fileType === "text/csv") return <TableIcon className="h-4 w-4" />;
   return <FileTextIcon className="h-4 w-4" />;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
 }
 
 export function FileAttachment({
@@ -85,7 +54,7 @@ export function FileAttachment({
       )}
     >
       {/* Inline image preview */}
-      {isImage && (
+      {isImage && attachment.url && (
         <div className="relative bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -108,16 +77,18 @@ export function FileAttachment({
           </p>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
-            <a
-              href={attachment.url}
-              download={attachment.fileName}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <DownloadIcon className="h-3.5 w-3.5" />
-            </a>
-          </Button>
+          {attachment.url && (
+            <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+              <a
+                href={attachment.url}
+                download={attachment.fileName}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <DownloadIcon className="h-3.5 w-3.5" />
+              </a>
+            </Button>
+          )}
           {canDelete && onDelete && (
             <Button
               variant="ghost"

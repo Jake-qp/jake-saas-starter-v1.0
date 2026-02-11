@@ -20,6 +20,8 @@ const schema = defineEntSchema(
       polarCustomerId: v.optional(v.string()),
       subscriptionTier: v.optional(v.string()),
       subscriptionStatus: v.optional(v.string()),
+      // Avatar storage (F001-017)
+      avatarStorageId: v.optional(v.id("_storage")),
     })
       .field("slug", v.string(), { unique: true })
       .index("polarCustomerId", ["polarCustomerId"])
@@ -27,6 +29,7 @@ const schema = defineEntSchema(
       .edges("members", { ref: true })
       .edges("invites", { ref: true })
       .edges("aiUsage", { ref: true })
+      .edges("files", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
 
     // Users table: merges Convex Auth required fields with app-specific fields.
@@ -48,6 +51,8 @@ const schema = defineEntSchema(
       fullName: v.optional(v.string()),
       pictureUrl: v.optional(v.string()),
       timezone: v.optional(v.string()),
+      // Avatar storage (F001-017)
+      avatarStorageId: v.optional(v.id("_storage")),
     })
       .field("email", v.optional(v.string()))
       .index("email", ["email"])
@@ -93,6 +98,19 @@ const schema = defineEntSchema(
     })
       .edge("team")
       .edge("member"),
+
+    // File storage tracking (F001-017)
+    files: defineEnt({
+      storageId: v.id("_storage"),
+      fileName: v.string(),
+      fileType: v.string(),
+      fileSize: v.number(),
+      uploadedBy: v.id("users"),
+      purpose: v.string(), // "avatar" | "teamAvatar" | "attachment"
+    })
+      .edge("team")
+      .index("teamPurpose", ["teamId", "purpose"])
+      .index("uploadedBy", ["uploadedBy"]),
 
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({

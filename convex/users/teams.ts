@@ -15,6 +15,7 @@ export async function defaultToAccessTeamSlug(viewer: Ent<"users">) {
 export const list = query({
   args: {},
   async handler(ctx) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
     if (ctx.viewer === null) {
       return null;
     }
@@ -28,6 +29,7 @@ export const list = query({
           slug: team.slug,
           isPersonal: team.isPersonal,
           pictureUrl: team.isPersonal ? ctx.viewer!.pictureUrl : null,
+          avatarStorageId: team.avatarStorageId ?? null,
           isDeleted:
             member.deletionTime !== undefined ||
             team.deletionTime !== undefined,
@@ -76,6 +78,7 @@ export async function getUniqueSlug(ctx: QueryCtx, name: string) {
   for (;;) {
     slug = n === 0 ? base : `${base}-${n}`;
     const existing = await ctx.table("teams").get("slug", slug);
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
     if (existing === null) {
       break;
     }

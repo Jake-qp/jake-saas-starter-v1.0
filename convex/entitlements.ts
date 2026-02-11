@@ -71,9 +71,12 @@ export async function getCurrentUsage(
     case "notes":
       // Notes table doesn't exist yet (F001-011), return 0 for now
       return 0;
-    case "storageQuotaMB":
-      // Storage tracking doesn't exist yet (F001-017), return 0 for now
-      return 0;
+    case "storageQuotaMB": {
+      // Sum file sizes for this team, convert bytes to MB (F001-017)
+      const files = await ctx.table("teams").getX(teamId).edge("files");
+      const totalBytes = files.reduce((sum, file) => sum + file.fileSize, 0);
+      return Math.ceil(totalBytes / (1024 * 1024));
+    }
     default: {
       const _exhaustive: never = key;
       throw new Error("Unknown limit key: " + String(_exhaustive));

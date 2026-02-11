@@ -5,10 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Pencil1Icon } from "@radix-ui/react-icons";
 import { useCallback, useRef, useState } from "react";
-import {
-  AVATAR_ALLOWED_TYPES,
-  AVATAR_MAX_SIZE_BYTES,
-} from "@/components/FileUploader";
+import { AVATAR_ALLOWED_TYPES, validateAvatarUpload } from "@/lib/fileConfig";
 
 export interface AvatarUploadProps {
   /** Current avatar URL */
@@ -27,9 +24,6 @@ export interface AvatarUploadProps {
   label?: string;
   className?: string;
 }
-
-// Mock avatar URL for Phase 2 visual validation
-const MOCK_AVATAR_URL = null; // Show fallback to demonstrate both states
 
 const sizeClasses = {
   sm: "h-12 w-12",
@@ -62,25 +56,15 @@ export function AvatarUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Use mock data for Phase 2 when currentAvatarUrl is not provided
-  const displayUrl = currentAvatarUrl ?? MOCK_AVATAR_URL;
-
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setError(null);
       const file = e.target.files?.[0];
       if (!file) return;
 
-      if (file.size === 0) {
-        setError("File is empty");
-        return;
-      }
-      if (file.size > AVATAR_MAX_SIZE_BYTES) {
-        setError("Image must be under 2 MB");
-        return;
-      }
-      if (!AVATAR_ALLOWED_TYPES.includes(file.type)) {
-        setError("Only JPEG, PNG, GIF, WebP, and SVG are allowed");
+      const validationError = validateAvatarUpload(file.type, file.size);
+      if (validationError) {
+        setError(validationError);
         return;
       }
 
@@ -95,7 +79,9 @@ export function AvatarUpload({
     <div className={cn("flex flex-col items-center gap-2", className)}>
       <div className="relative">
         <Avatar className={sizeClasses[size]}>
-          {displayUrl && <AvatarImage src={displayUrl} alt="Avatar" />}
+          {currentAvatarUrl && (
+            <AvatarImage src={currentAvatarUrl} alt="Avatar" />
+          )}
           <AvatarFallback
             className={cn("text-sm font-medium", size === "lg" && "text-lg")}
           >
@@ -127,7 +113,7 @@ export function AvatarUpload({
       </div>
       {label && <p className="text-xs text-muted-foreground">{label}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
-      {displayUrl && onRemove && !disabled && (
+      {currentAvatarUrl && onRemove && !disabled && (
         <Button
           variant="ghost"
           size="sm"

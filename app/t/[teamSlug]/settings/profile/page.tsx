@@ -1,6 +1,8 @@
 "use client";
 
+import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
 import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
+import { AvatarUpload } from "@/components/AvatarUpload";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 // Common IANA timezones
 const TIMEZONES = [
@@ -66,12 +68,17 @@ export default function ProfileSettingsPage() {
   const invalidateOtherSessions = useMutation(
     api.sessions.invalidateOtherSessions,
   );
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const saveUserAvatar = useMutation(api.storage.saveUserAvatar);
+  const removeUserAvatar = useMutation(api.storage.removeUserAvatar);
+  const team = useCurrentTeam();
 
   const [fullName, setFullName] = useState("");
   const [timezone, setTimezone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [invalidating, setInvalidating] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -99,7 +106,51 @@ export default function ProfileSettingsPage() {
     void invalidateOtherSessions({}).finally(() => setInvalidating(false));
   };
 
+  const handleAvatarUpload = useCallback(
+    async (file: File) => {
+      if (!team) return;
+      setUploadingAvatar(true);
+      try {
+        const uploadUrl = await generateUploadUrl({ teamId: team._id });
+        const result = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+        if (!result.ok) throw new Error("Upload failed");
+        const { storageId } = await result.json();
+        await saveUserAvatar({
+          teamId: team._id,
+          storageId,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+        });
+      } catch (error) {
+        console.error("Avatar upload failed:", error);
+      } finally {
+        setUploadingAvatar(false);
+      }
+    },
+    [team, generateUploadUrl, saveUserAvatar],
+  );
+
+  const handleAvatarRemove = useCallback(async () => {
+    try {
+      await removeUserAvatar({});
+    } catch (error) {
+      console.error("Avatar removal failed:", error);
+    }
+  }, [removeUserAvatar]);
+
   if (!user) return null;
+
+  const userInitials = (user.fullName ?? user.email ?? "?")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <>
@@ -107,6 +158,28 @@ export default function ProfileSettingsPage() {
         <SettingsMenuButton />
         <h1 className="text-4xl font-extrabold">Profile Settings</h1>
       </div>
+
+      {/* Avatar */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Avatar</CardTitle>
+          <CardDescription>
+            Upload a profile picture. Max 2 MB, images only.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AvatarUpload
+            currentAvatarUrl={user.pictureUrl}
+            fallback={userInitials}
+            onUpload={(file) => void handleAvatarUpload(file)}
+            onRemove={
+              user.pictureUrl ? () => void handleAvatarRemove() : undefined
+            }
+            disabled={uploadingAvatar}
+            label={uploadingAvatar ? "Uploading..." : undefined}
+          />
+        </CardContent>
+      </Card>
 
       {/* Profile Information */}
       <Card>

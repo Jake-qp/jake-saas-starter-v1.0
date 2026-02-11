@@ -12,28 +12,12 @@ import {
   TableIcon,
 } from "@radix-ui/react-icons";
 import { useCallback, useRef, useState } from "react";
-
-/** Allowed MIME types for uploads */
-export const ALLOWED_FILE_TYPES: Record<string, string[]> = {
-  images: [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    "image/svg+xml",
-  ],
-  documents: ["application/pdf"],
-  data: ["text/csv"],
-};
-
-export const ALL_ALLOWED_TYPES = Object.values(ALLOWED_FILE_TYPES).flat();
-
-/** Max file size per upload (10 MB) */
-export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
-
-/** Avatar-specific types */
-export const AVATAR_ALLOWED_TYPES = ALLOWED_FILE_TYPES.images;
-export const AVATAR_MAX_SIZE_BYTES = 2 * 1024 * 1024;
+import {
+  ALL_ALLOWED_TYPES,
+  MAX_FILE_SIZE_BYTES,
+  formatFileSize,
+  validateFileUpload,
+} from "@/lib/fileConfig";
 
 export type UploadStatus = "idle" | "uploading" | "success" | "error";
 
@@ -72,29 +56,6 @@ export interface FileUploaderProps {
   className?: string;
 }
 
-// Mock data for Phase 2 visual validation
-const MOCK_UPLOADS: FileUploadItem[] = [
-  {
-    id: "mock-1",
-    file: new File([], "quarterly-report.pdf"),
-    progress: 100,
-    status: "success",
-  },
-  {
-    id: "mock-2",
-    file: new File([], "screenshot.png"),
-    progress: 65,
-    status: "uploading",
-  },
-  {
-    id: "mock-3",
-    file: new File([], "data-export.csv"),
-    progress: 0,
-    status: "error",
-    error: "File exceeds 10 MB limit",
-  },
-];
-
 function getFileIcon(fileName: string) {
   const ext = fileName.split(".").pop()?.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext ?? "")) {
@@ -106,19 +67,12 @@ function getFileIcon(fileName: string) {
   return <FileTextIcon className="h-4 w-4" />;
 }
 
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
-}
-
 export function FileUploader({
   onUpload,
   accept = ALL_ALLOWED_TYPES,
   maxSize = MAX_FILE_SIZE_BYTES,
   multiple = true,
-  uploads,
+  uploads = [],
   onRemove,
   onRetry,
   disabled = false,
@@ -130,30 +84,14 @@ export function FileUploader({
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Use mock data in Phase 2 when no uploads provided
-  const displayUploads = uploads ?? MOCK_UPLOADS;
-
-  const validateFile = useCallback(
-    (file: File): string | null => {
-      if (file.size === 0) return "File is empty";
-      if (file.size > maxSize)
-        return `File exceeds ${formatFileSize(maxSize)} limit`;
-      if (!accept.includes(file.type))
-        return `File type not allowed. Accepted: ${accept.map((t) => t.split("/")[1]).join(", ")}`;
-      return null;
-    },
-    [accept, maxSize],
-  );
-
   const handleFiles = useCallback(
     (fileList: FileList | null) => {
       if (!fileList || disabled) return;
       const files = Array.from(fileList);
       const validFiles: File[] = [];
       for (const file of files) {
-        const error = validateFile(file);
+        const error = validateFileUpload(file.type, file.size, accept, maxSize);
         if (error) {
-          // In production, this would create an error upload item
           console.warn(`Rejected file ${file.name}: ${error}`);
         } else {
           validFiles.push(file);
@@ -163,7 +101,7 @@ export function FileUploader({
         onUpload(validFiles);
       }
     },
-    [disabled, validateFile, onUpload],
+    [disabled, accept, maxSize, onUpload],
   );
 
   const handleDrop = useCallback(
@@ -250,9 +188,9 @@ export function FileUploader({
       </div>
 
       {/* Upload items */}
-      {displayUploads.length > 0 && (
+      {uploads.length > 0 && (
         <div className="space-y-2">
-          {displayUploads.map((item) => (
+          {uploads.map((item) => (
             <div
               key={item.id}
               className="flex items-center gap-3 rounded-md border border-border p-2"
