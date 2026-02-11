@@ -5,6 +5,7 @@ import { TeamMenu } from "@/app/t/TeamMenu";
 import { ProfileButton } from "@/app/t/[teamSlug]/ProfileButton";
 import { StickyHeader } from "@/components/layout/sticky-header";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { WhatsNewBadge } from "@/components/WhatsNewBadge";
 import { TeamSwitcher } from "@/app/t/TeamSwitcher";
 import { CommandPalette } from "@/components/CommandPalette";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,6 +24,7 @@ export default function DashboardLayout({
             <TeamSwitcher />
             <div className="flex items-center gap-4">
               <ThemeToggle />
+              <WhatsNewBadge />
               <Notifications />
               <ProfileButton />
             </div>

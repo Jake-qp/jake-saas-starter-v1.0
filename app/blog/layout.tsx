@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 
-function MarketingNav() {
+function BlogNav() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -10,6 +10,9 @@ function MarketingNav() {
           SaaS Starter
         </Link>
         <nav className="hidden items-center gap-6 text-sm md:flex">
+          <Link href="/blog" className="text-foreground font-medium">
+            Blog
+          </Link>
           <Link
             href="/pricing"
             className="text-muted-foreground transition-colors hover:text-foreground"
@@ -17,16 +20,10 @@ function MarketingNav() {
             Pricing
           </Link>
           <Link
-            href="/blog"
+            href="/changelog"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            Blog
-          </Link>
-          <Link
-            href="/contact"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Contact
+            Changelog
           </Link>
         </nav>
         <div className="flex items-center gap-2">
@@ -43,7 +40,7 @@ function MarketingNav() {
   );
 }
 
-function MarketingFooter() {
+function BlogFooter() {
   return (
     <footer className="border-t border-border bg-muted/30">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
@@ -54,36 +51,6 @@ function MarketingFooter() {
               <li>
                 <Link href="/pricing" className="hover:text-foreground">
                   Pricing
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold">Company</h3>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/contact" className="hover:text-foreground">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold">Legal</h3>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/legal/terms" className="hover:text-foreground">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/privacy" className="hover:text-foreground">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/cookies" className="hover:text-foreground">
-                  Cookie Policy
                 </Link>
               </li>
             </ul>
@@ -101,9 +68,29 @@ function MarketingFooter() {
                   Changelog
                 </Link>
               </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Legal</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link href="/auth/sign-up" className="hover:text-foreground">
-                  Get Started
+                <Link href="/legal/terms" className="hover:text-foreground">
+                  Terms
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/privacy" className="hover:text-foreground">
+                  Privacy
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Company</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href="/contact" className="hover:text-foreground">
+                  Contact
                 </Link>
               </li>
             </ul>
@@ -117,16 +104,16 @@ function MarketingFooter() {
   );
 }
 
-export default function MarketingLayout({
+export default function BlogLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <MarketingNav />
+      <BlogNav />
       <main className="flex-1">{children}</main>
-      <MarketingFooter />
+      <BlogFooter />
     </div>
   );
 }
