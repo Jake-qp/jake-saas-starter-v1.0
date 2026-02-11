@@ -41,12 +41,12 @@ I want hooks that wrap PostHog feature flags with graceful degradation,
 So that the app works identically with or without PostHog configured.
 
 ## Acceptance Criteria
-- [ ] AC1: `useFeatureFlag(key)` returns correct boolean value from PostHog
-- [ ] AC2: `useFeatureFlag(key)` returns `false` when PostHog is not configured (graceful degradation)
-- [ ] AC3: `useFeatureFlagWithPayload(key)` returns JSON payload for flags with payloads
-- [ ] AC4: Admin can list, create, toggle, and delete flags via `/admin/flags` (proxies PostHog API)
-- [ ] AC5: `POSTHOG_PERSONAL_API_KEY` is never exposed to client-side code
-- [ ] AC6: Flag management API routes verify `isSuperAdmin` before proxying
+- [x] AC1: `useFeatureFlag(key)` returns correct boolean value from PostHog
+- [x] AC2: `useFeatureFlag(key)` returns `false` when PostHog is not configured (graceful degradation)
+- [x] AC3: `useFeatureFlagWithPayload(key)` returns JSON payload for flags with payloads
+- [x] AC4: Admin can list, create, toggle, and delete flags via `/admin/flags` (proxies PostHog API)
+- [x] AC5: `POSTHOG_PERSONAL_API_KEY` is never exposed to client-side code
+- [x] AC6: Flag management API routes verify `isSuperAdmin` before proxying
 
 ## Edge Cases
 - PostHog not configured: All hooks return false/null, admin page shows "PostHog not configured" message

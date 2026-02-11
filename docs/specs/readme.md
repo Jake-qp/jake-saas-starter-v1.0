@@ -12,6 +12,7 @@
 | F001-009 | Analytics & Event Tracking (PostHog) | ✅ | `docs/specs/F001-009-analytics-posthog.spec` |
 | F001-012 | Marketing Site & Legal Pages | ✅ | `docs/specs/F001-012-marketing-legal.spec` |
 | F001-017 | File Storage & Uploads | ✅ | `docs/specs/F001-017-file-storage.spec` |
+| F001-008 | Feature Flags (PostHog) | ✅ | `docs/specs/F001-008-feature-flags.spec` |
 
 ## Source Code Index
 
@@ -138,6 +139,24 @@
 | Team avatar | `app/t/[teamSlug]/settings/page.tsx` | Team avatar upload UI |
 | Teams query | `convex/users/teams.ts` | `avatarStorageId` in team list |
 | Storage tests | `convex/__tests__/storage.test.ts` | 34 tests: schema, validation, file config |
+
+### F001-008 — Feature Flags (PostHog)
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| isSuperAdmin query | `convex/admin.ts` | Check if current user is super admin |
+| Admin functions | `convex/functions.ts` | `adminQuery`/`adminMutation` wrappers enforcing isSuperAdmin |
+| Feature flag hooks | `lib/hooks/use-feature-flag.ts` | `useFeatureFlag(key)` + `useFeatureFlagWithPayload(key)` |
+| Flag admin helpers | `lib/featureFlagAdmin.ts` | PostHog REST API URL + auth headers (server-only) |
+| Admin auth | `lib/adminAuth.ts` | `verifySuperAdmin()` for Next.js API routes |
+| Flags API (list/create) | `app/api/admin/flags/route.ts` | GET/POST proxying PostHog feature flags API |
+| Flags API (toggle/delete) | `app/api/admin/flags/[id]/route.ts` | PATCH/DELETE for individual flags |
+| Admin layout | `app/admin/layout.tsx` | Admin panel layout with sidebar |
+| Flags UI | `app/admin/flags/page.tsx` | Flag management table with CRUD actions |
+| Schema | `convex/schema.ts` | `isSuperAdmin` field on users table |
+| Admin tests | `convex/__tests__/admin.test.ts` | 7 tests: schema, admin functions |
+| Flag hook tests | `lib/__tests__/featureFlags.test.ts` | 7 tests: hooks, graceful degradation |
+| Admin auth tests | `lib/__tests__/adminAuth.test.ts` | 6 tests: API routes, security |
 
 ## Concept Index
 
