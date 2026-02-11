@@ -1,36 +1,38 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-005
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-005-ai-llm-integration.spec`
-- User: Team member with "Use AI" permission
-- Screens: 1 (AI Chat Page)
-- Flows: 3
-- Acceptance criteria: 7
-
-## PRD Anchor (Source of Truth)
-**Feature:** F001-005
-**Source:** docs/prds/F001-saas-boilerplate-v2.md
-**Extract:** `sed -n '/<!-- START_FEATURE: F001-005 -->/,/<!-- END_FEATURE: F001-005 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+**ID:** (none)
+**Phase:** -
+**Status:** Ready for next build
 
 ---
 
 ## Last Completed
-**ID:** F001-004
+**ID:** F001-005
 **Date:** 2026-02-11
 
-Enhanced RBAC — Owner role (14/14 permissions), ownership transfer dialog, custom roles (Enterprise-gated), invite expiry badges, resend/revoke actions, 42 new tests.
+AI/LLM Integration (Dual Streaming) — Vercel AI SDK v6 with dual streaming patterns (Next.js Edge API route default + Convex HTTP action alternative). AI chat page with useChat streaming, model selector (4 models), credit usage meter. Shared Convex mutations with full auth → permission → entitlement → rate limit → execute pattern. 28 new tests.
 
-**Spec:** `docs/specs/F001-004-enhanced-rbac.spec`
+**Files Created:**
+- `app/api/ai/chat/route.ts` — Next.js Edge streaming endpoint
+- `app/t/[teamSlug]/ai/page.tsx` — AI chat page
+- `convex/ai.ts` — Shared mutations (saveUserMessage, saveAssistantMessage, listMessages)
+- `lib/aiModels.ts` — Model configuration
+- `convex/__tests__/ai.test.ts` — 21 backend tests
+- `lib/__tests__/aiModels.test.ts` — 7 model config tests
+
+**Files Modified:**
+- `convex/schema.ts` — Added aiMessages table
+- `convex/http.ts` — Added alternative Convex HTTP action (documented)
+- `app/t/TeamMenu.tsx` — Added "AI Chat" nav link
+
+**Spec:** `docs/specs/F001-005-ai-llm-integration.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
-**ACs:** 10/10
+**ACs:** 7/7
 
 ---
 
 ## Project State
-- **Tests:** 288 passing (6 todo seeds for future features)
+- **Tests:** 316 passing (6 todo seeds for future features)
 - **Build:** ✅ succeeds
-- **Features:** 9 complete | 8 pending
+- **Features:** 10 complete | 7 pending

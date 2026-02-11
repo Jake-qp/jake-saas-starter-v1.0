@@ -146,7 +146,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Marketing Site & Legal Pages (F001-012) | P1 | Done |
 | Production Infrastructure (F001-014) | P1 | Done |
 | File Storage & Uploads (F001-017) | P1 | Done |
-| AI/LLM Integration (F001-005) | P2 | Pending |
+| AI/LLM Integration (F001-005) | P2 | Done |
 | Notification System (F001-006) | P2 | Pending |
 | Onboarding System (F001-007) | P2 | Pending |
 | Example App - Notes CRUD (F001-011) | P2 | Pending |

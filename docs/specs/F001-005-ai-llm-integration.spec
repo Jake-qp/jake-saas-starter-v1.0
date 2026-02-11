@@ -33,13 +33,13 @@ I want to chat with AI models and get streaming responses
 So that I can use AI assistance within my team's credit quota
 
 ## Acceptance Criteria
-- [ ] AC1: AI chat page renders with streaming responses
-- [ ] AC2: Default streaming via Next.js API route (`/api/ai/chat`) works on Vercel Edge
-- [ ] AC3: Alternative streaming via Convex HTTP action is documented and functional
-- [ ] AC4: Both patterns share the same Convex mutations for saving messages and tracking usage
-- [ ] AC5: Usage is tracked per team per billing period in credits
-- [ ] AC6: Rate limiting prevents exceeding tier credit quota
-- [ ] AC7: "Use AI" permission gates access
+- [x] AC1: AI chat page renders with streaming responses
+- [x] AC2: Default streaming via Next.js API route (`/api/ai/chat`) works on Vercel Edge
+- [x] AC3: Alternative streaming via Convex HTTP action is documented and functional
+- [x] AC4: Both patterns share the same Convex mutations for saving messages and tracking usage
+- [x] AC5: Usage is tracked per team per billing period in credits
+- [x] AC6: Rate limiting prevents exceeding tier credit quota
+- [x] AC7: "Use AI" permission gates access
 
 ## Edge Cases
 - No credits remaining: Show entitlement error with upgrade URL
