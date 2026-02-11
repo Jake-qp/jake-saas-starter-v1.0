@@ -15,11 +15,14 @@
       "name": "Convex Auth Migration + Magic Link",
       "type": "backend",
       "priority": 0,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 2,
       "batch": 1,
       "dependencies": [],
       "description": "Replace Clerk auth with Convex Auth — email/password + magic link via Resend OTP, session management, timezone preference",
+      "spec_file": "docs/specs/F001-001-convex-auth.spec",
+      "started_at": "2026-02-11T14:00:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
