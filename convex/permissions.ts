@@ -18,6 +18,8 @@ export const vPermission = v.union(
   v.literal("View Analytics"),
   v.literal("Manage Integrations"),
   v.literal("Invite Members"),
+  // F001-011: Notes CRUD permission
+  v.literal("Manage Content"),
 );
 export type Permission = Infer<typeof vPermission>;
 

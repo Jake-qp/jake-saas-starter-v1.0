@@ -68,9 +68,14 @@ export async function getCurrentUsage(
     }
     case "aiCredits":
       return await getCreditsUsedThisPeriod(ctx, teamId);
-    case "notes":
-      // Notes table doesn't exist yet (F001-011), return 0 for now
-      return 0;
+    case "notes": {
+      const notes = await ctx
+        .table("teams")
+        .getX(teamId)
+        .edge("notes")
+        .filter((q) => q.eq(q.field("deletionTime"), undefined));
+      return notes.length;
+    }
     case "storageQuotaMB": {
       // Sum file sizes for this team, convert bytes to MB (F001-017)
       const files = await ctx.table("teams").getX(teamId).edge("files");

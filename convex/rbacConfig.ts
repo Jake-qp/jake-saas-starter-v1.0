@@ -12,7 +12,7 @@
 import type { Permission, Role } from "./permissions";
 
 /**
- * All 14 permissions in the system.
+ * All 15 permissions in the system.
  */
 export const ALL_PERMISSIONS: Permission[] = [
   // Original V1 permissions
@@ -31,17 +31,19 @@ export const ALL_PERMISSIONS: Permission[] = [
   "View Analytics",
   "Manage Integrations",
   "Invite Members",
+  // F001-011: Notes CRUD
+  "Manage Content",
 ];
 
 /**
- * Owner: All permissions (14/14).
+ * Owner: All permissions (15/15).
  * Only one Owner per team. Can transfer ownership.
  */
 export const OWNER_PERMISSIONS: Permission[] = [...ALL_PERMISSIONS];
 
 /**
- * Admin: All except Transfer Ownership and Manage Billing (12/14).
- * Can manage members, invites, files, and view billing.
+ * Admin: All except Transfer Ownership and Manage Billing (13/15).
+ * Can manage members, invites, files, content, and view billing.
  */
 export const ADMIN_PERMISSIONS: Permission[] = ALL_PERMISSIONS.filter(
   (p) => p !== "Transfer Ownership" && p !== "Manage Billing",

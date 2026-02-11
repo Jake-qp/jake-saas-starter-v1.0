@@ -31,6 +31,7 @@ const schema = defineEntSchema(
       .edges("aiUsage", { ref: true })
       .edges("aiMessages", { ref: true })
       .edges("files", { ref: true })
+      .edges("notes", { ref: true })
       .edges("customRoles", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
 
@@ -127,6 +128,22 @@ const schema = defineEntSchema(
       .edge("team")
       .index("teamPurpose", ["teamId", "purpose"])
       .index("uploadedBy", ["uploadedBy"]),
+
+    // Notes CRUD (F001-011)
+    notes: defineEnt({
+      title: v.string(),
+      content: v.string(),
+      searchable: v.string(), // title + " " + content for full-text search
+      createdBy: v.id("users"),
+      attachmentStorageIds: v.array(v.id("_storage")),
+    })
+      .edge("team")
+      .searchIndex("searchable", {
+        searchField: "searchable",
+        filterFields: ["teamId"],
+      })
+      .index("teamCreatedBy", ["teamId", "createdBy"])
+      .deletion("soft"),
 
     // AI chat messages (F001-005)
     aiMessages: defineEnt({

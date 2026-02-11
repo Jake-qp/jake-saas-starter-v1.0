@@ -13,8 +13,8 @@ import {
  * Enhanced RBAC test suite (F001-004).
  *
  * Tests the complete role-permission matrix:
- * - Owner: All 14 permissions
- * - Admin: 12 permissions (excludes Transfer Ownership, Manage Billing)
+ * - Owner: All 15 permissions
+ * - Admin: 13 permissions (excludes Transfer Ownership, Manage Billing)
  * - Member: 4 permissions (Read Members, Contribute, Upload Files, Use AI)
  * - Custom roles: Enterprise-tier team-scoped roles
  */
@@ -31,8 +31,8 @@ describe("F001-004: Enhanced RBAC", () => {
   });
 
   describe("permission definitions", () => {
-    it("should define 14 permissions total", () => {
-      expect(ALL_PERMISSIONS).toHaveLength(14);
+    it("should define 15 permissions total", () => {
+      expect(ALL_PERMISSIONS).toHaveLength(15);
     });
 
     it("should include all original V1 permissions", () => {
@@ -67,8 +67,8 @@ describe("F001-004: Enhanced RBAC", () => {
   });
 
   describe("Owner role permissions", () => {
-    it("should have all 14 permissions", () => {
-      expect(OWNER_PERMISSIONS).toHaveLength(14);
+    it("should have all 15 permissions", () => {
+      expect(OWNER_PERMISSIONS).toHaveLength(15);
     });
 
     it("should include Transfer Ownership", () => {
@@ -85,8 +85,8 @@ describe("F001-004: Enhanced RBAC", () => {
   });
 
   describe("Admin role permissions", () => {
-    it("should have 12 permissions", () => {
-      expect(ADMIN_PERMISSIONS).toHaveLength(12);
+    it("should have 13 permissions", () => {
+      expect(ADMIN_PERMISSIONS).toHaveLength(13);
     });
 
     it("should NOT include Transfer Ownership", () => {
