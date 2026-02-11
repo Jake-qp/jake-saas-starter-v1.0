@@ -5,26 +5,16 @@
 # and commits per phase. See docs/build-batch-orchestrator.md for full docs.
 #
 # Usage:
-#   scripts/build-batch.sh                    # Build all features
-#   scripts/build-batch.sh --feature F001-016 # Build single feature
-#   CLAUDE_MODEL=sonnet scripts/build-batch.sh # Override model
+#   scripts/build-batch.sh --prd F001              # Build all features for a PRD
+#   scripts/build-batch.sh --feature F001-016      # Build single feature (auto-detects PRD)
+#   scripts/build-batch.sh --prd F001 --feature F001-016  # Explicit PRD + feature
+#   CLAUDE_MODEL=sonnet scripts/build-batch.sh --prd F001 # Override model
 
 set -euo pipefail
 
 # Configuration
-PRD_ID="F001"
-PRD_FILE="docs/prds/F001-saas-boilerplate-v2.md"
 MODEL="${CLAUDE_MODEL:-opus}"
 LOG_DIR="logs"
-
-# Batches in dependency order (F001-002 is complete — not included)
-BATCH_1=("F001-001" "F001-014" "F001-016")
-BATCH_2=("F001-003" "F001-009" "F001-012" "F001-017")
-BATCH_3=("F001-004")
-BATCH_4=("F001-005" "F001-006" "F001-007" "F001-008" "F001-011" "F001-013")
-BATCH_5=("F001-010" "F001-015")
-
-ALL_BATCHES=("BATCH_1" "BATCH_2" "BATCH_3" "BATCH_4" "BATCH_5")
 
 # Track results
 PASSED=()
@@ -33,19 +23,96 @@ SKIPPED=()
 
 # Parse arguments
 SINGLE_FEATURE=""
+PRD_ID=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --feature)
             SINGLE_FEATURE="$2"
             shift 2
             ;;
+        --prd)
+            PRD_ID="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown argument: $1"
-            echo "Usage: scripts/build-batch.sh [--feature F001-XXX]"
+            echo "Usage: scripts/build-batch.sh --prd <PRD_ID> [--feature <FEATURE_ID>]"
+            echo "       scripts/build-batch.sh --feature <FEATURE_ID>"
             exit 1
             ;;
     esac
 done
+
+# Auto-detect PRD from feature ID prefix (e.g., F001-016 → F001)
+if [ -z "$PRD_ID" ] && [ -n "$SINGLE_FEATURE" ]; then
+    PRD_ID=$(echo "$SINGLE_FEATURE" | grep -oE '^F[0-9]+')
+    if [ -z "$PRD_ID" ]; then
+        echo "ERROR: Could not auto-detect PRD from feature ID: $SINGLE_FEATURE"
+        echo "Use --prd <PRD_ID> to specify explicitly."
+        exit 1
+    fi
+    echo "Auto-detected PRD: ${PRD_ID}"
+fi
+
+# Require --prd in full-batch mode
+if [ -z "$PRD_ID" ] && [ -z "$SINGLE_FEATURE" ]; then
+    echo "ERROR: --prd <PRD_ID> is required in full-batch mode."
+    echo "Usage: scripts/build-batch.sh --prd <PRD_ID>"
+    echo "       scripts/build-batch.sh --feature <FEATURE_ID>"
+    exit 1
+fi
+
+# Resolve PRD file from feature_list.json
+resolve_prd_file() {
+    local prd_id="$1"
+    python3 -c "
+import json, sys
+try:
+    with open('feature_list.json') as f:
+        data = json.load(f)
+    for feat in data.get('features', []):
+        if feat.get('id', '').startswith('${prd_id}-') and feat.get('prd'):
+            print(feat['prd'])
+            sys.exit(0)
+    print('ERROR: No features found for PRD ${prd_id} in feature_list.json', file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print(f'ERROR: {e}', file=sys.stderr)
+    sys.exit(1)
+" 2>&1
+}
+
+PRD_FILE=$(resolve_prd_file "$PRD_ID")
+if [[ "$PRD_FILE" == ERROR:* ]]; then
+    echo "$PRD_FILE"
+    exit 1
+fi
+echo "PRD file: ${PRD_FILE}"
+
+# Build batch arrays dynamically from feature_list.json
+# Returns a JSON object like {"1": ["F001-001", "F001-014"], "2": [...], ...}
+get_batches() {
+    local prd_id="$1"
+    python3 -c "
+import json, sys
+try:
+    with open('feature_list.json') as f:
+        data = json.load(f)
+    batches = {}
+    for feat in data.get('features', []):
+        if feat.get('id', '').startswith('${prd_id}-'):
+            batch_num = str(feat.get('batch', 0))
+            if batch_num not in batches:
+                batches[batch_num] = []
+            batches[batch_num].append(feat['id'])
+    # Output sorted by batch number, one batch per line: batch_num:id1,id2,...
+    for batch_num in sorted(batches.keys(), key=int):
+        print(f'{batch_num}:{\",\".join(batches[batch_num])}')
+except Exception as e:
+    print(f'ERROR: {e}', file=sys.stderr)
+    sys.exit(1)
+"
+}
 
 # Create log directory
 mkdir -p "$LOG_DIR"
@@ -166,28 +233,13 @@ PROMPT_EOF
     fi
 }
 
-# Run a batch of features
-run_batch() {
-    local BATCH_NAME="$1"
-    local -n FEATURES="$1"
-
-    echo ""
-    echo "########################################"
-    echo "  ${BATCH_NAME}"
-    echo "  Features: ${FEATURES[*]}"
-    echo "########################################"
-
-    for FEATURE_ID in "${FEATURES[@]}"; do
-        build_feature "$FEATURE_ID"
-    done
-}
-
 # ────────────────────────────────────────────────────
 # Single feature mode
 # ────────────────────────────────────────────────────
 if [ -n "$SINGLE_FEATURE" ]; then
     echo "========================================"
-    echo "  SaaS Starter V2 — Single Feature Build"
+    echo "  Batch Builder — Single Feature"
+    echo "  PRD:     ${PRD_ID}"
     echo "  Feature: ${SINGLE_FEATURE}"
     echo "  Model:   ${MODEL}"
     echo "========================================"
@@ -212,25 +264,47 @@ fi
 # ────────────────────────────────────────────────────
 # Full batch mode
 # ────────────────────────────────────────────────────
+
+# Read batches dynamically from feature_list.json
+BATCH_DATA=$(get_batches "$PRD_ID")
+BATCH_COUNT=$(echo "$BATCH_DATA" | wc -l | tr -d ' ')
+
 echo "========================================"
-echo "  SaaS Starter V2 — Batch Builder"
-echo "  PRD: ${PRD_ID}"
-echo "  Model: ${MODEL}"
-echo "  Batches: 5"
-echo "  Mode: Fresh context per feature"
+echo "  Batch Builder — Full PRD"
+echo "  PRD:     ${PRD_ID}"
+echo "  PRD File: ${PRD_FILE}"
+echo "  Model:   ${MODEL}"
+echo "  Batches: ${BATCH_COUNT}"
+echo "  Mode:    Fresh context per feature"
 echo "========================================"
 echo ""
 echo "Starting at: $(date)"
 START_TIME=$(date +%s)
 
 # Run all batches in order
-for BATCH in "${ALL_BATCHES[@]}"; do
-    run_batch "$BATCH"
+BATCH_INDEX=0
+while IFS= read -r BATCH_LINE; do
+    BATCH_INDEX=$((BATCH_INDEX + 1))
+    BATCH_NUM="${BATCH_LINE%%:*}"
+    BATCH_FEATURES_STR="${BATCH_LINE#*:}"
+
+    # Split comma-separated feature IDs into array
+    IFS=',' read -ra BATCH_FEATURES <<< "$BATCH_FEATURES_STR"
+
+    echo ""
+    echo "########################################"
+    echo "  BATCH ${BATCH_NUM} (${BATCH_INDEX}/${BATCH_COUNT})"
+    echo "  Features: ${BATCH_FEATURES[*]}"
+    echo "########################################"
+
+    for FEATURE_ID in "${BATCH_FEATURES[@]}"; do
+        build_feature "$FEATURE_ID"
+    done
 
     # After each batch, check if total failures increased
     if [ ${#FAILED[@]} -gt 0 ]; then
         echo ""
-        echo "WARNING: Feature(s) failed in ${BATCH}."
+        echo "WARNING: Feature(s) failed in batch ${BATCH_NUM}."
         echo "Failed so far: ${FAILED[*]}"
         echo ""
         read -p "Continue to next batch? (y/n) " -n 1 -r
@@ -240,7 +314,7 @@ for BATCH in "${ALL_BATCHES[@]}"; do
             break
         fi
     fi
-done
+done <<< "$BATCH_DATA"
 
 # Summary
 END_TIME=$(date +%s)
@@ -252,6 +326,7 @@ echo ""
 echo "========================================"
 echo "  BUILD COMPLETE"
 echo "========================================"
+echo "  PRD:     ${PRD_ID}"
 echo "  Duration: ${HOURS}h ${MINUTES}m"
 echo "  Passed:  ${#PASSED[@]} — ${PASSED[*]:-none}"
 echo "  Failed:  ${#FAILED[@]} — ${FAILED[*]:-none}"

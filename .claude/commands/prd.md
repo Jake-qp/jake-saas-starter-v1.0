@@ -338,16 +338,48 @@ Create `docs/prds/[PRD_ID]-[name].md` with this structure:
 
 ### Update feature_list.json
 
-```bash
-# Add PRD entry
-cat feature_list.json | jq '.prds += [{
-  "id": "[PRD_ID]",
+Add each child feature to the `features` array in `feature_list.json`. Each feature entry must include all fields used by the batch orchestrator:
+
+```json
+{
+  "id": "[PRD_ID]-001",
   "name": "[Feature Name]",
-  "status": "in_progress",
-  "prd_file": "docs/prds/[PRD_ID]-[name].md",
-  "created_at": "[timestamp]",
-  "child_features": ["[PRD_ID]-001", "[PRD_ID]-002", "[PRD_ID]-003"]
-}]' > feature_list.json.tmp && mv feature_list.json.tmp feature_list.json
+  "type": "frontend|backend",
+  "priority": 0,
+  "status": "pending",
+  "current_phase": 0,
+  "batch": 1,
+  "dependencies": [],
+  "description": "[One-line description]",
+  "prd": "docs/prds/[PRD_ID]-[name].md"
+}
+```
+
+**Required fields:**
+- `id`: Feature ID (e.g., `F002-001`)
+- `name`: Human-readable name
+- `type`: `"frontend"` or `"backend"`
+- `priority`: 0 (P0) through 3 (P3)
+- `status`: `"pending"` (set to `"complete"` when done)
+- `current_phase`: 0 (not started) through 5 (verified)
+- `batch`: Batch number (1-N) based on dependency order
+- `dependencies`: Array of feature IDs this depends on (e.g., `["F002-001"]`)
+- `description`: One-line description for logs/summaries
+- `prd`: Path to the PRD file (e.g., `"docs/prds/F002-payments.md"`)
+
+**Assign batch numbers** based on dependency order:
+- Batch 1: Features with no dependencies (foundation)
+- Batch 2: Features that depend only on Batch 1
+- Batch 3+: Features that depend on earlier batches
+
+Also add an `implementation_sequence` entry mapping batch labels to feature ID arrays:
+
+```json
+"implementation_sequence": {
+  "batch_1_foundation": ["[PRD_ID]-001", "[PRD_ID]-002"],
+  "batch_2_features": ["[PRD_ID]-003", "[PRD_ID]-004"],
+  "batch_3_integration": ["[PRD_ID]-005"]
+}
 ```
 
 ### Update progress.md
@@ -395,10 +427,18 @@ Present the PRD summary:
 ### Build Order
 Start with: `/build "[PRD_ID]-001: [Name]"`
 
+### Batch Orchestrator
+To build all features autonomously:
+```bash
+scripts/build-batch.sh --prd [PRD_ID]
+```
+Or build a single feature: `/build "[PRD_ID]-001: [Name]"` or `scripts/build-batch.sh --feature [PRD_ID]-001`
+
 ---
 
 **Ready to start building?**
 - ✅ Yes, run `/build "[PRD_ID]-001: [Name]"` to start
+- 🔄 Build all at once: `scripts/build-batch.sh --prd [PRD_ID]`
 - 📝 Review PRD first
 - 🔄 Make changes to PRD
 ```

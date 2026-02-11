@@ -63,58 +63,55 @@ Build all features from a PRD using `scripts/build-batch.sh`. Each feature gets 
 ### Quick Start
 
 ```bash
-# Build all features (5 batches, dependency order)
-scripts/build-batch.sh
+# Build all features for a PRD (--prd required)
+scripts/build-batch.sh --prd F001
 
-# Build a single feature (dry run / retry)
+# Build a single feature (auto-detects PRD from ID prefix)
 scripts/build-batch.sh --feature F001-016
 
+# Explicit PRD + feature
+scripts/build-batch.sh --prd F001 --feature F001-016
+
 # Use a different model
-CLAUDE_MODEL=sonnet scripts/build-batch.sh
+CLAUDE_MODEL=sonnet scripts/build-batch.sh --prd F001
 ```
 
 ### How It Works
 
-1. Script loops over 5 batches of features in dependency order
-2. For each feature, spawns `claude -p` with a prompt that follows the `/build-auto` workflow
-3. Each session: reads CLAUDE.md, extracts feature from PRD, executes 5 phases, commits per phase
-4. `phase-gate.sh` hook enforces quality gates (tests pass, build succeeds, mock data removed)
-5. Completed features are skipped on re-run (checks `feature_list.json`)
+1. Script reads `feature_list.json` to discover features matching the PRD prefix
+2. Groups features by `batch` field, runs batches in order
+3. For each feature, spawns `claude -p` with a prompt that follows the `/build-auto` workflow
+4. Each session: reads CLAUDE.md, extracts feature from PRD, executes 5 phases, commits per phase
+5. `phase-gate.sh` hook enforces quality gates (tests pass, build succeeds, mock data removed)
+6. Completed features are skipped on re-run (checks `feature_list.json`)
 
 ### Prerequisites
 
 Before running, ensure:
 - PRD has `<!-- START_FEATURE -->` markers (for feature extraction)
-- `feature_list.json` has all 17 features with correct statuses
+- `feature_list.json` has features with `batch`, `prd`, and `status` fields
 - `CHANGELOG.md` exists (Phase 5 gate checks it)
 - `scripts/build-batch.sh` exists and is executable
-- `logs/` directory exists
 
-### Build Sequence
+### Multi-PRD Support
 
-```
-Batch 1: F001-001 (Auth) + F001-014 (Prod Infra) + F001-016 (Testing)
-Batch 2: F001-003 (Billing) + F001-009 (Analytics) + F001-012 (Marketing) + F001-017 (File Storage)
-Batch 3: F001-004 (RBAC)
-Batch 4: F001-005 (AI) + F001-006 (Notif) + F001-007 (Onboard) + F001-008 (Flags) + F001-011 (Notes) + F001-013 (Blog)
-Batch 5: F001-010 (Admin) + F001-015 (Waitlist)
-```
+The orchestrator is PRD-generic. Each feature in `feature_list.json` has a `prd` field pointing to its PRD file. The `--prd` flag filters features by ID prefix (e.g., `--prd F001` builds features `F001-*`, `--prd F002` builds `F002-*`).
 
 ### Monitor
 
 ```bash
-tail -f logs/build-F001-XXX.log      # Human-readable log (tool calls, text, results)
-tail -f logs/build-F001-XXX.jsonl    # Raw stream-json (full Claude session data)
-git log --oneline -20                 # Commits landing
+tail -f logs/build-<ID>.log             # Human-readable log
+tail -f logs/build-<ID>.jsonl           # Raw stream-json
+git log --oneline -20                    # Commits landing
 cat feature_list.json | python3 -m json.tool  # Status
 ```
 
 ### Log Files
 
-Each feature produces two log files:
-- `logs/build-F001-XXX.log` — Human-readable: tool calls (`[READ]`, `[EDIT]`, `[BASH]`), assistant text, final result summary
-- `logs/build-F001-XXX.jsonl` — Raw stream-json: every event from the Claude session for detailed debugging
-- `logs/build-F001-XXX.log.stderr` — Stderr output (errors from the Claude CLI itself)
+Each feature produces three log files:
+- `logs/build-<ID>.log` — Human-readable: tool calls, assistant text, final result summary
+- `logs/build-<ID>.jsonl` — Raw stream-json: every event from the Claude session
+- `logs/build-<ID>.log.stderr` — Stderr output (errors from the Claude CLI itself)
 
 ### Mock Data Enforcement
 

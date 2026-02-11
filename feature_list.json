@@ -1,6 +1,5 @@
 {
   "project": "SaaS Boilerplate V2",
-  "prd": "docs/prds/F001-saas-boilerplate-v2.md",
   "pending_features": {
     "count": 14,
     "ids": [
@@ -20,7 +19,8 @@
       "current_phase": 0,
       "batch": 1,
       "dependencies": [],
-      "description": "Replace Clerk auth with Convex Auth — email/password + magic link via Resend OTP, session management, timezone preference"
+      "description": "Replace Clerk auth with Convex Auth — email/password + magic link via Resend OTP, session management, timezone preference",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-002",
@@ -31,7 +31,8 @@
       "current_phase": 5,
       "batch": 1,
       "dependencies": [],
-      "description": "Expand UI component library with shadcn/ui additions and 8 app-level components, dark mode"
+      "description": "Expand UI component library with shadcn/ui additions and 8 app-level components, dark mode",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-003",
@@ -42,7 +43,8 @@
       "current_phase": 0,
       "batch": 2,
       "dependencies": ["F001-001"],
-      "description": "Team-level billing via Polar with configurable entitlements and credit-based AI consumption"
+      "description": "Team-level billing via Polar with configurable entitlements and credit-based AI consumption",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-004",
@@ -53,7 +55,8 @@
       "current_phase": 0,
       "batch": 3,
       "dependencies": ["F001-001", "F001-003"],
-      "description": "Owner role, 9 new permissions, custom roles, ownership transfer, invite management"
+      "description": "Owner role, 9 new permissions, custom roles, ownership transfer, invite management",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-005",
@@ -64,7 +67,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-003", "F001-004"],
-      "description": "Vercel AI SDK with dual streaming (Next.js API route + Convex HTTP action), credit tracking, rate limiting"
+      "description": "Vercel AI SDK with dual streaming (Next.js API route + Convex HTTP action), credit tracking, rate limiting",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-006",
@@ -75,7 +79,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-001", "F001-003"],
-      "description": "In-app notifications (real-time) + 8-12 React Email templates, notification preferences"
+      "description": "In-app notifications (real-time) + 8-12 React Email templates, notification preferences",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-007",
@@ -86,7 +91,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-001", "F001-003"],
-      "description": "Multi-step onboarding wizard for new users with progress tracking"
+      "description": "Multi-step onboarding wizard for new users with progress tracking",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-008",
@@ -97,7 +103,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-003"],
-      "description": "PostHog feature flags with useFeatureFlag hook and admin management UI"
+      "description": "PostHog feature flags with useFeatureFlag hook and admin management UI",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-009",
@@ -108,7 +115,8 @@
       "current_phase": 0,
       "batch": 2,
       "dependencies": ["F001-001"],
-      "description": "PostHog product analytics — client/server setup, reverse proxy, identify/group, useTrack hook"
+      "description": "PostHog product analytics — client/server setup, reverse proxy, identify/group, useTrack hook",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-010",
@@ -119,7 +127,8 @@
       "current_phase": 0,
       "batch": 5,
       "dependencies": ["F001-003", "F001-004", "F001-008", "F001-009"],
-      "description": "Super admin panel with dashboard, user/team management, feature flags, audit log, impersonation"
+      "description": "Super admin panel with dashboard, user/team management, feature flags, audit log, impersonation",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-011",
@@ -130,7 +139,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-001", "F001-004", "F001-003"],
-      "description": "Rich notes CRUD with permissions, search, entitlements, file attachments, command palette"
+      "description": "Rich notes CRUD with permissions, search, entitlements, file attachments, command palette",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-012",
@@ -141,7 +151,8 @@
       "current_phase": 0,
       "batch": 2,
       "dependencies": ["F001-002"],
-      "description": "Landing page, pricing, contact form, terms/privacy/cookies (MDX), marketing layout"
+      "description": "Landing page, pricing, contact form, terms/privacy/cookies (MDX), marketing layout",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-013",
@@ -152,7 +163,8 @@
       "current_phase": 0,
       "batch": 4,
       "dependencies": ["F001-012"],
-      "description": "MDX blog + changelog with email subscription and What's New badge"
+      "description": "MDX blog + changelog with email subscription and What's New badge",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-014",
@@ -163,7 +175,8 @@
       "current_phase": 0,
       "batch": 1,
       "dependencies": [],
-      "description": "Sentry, Vercel Analytics, Speed Insights, cron jobs, rate limiter, preview seed data, deployment docs"
+      "description": "Sentry, Vercel Analytics, Speed Insights, cron jobs, rate limiter, preview seed data, deployment docs",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-015",
@@ -174,7 +187,8 @@
       "current_phase": 0,
       "batch": 5,
       "dependencies": ["F001-008", "F001-006"],
-      "description": "Waitlist page, admin approval workflow, feature-flag gated pre-launch mode"
+      "description": "Waitlist page, admin approval workflow, feature-flag gated pre-launch mode",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-016",
@@ -189,7 +203,8 @@
       "batch": 1,
       "dependencies": [],
       "description": "Vitest, Playwright, CI/CD, pre-commit hooks, seed tests, ESLint tightening",
-      "spec_file": "docs/specs/F001-016-testing-quality-infrastructure.spec"
+      "spec_file": "docs/specs/F001-016-testing-quality-infrastructure.spec",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
       "id": "F001-017",
@@ -200,7 +215,8 @@
       "current_phase": 0,
       "batch": 2,
       "dependencies": ["F001-002"],
-      "description": "Convex file storage, FileUploader component, avatar uploads, storage quotas per tier"
+      "description": "Convex file storage, FileUploader component, avatar uploads, storage quotas per tier",
+      "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     }
   ],
   "implementation_sequence": {
