@@ -1,7 +1,20 @@
 # Build Progress
 
 ## Current Feature
-None — ready for next feature
+**ID:** F001-008
+**Phase:** 1 → 2
+**Status:** Spec approved, starting visual design
+
+**Spec:** `docs/specs/F001-008-feature-flags.spec`
+- User: SaaS developer / super admin
+- Screens: 1 (admin flags management)
+- Flows: 3
+- Acceptance criteria: 6
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-008
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-008 -->/,/<!-- END_FEATURE: F001-008 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
 
 ---
 
@@ -10,21 +23,6 @@ None — ready for next feature
 **Date:** 2026-02-11
 
 Onboarding System — 15 new tests (schema, config, status helpers, step validation).
-Multi-step wizard (Profile, Team, Get Started) using existing StepWizard component.
-Progress tracked in DB (onboardingStatus + onboardingStep on users table).
-Dashboard auto-redirects new users; skip button on every step.
-
-**Files Created:**
-- `convex/onboarding.ts` — getStatus, updateStep, complete, skip
-- `convex/__tests__/onboarding.test.ts` — 15 tests
-- `lib/onboardingConfig.ts` — steps, status helpers, validation
-- `app/t/[teamSlug]/onboarding/page.tsx` — wizard UI
-
-**Files Modified:**
-- `convex/schema.ts` — onboardingStatus + onboardingStep fields
-- `convex/users.ts` — expose onboardingStatus in viewer query
-- `convex/users/teams.ts` — added teams.update mutation
-- `app/t/[teamSlug]/page.tsx` — onboarding redirect
 
 **Spec:** `docs/specs/F001-007-onboarding-system.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅

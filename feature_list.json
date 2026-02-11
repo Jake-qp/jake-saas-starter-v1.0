@@ -133,11 +133,14 @@
       "name": "Feature Flags (PostHog)",
       "type": "backend",
       "priority": 3,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 2,
       "batch": 4,
       "dependencies": ["F001-003"],
       "description": "PostHog feature flags with useFeatureFlag hook and admin management UI",
+      "spec_file": "docs/specs/F001-008-feature-flags.spec",
+      "started_at": "2026-02-11T15:00:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
