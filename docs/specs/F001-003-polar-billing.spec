@@ -37,15 +37,15 @@ I want to manage my team's subscription and see usage against plan limits
 So that I can ensure my team has the resources they need and upgrade when necessary
 
 ## Acceptance Criteria
-- [ ] AC1: Team admin can view billing page with current plan
-- [ ] AC2: Polar checkout flow creates subscription and updates team tier
-- [ ] AC3: `getUserInfo` returns team-level identity for Polar (team._id + owner email)
-- [ ] AC4: Webhook `onSubscriptionUpdated` correctly updates subscriptionTier and subscriptionStatus
-- [ ] AC5: Idempotent webhook handling (timestamp-based stale detection via `@convex-dev/polar`)
-- [ ] AC6: checkEntitlement correctly enforces member limits per tier
-- [ ] AC7: Credit-based entitlement: AI requests decrement credits based on model/token usage
-- [ ] AC8: Dashboard shows credit usage meter (used/remaining for current period)
-- [ ] AC9: Free tier teams have appropriate feature restrictions
+- [x] AC1: Team admin can view billing page with current plan
+- [x] AC2: Polar checkout flow creates subscription and updates team tier
+- [x] AC3: `getUserInfo` returns team-level identity for Polar (team._id + owner email)
+- [x] AC4: Webhook `onSubscriptionUpdated` correctly updates subscriptionTier and subscriptionStatus
+- [x] AC5: Idempotent webhook handling (timestamp-based stale detection via `@convex-dev/polar`)
+- [x] AC6: checkEntitlement correctly enforces member limits per tier
+- [x] AC7: Credit-based entitlement: AI requests decrement credits based on model/token usage
+- [x] AC8: Dashboard shows credit usage meter (used/remaining for current period)
+- [x] AC9: Free tier teams have appropriate feature restrictions
 
 ## Edge Cases
 - Team with no subscription: Treated as free tier (not an error)

@@ -8,6 +8,7 @@
 | F001-002 | Design System Expansion | ✅ | (built before spec system) |
 | F001-014 | Production Infrastructure | ✅ | `docs/specs/F001-014-production-infrastructure.spec` |
 | F001-016 | Testing & Quality Infrastructure | ✅ | `docs/specs/F001-016-testing-quality-infrastructure.spec` |
+| F001-003 | Polar Billing + Credit System | ✅ | `docs/specs/F001-003-polar-billing.spec` |
 
 ## Source Code Index
 
@@ -71,6 +72,22 @@
 | Seed tests | `convex/__tests__/seedPreview.test.ts` | Seed data structure tests |
 | Sentry tests | `lib/__tests__/sentry.test.ts` | Sentry config file tests |
 | Analytics tests | `lib/__tests__/analytics.test.ts` | Analytics + PostHog proxy tests |
+
+### F001-003 — Polar Billing + Credits
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| Plan config | `lib/planConfig.ts` | Tier definitions, limits, features, credit costs |
+| Entitlements | `convex/entitlements.ts` | checkEntitlement(), getCurrentUsage(), decrementCredits() |
+| Billing module | `convex/billing.ts` | Polar component setup, queries, mutations |
+| HTTP webhooks | `convex/http.ts` | Polar webhook routes (onSubscriptionCreated/Updated) |
+| Schema (billing) | `convex/schema.ts` | Teams billing fields + aiUsage table |
+| Component config | `convex/convex.config.ts` | Polar component registration |
+| Cron handlers | `convex/cronJobs.ts` | Credit reset + subscription sync implementations |
+| Billing settings | `app/t/[teamSlug]/settings/billing/page.tsx` | Billing UI with plan info, usage meters, checkout |
+| Settings menu | `app/t/[teamSlug]/settings/SettingsMenu.tsx` | Added Billing nav link |
+| Plan config tests | `lib/__tests__/planConfig.test.ts` | 27 tests for plan config logic |
+| Billing tests | `convex/__tests__/billing.test.ts` | 29 tests for schema + entitlement logic |
 
 ## Concept Index
 

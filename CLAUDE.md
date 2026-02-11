@@ -141,7 +141,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Convex Auth + Magic Link (F001-001) | P0 | Done |
 | Design System Expansion (F001-002) | P0 | Done |
 | Testing & Quality Infrastructure (F001-016) | P0 | Done |
-| Polar Billing + Credits (F001-003) | P1 | Pending |
+| Polar Billing + Credits (F001-003) | P1 | Done |
 | Enhanced RBAC (F001-004) | P1 | Pending |
 | Marketing Site & Legal Pages (F001-012) | P1 | Pending |
 | Production Infrastructure (F001-014) | P1 | Done |

@@ -1,9 +1,9 @@
 {
   "project": "SaaS Boilerplate V2",
   "pending_features": {
-    "count": 12,
+    "count": 11,
     "ids": [
-      "F001-003", "F001-004", "F001-005", "F001-006",
+      "F001-004", "F001-005", "F001-006",
       "F001-007", "F001-008", "F001-009", "F001-010", "F001-011",
       "F001-012", "F001-013", "F001-015",
       "F001-017"
@@ -45,13 +45,16 @@
       "name": "Polar Billing + Credit System",
       "type": "backend",
       "priority": 1,
-      "status": "in_progress",
+      "status": "complete",
       "current_phase": 5,
+      "phase_completed": 5,
       "batch": 2,
       "dependencies": ["F001-001"],
       "description": "Team-level billing via Polar with configurable entitlements and credit-based AI consumption",
       "spec_file": "docs/specs/F001-003-polar-billing.spec",
       "started_at": "2026-02-11T23:00:00-05:00",
+      "completed_at": "2026-02-11T23:45:00-05:00",
+      "tests_added": 56,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
