@@ -362,34 +362,37 @@
       "current_phase": 0,
       "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
       "prd_context": {
-        "read_sections": ["Context Summary", "F001-008: Feature Flags"],
+        "read_sections": ["Context Summary", "F001-008: Feature Flags", "ADR-008"],
         "key_concepts": [
-          "Convex-native flags (reactive subscriptions)",
-          "Resolution: team override > tier default > global default",
-          "useFeatureFlag(key) hook"
+          "PostHog feature flags (polls ~30s, not Convex-native)",
+          "useFeatureFlag(key) wraps PostHog useFeatureFlagEnabled()",
+          "Admin manages flags via PostHog REST API proxy",
+          "Graceful degradation when PostHog not configured"
         ]
       },
-      "description": "Server-side feature flags with per-team overrides and reactive updates",
+      "description": "PostHog-based feature flags with admin management UI proxying PostHog REST API (see ADR-008)",
       "dependencies": ["F001-003"],
       "files_to_create": [
-        "convex/featureFlags/flags.ts",
-        "convex/featureFlags/teamFlags.ts",
-        "app/t/[teamSlug]/hooks/useFeatureFlag.ts"
+        "lib/hooks/use-feature-flag.ts",
+        "app/api/posthog/flags/route.ts",
+        "app/api/posthog/flags/[id]/route.ts",
+        "app/admin/flags/page.tsx"
       ],
       "files_to_modify": [
-        "convex/schema.ts"
+        "app/t/[teamSlug]/hooks.ts"
       ],
       "subtasks": [
-        "Add featureFlags and teamFeatureFlags to schema",
-        "Create flag CRUD mutations",
-        "Create resolution query (team > tier > global)",
-        "Build useFeatureFlag hook",
-        "Seed default feature flags in init.ts"
+        "Create useFeatureFlag hook wrapping PostHog",
+        "Create useFeatureFlagWithPayload hook for JSON payloads",
+        "Build admin flag API routes (GET/POST/PATCH/DELETE) proxying PostHog",
+        "Build admin flags page with DataTable and toggle switches",
+        "Re-export useFeatureFlag from app/t/[teamSlug]/hooks.ts"
       ],
       "acceptance_criteria": [
-        "useFeatureFlag returns correct value per resolution order",
-        "Admin can toggle flags globally and per-team",
-        "Flag changes propagate reactively"
+        "useFeatureFlag returns correct boolean from PostHog",
+        "useFeatureFlag returns false when PostHog not configured",
+        "Admin can list, create, toggle, delete flags via /admin/flags",
+        "Flag management API routes verify isSuperAdmin"
       ]
     },
     {
@@ -401,33 +404,51 @@
       "current_phase": 0,
       "prd_file": "docs/prds/F001-saas-boilerplate-v2.md",
       "prd_context": {
-        "read_sections": ["Context Summary", "F001-009: Analytics & Event Tracking"],
+        "read_sections": ["Context Summary", "F001-009: Analytics & Event Tracking", "ADR-008"],
         "key_concepts": [
-          "First-party analytics in Convex",
-          "track() mutation + useTrack() hook",
-          "Time-series aggregation queries"
+          "PostHog product analytics (not Convex-native)",
+          "useTrack() wraps posthog.capture()",
+          "PostHog reverse proxy via /ph/* in next.config",
+          "posthog.identify() + posthog.group('team') for user/team analytics",
+          "Server-side tracking from Convex via @samhoque/convex-posthog"
         ]
       },
-      "description": "First-party event tracking and analytics stored in Convex",
+      "description": "PostHog-based product analytics with client/server setup, reverse proxy, and identify/group integration (see ADR-008)",
       "dependencies": ["F001-001"],
       "files_to_create": [
-        "convex/analytics/events.ts",
-        "convex/analytics/aggregations.ts",
-        "app/t/[teamSlug]/hooks/useTrack.ts"
+        "lib/posthog/client.ts",
+        "lib/posthog/server.ts",
+        "app/PostHogProvider.tsx",
+        "app/PostHogPageView.tsx",
+        "lib/hooks/use-track.ts",
+        "lib/hooks/use-posthog-identify.ts",
+        "convex/posthog.ts"
       ],
       "files_to_modify": [
-        "convex/schema.ts"
+        "app/layout.tsx",
+        "app/ConvexClientProvider.tsx",
+        "app/t/[teamSlug]/hooks.ts",
+        "app/t/[teamSlug]/layout.tsx",
+        "next.config.js"
       ],
       "subtasks": [
-        "Add analyticsEvents to schema",
-        "Create track() mutation",
-        "Create aggregation queries (counts, time-series)",
-        "Build useTrack() hook",
-        "Add TTL cleanup scheduled function"
+        "Create PostHog browser singleton with env-var gating and reverse proxy",
+        "Create PostHog server singleton for serverless",
+        "Create PostHogProvider wrapper (no-op when unconfigured)",
+        "Create PostHogPageView for manual App Router pageview capture",
+        "Build useTrack() hook wrapping posthog.capture()",
+        "Build PostHogIdentifyUser component for auth integration",
+        "Build PostHogTeamIdentify for team group analytics",
+        "Add PostHog reverse proxy rewrites to next.config",
+        "Set up server-side tracking from Convex via @samhoque/convex-posthog"
       ],
       "acceptance_criteria": [
-        "useTrack fires events to analyticsEvents table",
-        "Admin can view event counts and time-series data"
+        "useTrack fires events that appear in PostHog dashboard",
+        "useTrack is no-op when PostHog not configured",
+        "Reverse proxy works: requests go to /ph/ not us.i.posthog.com",
+        "posthog.identify() links events to authenticated users",
+        "posthog.group('team') enables team-level analytics",
+        "App works without errors when NEXT_PUBLIC_POSTHOG_KEY not set"
       ]
     },
     {

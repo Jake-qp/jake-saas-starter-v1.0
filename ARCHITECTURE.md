@@ -31,6 +31,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for the full PRD. See `docs/adrs/` f
 │  Providers: ConvexAuthNextjsServerProvider (server)               │
 │           + ConvexAuthNextjsProvider (client)                     │
 │  Monitoring: @sentry/nextjs + @vercel/analytics + @vercel/speed  │
+│  Analytics:  posthog-js (reverse proxied via /ph/*)              │
 └──────────────────────┬───────────────────────────────────────────┘
                        │ Convex React Client
                        ▼
@@ -50,8 +51,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for the full PRD. See `docs/adrs/` f
 │  ├─ notes/               (Example CRUD app)                       │
 │  ├─ ai/                  (AI conversations, usage, credits)       │
 │  ├─ notifications/       (In-app + email)                         │
-│  ├─ featureFlags/        (Flag definitions + overrides)           │
-│  ├─ analytics/           (Event tracking)                         │
+│  ├─ posthog.ts           (Server-side PostHog event tracking)     │
 │  ├─ waitlist/            (Waitlist entries + approval)             │
 │  └─ admin/               (Super admin queries/mutations)          │
 │                                                                   │
@@ -62,10 +62,11 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for the full PRD. See `docs/adrs/` f
 │  3. Infrastructure: env vars, HMAC webhook verification           │
 └──────────────────────┬───────────────────────────────────────────┘
                        │
-           ┌───────────┼───────────┬───────────┐
-           ▼           ▼           ▼           ▼
-      Polar API   OpenAI/Claude   Resend     Sentry
-      (Billing)   (AI Providers)  (Email)    (Monitoring)
+           ┌───────────┼───────────┬───────────┬───────────┐
+           ▼           ▼           ▼           ▼           ▼
+      Polar API   OpenAI/Claude   Resend     Sentry     PostHog
+      (Billing)   (AI Providers)  (Email)    (Errors)   (Analytics
+                                                         + Flags)
 ```
 
 ---
@@ -120,6 +121,13 @@ lib/
   planConfig.ts             Configurable tier/entitlement/credit definitions
   mdx.ts                    MDX processing utilities
   utils.ts                  Shared utilities
+  posthog/
+    client.ts               PostHog browser singleton (env-var gated)
+    server.ts               PostHog server-side singleton (serverless-compat)
+  hooks/
+    use-track.ts            useTrack() — wraps posthog.capture()
+    use-feature-flag.ts     useFeatureFlag() — wraps PostHog flag evaluation
+    use-posthog-identify.ts PostHog identify + group calls
 tests/                      Vitest global setup
 e2e/                        Playwright E2E tests
 docs/
@@ -154,9 +162,6 @@ docs/
 | notifications | In-app notifications | user |
 | notificationPreferences | Per-user notification settings | user |
 | onboardingProgress | Wizard step tracking | user |
-| featureFlags | Global flag definitions | — |
-| teamFeatureFlags | Per-team flag overrides | team, featureFlag |
-| analyticsEvents | First-party event tracking | team, user |
 | auditLog | Admin action audit trail | user |
 | waitlistEntries | Pre-launch email collection | — |
 
@@ -164,7 +169,7 @@ docs/
 
 - **Soft deletion:** users, teams, members, notes, aiConversations
 - **Scheduled deletion:** teams have 7-day grace period
-- **Unique fields:** users.email, teams.slug, roles.name, permissions.name, invites.email, featureFlags.key, waitlistEntries.email
+- **Unique fields:** users.email, teams.slug, roles.name, permissions.name, invites.email, waitlistEntries.email
 
 ### Permissions (14)
 
@@ -242,15 +247,15 @@ User attempts action (e.g., "Delete Note")
 5. If allowed → proceed, then decrement credits based on model/token usage
 ```
 
-### Feature Flag Resolution
+### Feature Flag Resolution (PostHog)
 
 ```
 1. Client calls useFeatureFlag("new-dashboard")
-2. Query resolves:
-   a. Check teamFeatureFlags for team override → if exists, return it
-   b. Check featureFlags.tierDefaults[team.subscriptionTier] → if exists, return it
-   c. Return featureFlags.enabled (global default)
-3. Result reactively updates via Convex subscription
+2. Hook wraps PostHog's useFeatureFlagEnabled()
+   a. PostHog evaluates flag based on user properties, team group, percentage rollout
+   b. Flags poll every ~30s (not instant like Convex subscriptions)
+   c. Returns false when PostHog is not configured (graceful degradation)
+3. Admin manages flags via /admin/flags → proxies PostHog REST API
 ```
 
 ### AI Streaming (Dual Pattern)
@@ -337,6 +342,8 @@ Batch 5 (parallel): F001-010 (Super Admin) + F001-015 (Waitlist)
 | `ANTHROPIC_API_KEY` | Anthropic API key (optional) |
 | `RESEND_API_KEY` | Resend email API key |
 | `HOSTED_URL` | Public URL for email links |
+| `POSTHOG_API_KEY` | PostHog server-side project key (for Convex actions) |
+| `POSTHOG_HOST` | PostHog host URL (defaults to `https://us.i.posthog.com`) |
 
 ### Vercel Dashboard
 
@@ -345,6 +352,10 @@ Batch 5 (parallel): F001-010 (Super Admin) + F001-015 (Waitlist)
 | `CONVEX_DEPLOY_KEY` | Enables `convex deploy` in CI (separate prod + preview keys) |
 | `SENTRY_AUTH_TOKEN` | Source map upload during build (optional) |
 | `NEXT_PUBLIC_SENTRY_DSN` | Sentry error tracking (optional — disabled if not set) |
+| `NEXT_PUBLIC_POSTHOG_KEY` | PostHog client-side project key (optional — disabled if not set) |
+| `POSTHOG_API_KEY` | PostHog server-side project key |
+| `POSTHOG_PERSONAL_API_KEY` | PostHog admin flag management API key |
+| `POSTHOG_PROJECT_ID` | PostHog project ID for management API URLs |
 | `NEXT_PUBLIC_CONVEX_URL` | Auto-set by `convex deploy` — do NOT set manually |
 
 ---
@@ -362,3 +373,4 @@ See `docs/adrs/` for full rationale on each decision:
 | Content | MDX (not CMS) | [ADR-005](docs/adrs/005-mdx-content.md) |
 | Deployment | Vercel | [ADR-006](docs/adrs/006-vercel-deploy.md) |
 | AI billing | Credit-based | [ADR-007](docs/adrs/007-credit-billing.md) |
+| Analytics + Feature Flags | PostHog (not Convex-native) | [ADR-008](docs/adrs/008-posthog-analytics-flags.md) |

@@ -13,6 +13,7 @@ This directory contains Architecture Decision Records (ADRs) for the SaaS Starte
 | [005](005-mdx-content.md) | MDX for Blog and Legal Content | Accepted | 2026-02-10 |
 | [006](006-vercel-deploy.md) | Vercel for Deployment | Accepted | 2026-02-10 |
 | [007](007-credit-billing.md) | Credit-Based AI Billing | Accepted | 2026-02-10 |
+| [008](008-posthog-analytics-flags.md) | PostHog for Analytics and Feature Flags | Accepted | 2026-02-10 |
 
 ## Template
 

@@ -15,6 +15,7 @@ Migrating from V1 (Clerk) to V2 (Convex Auth, Polar billing, AI, admin). See `do
 - **UI:** shadcn/ui (New York style), Tailwind CSS, Radix, next-themes
 - **Email:** Resend + React Email
 - **Validation:** Zod | **Forms:** react-hook-form
+- **Analytics + Feature Flags:** PostHog (`posthog-js`, `posthog-node`, `@samhoque/convex-posthog`) — env-var gated
 - **Testing:** Vitest + convex-test + Playwright + axe-playwright
 
 ## Commands
@@ -43,12 +44,13 @@ npm run test:all         # All tests (Vitest + Playwright)
 - **Components:** shadcn/ui lives in `components/ui/` — add via `npx shadcn-ui@latest add <component>`, don't hand-edit
 - **Routing:** Marketing: `app/(marketing)/` | Auth: `app/auth/` | App: `app/t/[teamSlug]/` | Admin: `app/admin/` | Blog: `app/blog/`
 - **Team context:** Use `useCurrentTeam()` hook from `app/t/[teamSlug]/hooks.ts`
-- **Feature flags:** Use `useFeatureFlag(key)` hook — returns boolean
-- **Analytics:** Use `useTrack()` hook — returns fire-and-forget tracking function
+- **Feature flags:** Use `useFeatureFlag(key)` from `lib/hooks/use-feature-flag.ts` — wraps PostHog, returns boolean, `false` when unconfigured
+- **Analytics:** Use `useTrack()` from `lib/hooks/use-track.ts` — wraps `posthog.capture()`, no-op when unconfigured
+- **PostHog:** Client init via `lib/posthog/client.ts` with reverse proxy (`/ph/*`). Server via `lib/posthog/server.ts`. Convex via `@samhoque/convex-posthog`. All env-var gated — app works without PostHog.
 - **Billing:** Team-level (not per-user). Tiers/limits/credits configured in `lib/planConfig.ts`
 - **AI streaming:** Default via Next.js API route; alternative via Convex HTTP action (see [ADR-004](docs/adrs/004-ai-dual-streaming.md))
 - **Blog/Legal:** MDX files in `content/`; processed at build time
-- **Monitoring:** Sentry (optional, env-var gated); Vercel Analytics + Speed Insights always active
+- **Monitoring:** Sentry (optional, env-var gated); Vercel Analytics + Speed Insights always active; PostHog (optional, env-var gated) for product analytics + feature flags
 - **Deployment:** Vercel (auto-deploy from GitHub). Build: `npx convex deploy --cmd 'npm run build'`
 - **ESLint:** Ignores `convex/_generated` and `components/ui`
 
@@ -79,13 +81,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for system design, data model, key flows,
 
 ## Architecture Decisions
 
-See [docs/adrs/](docs/adrs/) for rationale on Convex Auth, Polar billing, convex-ents, AI streaming, MDX content, Vercel deployment, and credit-based billing.
+See [docs/adrs/](docs/adrs/) for rationale on Convex Auth, Polar billing, convex-ents, AI streaming, MDX content, Vercel deployment, credit-based billing, and PostHog analytics/flags.
 
 ## Environment Variables
 
-**Convex Dashboard:** `SITE_URL`, `CONVEX_AUTH_PRIVATE_KEY`, `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `HOSTED_URL`
+**Convex Dashboard:** `SITE_URL`, `CONVEX_AUTH_PRIVATE_KEY`, `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `HOSTED_URL`, `POSTHOG_API_KEY`, `POSTHOG_HOST`
 
-**Vercel Dashboard:** `CONVEX_DEPLOY_KEY`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_CONVEX_URL` (auto-set)
+**Vercel Dashboard:** `CONVEX_DEPLOY_KEY`, `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN`, `NEXT_PUBLIC_CONVEX_URL` (auto-set), `NEXT_PUBLIC_POSTHOG_KEY`, `POSTHOG_API_KEY`, `POSTHOG_PERSONAL_API_KEY`, `POSTHOG_PROJECT_ID`
 
 ## V2 Roadmap (F001)
 

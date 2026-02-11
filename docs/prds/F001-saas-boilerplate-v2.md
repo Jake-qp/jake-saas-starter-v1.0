@@ -11,7 +11,7 @@
 ## Context Summary
 <!-- REQUIRED: This section is loaded by /build for child features. Keep under 50 lines. -->
 
-**Vision:** Transform the existing SaaS starter into a world-class, production-grade boilerplate with auth, billing, AI, admin, feature flags, and analytics — all native to Convex.
+**Vision:** Transform the existing SaaS starter into a world-class, production-grade boilerplate with auth, billing, AI, admin, feature flags, and analytics — using Convex-native solutions where transactional integrity matters and PostHog where a mature platform provides better value.
 
 **Problem:** The current starter has solid multi-tenant foundations but lacks billing, AI integration, admin tooling, feature flags, analytics, and onboarding — making it unsuitable for shipping real products without weeks of additional work.
 
@@ -19,7 +19,7 @@
 - Replace Clerk with Convex Auth (single source of truth, no external auth dependency)
 - Auth: Convex Auth with email/password + magic link via Resend OTP (no OAuth providers — keeps setup simple)
 - Team-level billing via Polar (B2B SaaS model: Slack, Notion, Linear) with credit-based AI consumption
-- Feature flags stored in Convex (reactive subscriptions = instant propagation)
+- Feature flags via PostHog (rollouts, A/B tests, admin toggle via API proxy)
 - AI via Vercel AI SDK — dual streaming patterns: Next.js API route (default) + Convex HTTP action (alternative)
 - Super admin via `isSuperAdmin` boolean on users (orthogonal to team roles)
 - Configurable entitlement system (tiers, limits, feature gates defined in config, not hardcoded)
@@ -33,7 +33,8 @@
 **Schema Changes:**
 - `users`: Remove `tokenIdentifier`, add `isSuperAdmin`; integrate `authTables`
 - `teams`: Add `polarCustomerId`, `subscriptionTier`, `subscriptionStatus`
-- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `featureFlags`, `teamFeatureFlags`, `analyticsEvents`, `auditLog`, `waitlistEntries`
+- New tables: `notes`, `aiUsage`, `aiConversations`, `aiMessages`, `notifications`, `notificationPreferences`, `onboardingProgress`, `auditLog`, `waitlistEntries`
+- Removed tables (replaced by PostHog — see [ADR-008](../adrs/008-posthog-analytics-flags.md)): `featureFlags`, `teamFeatureFlags`, `analyticsEvents`
 
 ### Child Features
 
@@ -98,7 +99,7 @@ Developers think of this as "the last boilerplate I need." It should feel like a
 
 This PRD defines the transformation of an existing SaaS starter kit into a comprehensive, production-grade boilerplate. The current codebase provides multi-tenant foundations (teams, RBAC, invites, soft deletion) built on Next.js 14, Convex, Clerk, and shadcn/ui. It needs to evolve into a complete platform with native auth, billing, AI integration, admin tooling, feature flags, analytics, onboarding, a polished marketing site, content marketing infrastructure, and production deployment tooling.
 
-The upgrade is structured as 15 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, feature flags, analytics) over third-party services where possible, reducing external dependencies and leveraging Convex's real-time subscriptions.
+The upgrade is structured as 15 independent-but-connected modules, each buildable via the Vibe System's `/build` workflow. The architecture prioritizes Convex-native solutions (auth, audit logging, entitlements) where transactional integrity matters, and uses PostHog for product analytics and feature flags where a mature platform provides better value than custom code (see [ADR-008](../adrs/008-posthog-analytics-flags.md)).
 
 **Before:** A starter with auth (Clerk), teams, and basic RBAC. Developers must build billing, AI, admin, notifications, analytics, marketing pages, and deployment infrastructure from scratch.
 
@@ -137,8 +138,8 @@ A boilerplate where cloning the repo and setting environment variables gives you
 - AI chat with dual streaming patterns (Next.js API route + Convex HTTP action), usage tracking, and rate limiting
 - In-app + email notifications
 - Guided onboarding for new users and teams
-- Feature flags with per-team overrides
-- First-party analytics and event tracking
+- Feature flags via PostHog with admin management UI
+- Product analytics and feature flags via PostHog (see [ADR-008](../adrs/008-posthog-analytics-flags.md))
 - Super admin panel for platform operations
 - A polished marketing site with hero, features, pricing, FAQ, contact form, and legal pages
 - MDX-based blog and changelog for content marketing
@@ -167,8 +168,8 @@ A boilerplate where cloning the repo and setting environment variables gives you
 | AI | None | Vercel AI SDK — dual: Next.js API route (default) + Convex HTTP action (alt) |
 | Notifications | Invite emails only | In-app (real-time) + email templates |
 | Onboarding | None | Multi-step wizard |
-| Feature flags | None | Convex-native with per-team overrides |
-| Analytics | None | First-party event tracking in Convex |
+| Feature flags | None | PostHog feature flags with admin proxy (see [ADR-008](../adrs/008-posthog-analytics-flags.md)) |
+| Analytics | None | PostHog product analytics with `useTrack()` wrapper (see [ADR-008](../adrs/008-posthog-analytics-flags.md)) |
 | Admin | None | Super admin panel (`/admin`) |
 | Demo content | Messages (basic chat) | Notes CRUD (rich reference implementation) |
 | Landing page | Bare `/` route | Modular marketing site: hero, features, pricing, FAQ, CTA |
@@ -215,8 +216,8 @@ A boilerplate where cloning the repo and setting environment variables gives you
 | Billing (F001-003) | Entitlements, AI, Feature Flags | Tier determines limits and feature access; credits gate AI usage |
 | RBAC (F001-004) | All team features | Permissions gate every team action |
 | AI (F001-005) | Billing, RBAC | Rate-limited by tier credits, gated by permission |
-| Feature Flags (F001-008) | Admin, Billing, Waitlist | Flags can be tier-based, per-team, or control pre-launch mode |
-| Analytics (F001-009) | Admin | Admin dashboard surfaces aggregate analytics |
+| Feature Flags (F001-008) | Admin, Billing, Waitlist | PostHog flags; admin manages via API proxy; controls pre-launch mode |
+| Analytics (F001-009) | Admin, Prod Infra | PostHog analytics; dashboards in PostHog; reverse proxy in next.config |
 | Admin (F001-010) | Everything | Admin panel aggregates all modules |
 | Marketing (F001-012) | Billing, Design System | Pricing table reads from `planConfig.ts`; uses design system components |
 | Blog (F001-013) | Marketing | Shares layout/navigation with marketing site |
@@ -250,6 +251,7 @@ A boilerplate where cloning the repo and setting environment variables gives you
 │  Providers: ConvexAuthNextjsServerProvider (server)               │
 │           + ConvexAuthNextjsProvider (client)                     │
 │  Monitoring: @sentry/nextjs + @vercel/analytics + @vercel/speed  │
+│  Analytics: posthog-js (reverse proxied via /ph/*)               │
 │  useConvexAuth / useQuery / useMutation / useChat                │
 └──────────────────────┬───────────────────────────────────────────┘
                        │ Convex React Client
@@ -272,8 +274,7 @@ A boilerplate where cloning the repo and setting environment variables gives you
 │  ├─ notes/               (Example CRUD app)                       │
 │  ├─ ai/                  (AI conversations, usage, credits)       │
 │  ├─ notifications/       (In-app + email)                         │
-│  ├─ featureFlags/        (Flag definitions + overrides)           │
-│  ├─ analytics/           (Event tracking)                         │
+│  ├─ posthog.ts           (Server-side PostHog tracking)            │
 │  ├─ waitlist/            (Waitlist entries + approval)             │
 │  └─ admin/               (Super admin queries/mutations)          │
 │                                                                   │
@@ -284,10 +285,11 @@ A boilerplate where cloning the repo and setting environment variables gives you
 │  3. Infrastructure: env vars, HMAC webhook verification           │
 └──────────────────────┬───────────────────────────────────────────┘
                        │
-           ┌───────────┼───────────┬───────────┐
-           ▼           ▼           ▼           ▼
-      Polar API   OpenAI/Claude   Resend     Sentry
-      (Billing)   (AI Providers)  (Email)    (Monitoring)
+           ┌───────────┼───────────┬───────────┬───────────┐
+           ▼           ▼           ▼           ▼           ▼
+      Polar API   OpenAI/Claude   Resend     Sentry     PostHog
+      (Billing)   (AI Providers)  (Email)    (Errors)   (Analytics
+                                                         + Flags)
 ```
 
 ### Auth Flow (Post-Migration)
@@ -442,39 +444,11 @@ onboardingProgress: defineEnt({
   .edge("user")
 ```
 
-#### `featureFlags`
-```typescript
-featureFlags: defineEnt({
-  key: v.string(),
-  description: v.optional(v.string()),
-  enabled: v.boolean(),
-  tierDefaults: v.optional(v.any()),
-})
-  .field("key", v.string(), { unique: true })
-```
+#### ~~`featureFlags`~~ — Removed (replaced by PostHog, see [ADR-008](../adrs/008-posthog-analytics-flags.md))
 
-#### `teamFeatureFlags`
-```typescript
-teamFeatureFlags: defineEnt({
-  enabled: v.boolean(),
-})
-  .edge("team")
-  .edge("featureFlag", { to: "featureFlags" })
-  .index("teamFlag", ["teamId", "featureFlagId"])
-```
+#### ~~`teamFeatureFlags`~~ — Removed (replaced by PostHog, see [ADR-008](../adrs/008-posthog-analytics-flags.md))
 
-#### `analyticsEvents`
-```typescript
-analyticsEvents: defineEnt({
-  event: v.string(),
-  properties: v.optional(v.any()),
-  timestamp: v.number(),
-})
-  .edge("team")
-  .edge("user")
-  .index("teamEvent", ["teamId", "event"])
-  .index("eventTimestamp", ["event", "timestamp"])
-```
+#### ~~`analyticsEvents`~~ — Removed (replaced by PostHog, see [ADR-008](../adrs/008-posthog-analytics-flags.md))
 
 #### `auditLog`
 ```typescript
@@ -517,14 +491,14 @@ waitlistEntries: defineEnt({
 5. If allowed → proceed with action, increment usage
 ```
 
-### Feature Flag Resolution
+### Feature Flag Resolution (PostHog)
 ```
 1. Client calls useFeatureFlag("new-dashboard")
-2. Query resolves:
-   a. Check teamFeatureFlags for team override → if exists, return it
-   b. Check featureFlags.tierDefaults[team.subscriptionTier] → if exists, return it
-   c. Return featureFlags.enabled (global default)
-3. Result reactively updates via Convex subscription
+2. Hook wraps PostHog's useFeatureFlagEnabled()
+   a. PostHog evaluates flag based on user properties, team group, percentage rollout
+   b. Flags are polled every ~30s (not instant like Convex subscriptions)
+   c. Returns false when PostHog is not configured (graceful degradation)
+3. Admin manages flags via /admin/flags → proxies PostHog REST API
 ```
 
 ### Credit-Based Entitlement Check Flow
@@ -587,7 +561,7 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | 3 | Team owner leaves or is deleted | Orphaned team with no owner | High | Owner cannot leave; must transfer ownership first |
 | 4 | Subscription expires mid-session | User mid-action loses access | Medium | Graceful degradation; show upgrade prompt, don't kill active session |
 | 5 | AI provider rate-limited or down | User gets no response | Medium | Return friendly error; suggest retry; log for monitoring |
-| 6 | Feature flag changed while user on page | Inconsistent UI state | Low | Convex reactive subscription auto-updates; components re-render |
+| 6 | Feature flag changed while user on page | Inconsistent UI state | Low | PostHog polls flags every ~30s; acceptable for rollout use cases |
 | 7 | Super admin impersonates deleted user | Access to soft-deleted data | Medium | Impersonation is read-only; soft-deleted users shown with clear indicator |
 | 8 | Concurrent role changes on same member | Race condition | Low | Convex transactions are serializable; last write wins |
 | 9 | Invite sent to email already on team | Confusion, duplicate member | Medium | Check existing membership before creating invite; show clear error |
@@ -595,7 +569,7 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | 11 | Billing webhook replay attack | Duplicate subscription updates | High | Polar component handles idempotency via event IDs |
 | 12 | AI usage counter drift | User charged more/less than actual | Medium | Reconcile usage counts periodically via scheduled function |
 | 13 | Team at member limit tries to accept invite | Exceeds entitlement | Medium | Check entitlement in invite acceptance flow; reject with upgrade prompt |
-| 14 | Analytics table grows unbounded | Performance degradation | Medium | TTL-based cleanup via scheduled function (e.g., 90-day retention) |
+| 14 | Analytics data retention | N/A | N/A | PostHog manages data retention (1 year on free tier); no Convex table to manage |
 | 15 | Magic link email not delivered | User can't sign in | Medium | Fall back to email/password; show "Didn't receive email?" with retry |
 | 16 | Credit calculation drift (token counting) | User overcharged/undercharged | Medium | Use conservative estimate before streaming; reconcile after completion |
 | 17 | Sentry DSN not configured | No error monitoring | Low | All Sentry code env-var gated; app works fine without it |
@@ -643,8 +617,16 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | **Other Backend** | | |
 | `convex/notes/` | F001-011 | Notes CRUD (queries, mutations) |
 | `convex/notifications/` | F001-006 | Notification create/list/mark-read + preferences |
-| `convex/featureFlags/` | F001-008 | Flag CRUD + resolution logic |
-| `convex/analytics/` | F001-009 | Event tracking + aggregation queries |
+| `lib/posthog/client.ts` | F001-008/009 | PostHog browser singleton (env-var gated) |
+| `lib/posthog/server.ts` | F001-008/009 | PostHog server-side singleton (serverless-compatible) |
+| `app/PostHogProvider.tsx` | F001-008/009 | PostHog React provider wrapper (no-op when unconfigured) |
+| `app/PostHogPageView.tsx` | F001-008/009 | Manual pageview capture for App Router |
+| `lib/hooks/use-track.ts` | F001-009 | `useTrack()` wraps `posthog.capture()` |
+| `lib/hooks/use-feature-flag.ts` | F001-008 | `useFeatureFlag()` wraps PostHog flag evaluation |
+| `lib/hooks/use-posthog-identify.ts` | F001-008/009 | PostHog identify + group calls after auth |
+| `app/api/posthog/flags/route.ts` | F001-008 | Admin flag list/create (proxies PostHog API) |
+| `app/api/posthog/flags/[id]/route.ts` | F001-008 | Admin flag toggle/update/delete |
+| `convex/posthog.ts` | F001-009 | Server-side PostHog tracking from Convex mutations |
 | `convex/admin/` | F001-010 | Super admin queries/mutations + audit log |
 | `convex/waitlist/` | F001-015 | Waitlist entry CRUD + approval workflow |
 | **Other Frontend** | | |
@@ -698,13 +680,13 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `.husky/pre-commit` | F001-016 | Pre-commit hook (lint-staged) |
 | `ARCHITECTURE.md` | F001-016 | System design, data model, flows |
 | `CONTRIBUTING.md` | F001-016 | Dev setup, testing, PR process |
-| `docs/adrs/` | F001-016 | 7 initial Architecture Decision Records |
+| `docs/adrs/` | F001-016 | 8 Architecture Decision Records |
 
 ### Modified Files
 
 | File | Changes |
 |------|---------|
-| `convex/schema.ts` | Add authTables integration, new entities (incl. waitlistEntries), expand roles/permissions |
+| `convex/schema.ts` | Add authTables integration, new entities (incl. waitlistEntries), expand roles/permissions. Remove `featureFlags`, `teamFeatureFlags`, `analyticsEvents` tables (replaced by PostHog). |
 | `convex/functions.ts` | Session-based user lookup via `getAuthUserId()` (replace tokenIdentifier) |
 | `convex/permissions.ts` | Add Owner role, 9 new permissions, preserve API surface |
 | `convex/init.ts` | Seed new roles, permissions, default feature flags |
@@ -712,14 +694,15 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | `convex/users/teams.ts` | Add billing fields to team creation; `polarCustomerId` integration |
 | `convex/users/teams/members.ts` | Owner role enforcement |
 | `convex/invites.ts` | Entitlement check on invite acceptance |
-| `app/ConvexClientProvider.tsx` | Replace ClerkProvider with two-layer ConvexAuth providers |
-| `app/layout.tsx` | Add `@vercel/analytics`, `@vercel/speed-insights`, Sentry providers |
-| `app/t/[teamSlug]/hooks.ts` | Add useFeatureFlag, useTrack hooks |
+| `app/ConvexClientProvider.tsx` | Replace ClerkProvider with two-layer ConvexAuth providers; add `PostHogIdentifyUser` inside `Authenticated` |
+| `app/layout.tsx` | Add `@vercel/analytics`, `@vercel/speed-insights`, Sentry providers, `PostHogProvider`, `PostHogPageView` |
+| `app/t/[teamSlug]/hooks.ts` | Re-export `useTrack`, `useFeatureFlag` from `lib/hooks/` |
 | `app/t/[teamSlug]/layout.tsx` | Add navigation for notes, AI, billing |
 | `app/t/TeamMenu.tsx` | Expand navigation items |
 | `middleware.ts` | Replace Clerk middleware with `createRouteMatcher` redirect logic |
-| `next.config.mjs` | Add `@next/mdx` or `contentlayer2` config; Sentry webpack plugin; source map upload |
-| `package.json` | Add @convex-dev/auth, @convex-dev/polar, ai, @ai-sdk/*, next-themes, react-email, @vercel/analytics, @vercel/speed-insights, @sentry/nextjs, @next/mdx (or contentlayer2) |
+| `next.config.mjs` | Add `@next/mdx` or `contentlayer2` config; Sentry webpack plugin; source map upload; PostHog reverse proxy rewrites (`/ph/*`) |
+| `app/t/[teamSlug]/layout.tsx` | Add `PostHogTeamIdentify` for team-level group analytics |
+| `package.json` | Add @convex-dev/auth, @convex-dev/polar, ai, @ai-sdk/*, next-themes, react-email, @vercel/analytics, @vercel/speed-insights, @sentry/nextjs, @next/mdx (or contentlayer2), posthog-js, posthog-node, @samhoque/convex-posthog |
 | `tailwind.config.ts` | Dark mode support |
 
 ---
@@ -761,9 +744,11 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
   - Billing settings page with `CheckoutLink`/`CustomerPortalLink`
   - Configurable entitlement system with credit-based consumption
   - Credit decrement per AI request (model-specific cost)
-- [ ] **F001-009:** Analytics & Event Tracking
-  - track() mutation + useTrack() hook
-  - Time-series aggregation queries
+- [ ] **F001-009:** Analytics & Event Tracking (PostHog)
+  - PostHog client/server setup with env-var gating + reverse proxy
+  - `useTrack()` hook wrapping `posthog.capture()`
+  - `PostHogProvider`, `PostHogPageView`, identify/group integration
+  - Server-side tracking from Convex via `@samhoque/convex-posthog`
 - [ ] **F001-012:** Marketing Site & Legal Pages
   - Landing page: HeroSection, FeaturesGrid, PricingTable, FAQAccordion, CTASection
   - PricingTable auto-populated from `planConfig.ts`
@@ -792,9 +777,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] **F001-007:** Onboarding System
   - Multi-step wizard
   - Progress tracking
-- [ ] **F001-008:** Feature Flags
-  - Global + per-team + tier-based flags
-  - useFeatureFlag hook
+- [ ] **F001-008:** Feature Flags (PostHog)
+  - `useFeatureFlag()` hook wrapping PostHog's `useFeatureFlagEnabled()`
+  - Admin flag management UI at `/admin/flags` (proxies PostHog REST API)
+  - `useFeatureFlagWithPayload()` for JSON payload flags
 - [ ] **F001-011:** Example App (Notes CRUD)
   - Full CRUD with permissions
   - Search, pagination, soft deletion
@@ -810,9 +796,9 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 ### Phase 5: Operations (P3) — Batch 5 (parallel)
 - [ ] **F001-010:** Super Admin Panel
   - Dashboard, user/team management
-  - Feature flag management
-  - Analytics dashboard
-  - Audit log
+  - Feature flag management (proxies PostHog API via `/api/posthog/flags/`)
+  - Analytics page links to PostHog dashboard (no custom analytics UI)
+  - Audit log (Convex-native `auditLog` table)
   - Waitlist management section
 - [ ] **F001-015:** Waitlist / Pre-Launch Mode
   - `waitlist_mode` feature flag controls pre-launch mode
@@ -877,20 +863,30 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] Wizard tracks completed steps across sessions
 - [ ] User can skip onboarding
 
-### Feature Flags (F001-008)
-- [ ] useFeatureFlag returns correct value based on resolution order
-- [ ] Admin can toggle flags globally and per-team
-- [ ] Flag changes propagate reactively without page refresh
+### Feature Flags (F001-008) — PostHog
+- [ ] `useFeatureFlag(key)` returns correct boolean value from PostHog
+- [ ] `useFeatureFlag(key)` returns `false` when PostHog is not configured (graceful degradation)
+- [ ] `useFeatureFlagWithPayload(key)` returns JSON payload for flags with payloads
+- [ ] Admin can list, create, toggle, and delete flags via `/admin/flags` (proxies PostHog API)
+- [ ] `POSTHOG_PERSONAL_API_KEY` is never exposed to client-side code
+- [ ] Flag management API routes verify `isSuperAdmin` before proxying
 
-### Analytics (F001-009)
-- [ ] useTrack fires events that appear in analyticsEvents table
-- [ ] Admin can view event counts and time-series data
+### Analytics (F001-009) — PostHog
+- [ ] `useTrack(event, properties?)` fires events that appear in PostHog dashboard
+- [ ] `useTrack()` is a no-op when PostHog is not configured
+- [ ] PostHog reverse proxy works: network tab shows requests to `/ph/` not `us.i.posthog.com`
+- [ ] `posthog.identify()` links events to authenticated users after auth resolves
+- [ ] `posthog.group("team", teamId)` enables team-level analytics
+- [ ] Manual pageview capture works with App Router navigation
+- [ ] App works without errors when `NEXT_PUBLIC_POSTHOG_KEY` is not set
 
 ### Super Admin (F001-010)
 - [ ] Super admin can access /admin routes
 - [ ] Non-super-admin users are blocked from /admin
 - [ ] Dashboard shows user, team, and revenue metrics
-- [ ] Admin actions are logged to auditLog table
+- [ ] Admin actions are logged to auditLog table (Convex-native)
+- [ ] Feature flag management at `/admin/flags` proxies PostHog REST API
+- [ ] Analytics page links to PostHog dashboard (no custom charts)
 
 ### Example App (F001-011)
 - [ ] Notes CRUD works with real-time updates
@@ -921,8 +917,10 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] Sentry tunnel route (`/monitoring`) forwards events to avoid ad-blockers
 - [ ] `@vercel/analytics` tracks page views in Vercel dashboard
 - [ ] `@vercel/speed-insights` reports Core Web Vitals (LCP, FID, CLS, TTFB, INP)
+- [ ] PostHog reverse proxy configured in `next.config.js` (`/ph/*` rewrites)
+- [ ] PostHog gracefully disabled when `NEXT_PUBLIC_POSTHOG_KEY` is not set
 - [ ] `convex/seedPreview.ts` populates demo data (team, users, notes, sample content)
-- [ ] `docs/deployment.md` covers Vercel setup, env vars, preview deploys, custom domains
+- [ ] `docs/deployment.md` covers Vercel setup, env vars (including PostHog), preview deploys, custom domains
 
 ### Waitlist / Pre-Launch Mode (F001-015)
 - [ ] When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
@@ -942,7 +940,7 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 - [ ] Seed test files exist for permissions, plan config, auth E2E, and accessibility
 - [ ] ESLint rules tightened: `no-explicit-any: warn`, `no-unused-vars: error`
 - [ ] ARCHITECTURE.md contains system design, data model, and key flows
-- [ ] `docs/adrs/` has 7 initial Architecture Decision Records
+- [ ] `docs/adrs/` has 8 Architecture Decision Records
 - [ ] CONTRIBUTING.md documents dev setup, testing, PR process
 
 ---
@@ -971,6 +969,7 @@ Both patterns share the same Convex mutations for saving messages, tracking usag
 | Vercel Analytics | Free (included) | Free (included with Vercel) |
 | Vercel Speed Insights | Free tier available | $10/mo for more data points |
 | Sentry | 5K errors/mo (free) | $26/mo (Team plan) |
+| PostHog | 1M events + 1M flags/mo | Usage-based at scale |
 
 AI costs are pass-through — the boilerplate tracks usage via credits but each deployer configures their own API keys and credit pricing per model. Blog/changelog are static MDX (zero runtime cost).
 
@@ -1002,11 +1001,11 @@ AI costs are pass-through — the boilerplate tracks usage via credits but each 
 | 2026-02-10 | Configurable entitlements (not hardcoded tiers) | Each project defines its own tiers — boilerplate provides plumbing, not business logic |
 | 2026-02-10 | Team-level billing (not per-user) | Matches B2B SaaS model (Slack, Notion, Linear) |
 | 2026-02-10 | AI via Vercel AI SDK | Provider-agnostic; swap OpenAI/Anthropic via config; built-in streaming |
-| 2026-02-10 | Feature flags in Convex (not LaunchDarkly) | Reactive subscriptions = instant propagation; no third-party dependency |
+| 2026-02-10 | ~~Feature flags in Convex~~ → PostHog | PostHog provides flags + analytics + session replay + A/B testing. Generous free tier. See [ADR-008](../adrs/008-posthog-analytics-flags.md). |
 | 2026-02-10 | Replace messages with notes CRUD | Richer reference implementation demonstrating more patterns |
 | 2026-02-10 | Owner/Admin/Member (3 fixed roles) | Owner is transferable highest-privilege; custom roles opt-in for Enterprise |
 | 2026-02-10 | Super admin via isSuperAdmin boolean | Simple, orthogonal to team roles, easy to check |
-| 2026-02-10 | First-party analytics (not Mixpanel/Amplitude) | Convex-native; no third-party data sharing; real-time dashboards |
+| 2026-02-10 | ~~First-party analytics~~ → PostHog analytics | PostHog provides funnels, retention, session replay. Eliminates custom aggregation code. See [ADR-008](../adrs/008-posthog-analytics-flags.md). |
 | 2026-02-10 | Add magic link auth (Resend OTP) | Convex Auth supports it natively; better UX for some users; no additional service needed (Resend already in stack) |
 | 2026-02-10 | Credit-based AI billing (not just request count) | Different models have vastly different costs; credits give developers flexibility to price fairly |
 | 2026-02-10 | Dual AI streaming patterns | Next.js API route is standard Vercel pattern (default); Convex HTTP action is better for teams wanting everything on Convex. Ship both, document trade-offs. |
@@ -1145,6 +1144,10 @@ npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
 | `CONVEX_DEPLOY_KEY` | Production + Preview (separate keys) | Enables `convex deploy` in CI |
 | `SENTRY_AUTH_TOKEN` | Production + Preview | Source map upload during build |
 | `NEXT_PUBLIC_SENTRY_DSN` | Production + Preview | Optional — Sentry disabled if not set |
+| `NEXT_PUBLIC_POSTHOG_KEY` | Production + Preview | PostHog client-side project key (optional — disabled if not set) |
+| `POSTHOG_API_KEY` | Production + Preview | PostHog server-side project key |
+| `POSTHOG_PERSONAL_API_KEY` | Production only | PostHog admin flag management API key |
+| `POSTHOG_PROJECT_ID` | Production only | PostHog project ID for management API URLs |
 | `NEXT_PUBLIC_CONVEX_URL` | — | Auto-set by `convex deploy` — do NOT set manually |
 
 **Environment Variables — Convex Dashboard:**
@@ -1159,6 +1162,8 @@ npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
 | `ANTHROPIC_API_KEY` | Anthropic API key (optional) |
 | `RESEND_API_KEY` | Resend email API key |
 | `HOSTED_URL` | Public URL for email links (same as SITE_URL) |
+| `POSTHOG_API_KEY` | PostHog server-side project key (for Convex actions) |
+| `POSTHOG_HOST` | PostHog host URL (defaults to `https://us.i.posthog.com`) |
 
 **Key notes:**
 - Webhooks (Polar, etc.) hit `.convex.site` directly — not through Vercel
@@ -1175,7 +1180,8 @@ npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
 | Billing (F001-003) | `michaelshimeles/react-starter-kit` | Unlicensed (reference only) | Real-world Polar + Convex usage |
 | AI (F001-005) | `Syed-Ahmed02/nextjs-convex-clerk-ai-template` | Unlicensed (reference only) | Vercel AI SDK + Convex streaming patterns |
 | Design System (F001-002) | `ixartz/SaaS-Boilerplate` | MIT | shadcn/ui dashboard layout, data tables, settings pages |
-| Feature Flags (F001-008) | `PostHog/posthog-convex` | MIT | PostHog Convex integration (analytics + flags) |
+| Analytics + Flags (F001-008/009) | `PostHog/posthog-js` | MIT | PostHog JS client, React provider, hooks |
+| Convex PostHog (F001-009) | `@samhoque/convex-posthog` | MIT | Server-side PostHog tracking from Convex mutations |
 | Email (F001-006) | `jordanliu/convex-starter` | Unlicensed (reference only) | React Email + Convex patterns |
 
 **Key Patterns to Adopt:**
@@ -1208,7 +1214,10 @@ npx convex deploy --cmd 'npm run build' --preview-run 'seedPreview'
     "@vercel/analytics": "latest",
     "@vercel/speed-insights": "latest",
     "@next/mdx": "latest",
-    "@mdx-js/react": "latest"
+    "@mdx-js/react": "latest",
+    "posthog-js": "latest",
+    "posthog-node": "latest",
+    "@samhoque/convex-posthog": "latest"
   },
   "optionalDependencies": {
     "@sentry/nextjs": "latest"
