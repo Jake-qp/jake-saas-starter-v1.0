@@ -43,13 +43,13 @@ I want to see a professional marketing site with pricing, features, and legal pa
 So that I can evaluate the product and understand its terms before signing up
 
 ## Acceptance Criteria (from PRD)
-- [ ] AC1: Landing page renders with hero, features grid, pricing table, FAQ, and CTA sections
-- [ ] AC2: PricingTable auto-populates from `planConfig.ts` and highlights recommended plan
-- [ ] AC3: `/pricing` page works as standalone pricing comparison
-- [ ] AC4: `/contact` form validates input and sends email via Resend
-- [ ] AC5: `/legal/terms`, `/legal/privacy`, `/legal/cookies` render MDX content correctly
-- [ ] AC6: Marketing pages are fully responsive (mobile/tablet/desktop)
-- [ ] AC7: Marketing layout has distinct nav/footer from authenticated app layout
+- [x] AC1: Landing page renders with hero, features grid, pricing table, FAQ, and CTA sections
+- [x] AC2: PricingTable auto-populates from `planConfig.ts` and highlights recommended plan
+- [x] AC3: `/pricing` page works as standalone pricing comparison
+- [x] AC4: `/contact` form validates input and sends email via Resend
+- [x] AC5: `/legal/terms`, `/legal/privacy`, `/legal/cookies` render MDX content correctly
+- [x] AC6: Marketing pages are fully responsive (mobile/tablet/desktop)
+- [x] AC7: Marketing layout has distinct nav/footer from authenticated app layout
 
 ## Implementation Notes (from PRD)
 - Landing page: HeroSection, FeaturesGrid, PricingTable, FAQAccordion, CTASection

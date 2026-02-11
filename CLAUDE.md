@@ -143,7 +143,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Testing & Quality Infrastructure (F001-016) | P0 | Done |
 | Polar Billing + Credits (F001-003) | P1 | Done |
 | Enhanced RBAC (F001-004) | P1 | Pending |
-| Marketing Site & Legal Pages (F001-012) | P1 | Pending |
+| Marketing Site & Legal Pages (F001-012) | P1 | Done |
 | Production Infrastructure (F001-014) | P1 | Done |
 | File Storage & Uploads (F001-017) | P1 | Pending |
 | AI/LLM Integration (F001-005) | P2 | Pending |
@@ -152,7 +152,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Example App - Notes CRUD (F001-011) | P2 | Pending |
 | Blog & Changelog (F001-013) | P2 | Pending |
 | Feature Flags (F001-008) | P3 | Pending |
-| Analytics & Event Tracking (F001-009) | P3 | Pending |
+| Analytics & Event Tracking (F001-009) | P3 | Done |
 | Super Admin Panel (F001-010) | P3 | Pending |
 | Waitlist / Pre-Launch Mode (F001-015) | P3 | Pending |
 

@@ -5,7 +5,7 @@
     "ids": [
       "F001-004", "F001-005", "F001-006",
       "F001-007", "F001-008", "F001-010", "F001-011",
-      "F001-012", "F001-013", "F001-015",
+      "F001-013", "F001-015",
       "F001-017"
     ]
   },
@@ -165,13 +165,16 @@
       "name": "Marketing Site & Legal Pages",
       "type": "frontend",
       "priority": 1,
-      "status": "in_progress",
-      "current_phase": 2,
+      "status": "complete",
+      "current_phase": 5,
+      "phase_completed": 5,
       "batch": 2,
       "dependencies": ["F001-002"],
       "description": "Landing page, pricing, contact form, terms/privacy/cookies (MDX), marketing layout",
       "spec_file": "docs/specs/F001-012-marketing-legal.spec",
       "started_at": "2026-02-11T19:30:00-05:00",
+      "completed_at": "2026-02-11T20:15:00-05:00",
+      "tests_added": 21,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
