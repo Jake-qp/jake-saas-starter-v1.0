@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,28 +15,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RocketIcon, CheckCircledIcon } from "@radix-ui/react-icons";
 
-// --- MOCK DATA (Phase 2 only — will be replaced in Phase 4) ---
-const MOCK_WAITLIST_COUNT = 1_247;
-// --- END MOCK DATA ---
-
 export default function WaitlistPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
     "idle" | "submitting" | "success" | "duplicate" | "error"
   >("idle");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const joinWaitlist = useMutation(api.waitlist.joinWaitlist);
+  const waitlistCount = useQuery(api.waitlist.getWaitlistCount);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("submitting");
 
-    // Mock submit — will be replaced with real Convex mutation in Phase 4
-    setTimeout(() => {
-      if (email === "taken@example.com") {
+    try {
+      const result = await joinWaitlist({ email });
+      if (result.status === "duplicate") {
         setStatus("duplicate");
       } else {
         setStatus("success");
       }
-    }, 800);
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
@@ -79,7 +82,12 @@ export default function WaitlistPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form
+                onSubmit={(e) => {
+                  void handleSubmit(e);
+                }}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
                   <Label htmlFor="waitlist-email">Email address</Label>
                   <Input
@@ -123,9 +131,11 @@ export default function WaitlistPage() {
           </Card>
         )}
 
-        <p className="text-sm text-muted-foreground">
-          {MOCK_WAITLIST_COUNT.toLocaleString()} people already on the waitlist
-        </p>
+        {waitlistCount !== undefined && waitlistCount > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {waitlistCount.toLocaleString()} people already on the waitlist
+          </p>
+        )}
       </div>
     </div>
   );

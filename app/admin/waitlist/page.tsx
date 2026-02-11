@@ -1,52 +1,20 @@
 "use client";
 
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { ColumnDef } from "@tanstack/react-table";
 import { PageHeader, DataTable, EmptyState, StatusBadge } from "@/components";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
 
-// --- MOCK DATA (Phase 2 only — will be replaced in Phase 4) ---
 interface WaitlistEntry {
-  _id: string;
+  _id: Id<"waitlistEntries">;
   email: string;
-  status: "pending" | "approved" | "rejected";
+  status: string;
   _creationTime: number;
 }
-
-const MOCK_ENTRIES: WaitlistEntry[] = [
-  {
-    _id: "mock-1",
-    email: "alice@startup.io",
-    status: "pending",
-    _creationTime: Date.now() - 2 * 86400000,
-  },
-  {
-    _id: "mock-2",
-    email: "bob.smith@company.com",
-    status: "pending",
-    _creationTime: Date.now() - 1 * 86400000,
-  },
-  {
-    _id: "mock-3",
-    email: "carol.jones@enterprise.co",
-    status: "approved",
-    _creationTime: Date.now() - 5 * 86400000,
-  },
-  {
-    _id: "mock-4",
-    email: "dave@freelancer.me",
-    status: "rejected",
-    _creationTime: Date.now() - 3 * 86400000,
-  },
-  {
-    _id: "mock-5",
-    email:
-      "extremely-long-email-address-that-tests-overflow@very-long-domain-name.example.com",
-    status: "pending",
-    _creationTime: Date.now() - 12 * 3600000,
-  },
-];
-// --- END MOCK DATA ---
 
 const statusMap: Record<string, "default" | "success" | "error"> = {
   pending: "default",
@@ -55,7 +23,77 @@ const statusMap: Record<string, "default" | "success" | "error"> = {
 };
 
 export default function AdminWaitlistPage() {
-  const entries = MOCK_ENTRIES;
+  const entries = useQuery(api.waitlist.listWaitlistEntries);
+  const approveEntry = useMutation(api.waitlist.approveEntry);
+  const rejectEntry = useMutation(api.waitlist.rejectEntry);
+
+  const handleApprove = async (
+    entryId: Id<"waitlistEntries">,
+    email: string,
+  ) => {
+    try {
+      await approveEntry({ entryId });
+
+      // Send invitation email (AC5)
+      try {
+        await fetch("/api/waitlist/send-invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+      } catch {
+        // Email send failure is non-blocking — entry is still approved
+        console.error("Failed to send invitation email to", email);
+      }
+
+      toast({
+        title: "Entry approved",
+        description: `Invitation sent to ${email}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to approve entry",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReject = async (entryId: Id<"waitlistEntries">) => {
+    try {
+      await rejectEntry({ entryId });
+      toast({
+        title: "Entry rejected",
+        description: "Waitlist entry has been rejected.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to reject entry",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!entries) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Waitlist"
+          description="Manage pre-launch waitlist entries"
+          breadcrumbs={[
+            { label: "Admin", href: "/admin" },
+            { label: "Waitlist" },
+          ]}
+        />
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-muted-foreground">Loading waitlist...</p>
+        </div>
+      </div>
+    );
+  }
 
   const pendingCount = entries.filter((e) => e.status === "pending").length;
 
@@ -93,20 +131,16 @@ export default function AdminWaitlistPage() {
             <Button
               variant="default"
               size="sm"
-              onClick={() => {
-                // Mock — Phase 4 will use real mutation
-                console.log("Approve:", row.original.email);
-              }}
+              onClick={() =>
+                void handleApprove(row.original._id, row.original.email)
+              }
             >
               Approve
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                // Mock — Phase 4 will use real mutation
-                console.log("Reject:", row.original.email);
-              }}
+              onClick={() => void handleReject(row.original._id)}
             >
               Reject
             </Button>
