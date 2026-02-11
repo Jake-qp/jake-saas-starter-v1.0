@@ -1,9 +1,22 @@
 # Build Progress
 
 ## Current Feature
-**ID:** (none)
-**Phase:** -
-**Status:** Ready for next build
+**ID:** F001-003
+**Phase:** 1 → 2
+**Status:** Spec approved, starting visual design
+
+**Spec:** `docs/specs/F001-003-polar-billing.spec`
+- User: Team Admin
+- Screens: 1 (Billing Settings Page) + Polar-hosted checkout/portal
+- Flows: 4 (view billing, upgrade plan, hit limit, AI credit consumption)
+- Acceptance criteria: 9
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-003
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-003 -->/,/<!-- END_FEATURE: F001-003 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+
+<!-- DO NOT INVENT REQUIREMENTS. Re-extract from PRD when needed. -->
 
 ---
 
@@ -11,36 +24,9 @@
 **ID:** F001-014
 **Date:** 2026-02-11
 
-Production Infrastructure — Sentry error monitoring (client/server/edge), Vercel Analytics + Speed Insights, PostHog reverse proxy, 4 cron jobs, team-scoped rate limiting, preview seed data, deployment docs.
-
-**Files Created:**
-- `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`
-- `instrumentation.ts`
-- `app/global-error.tsx`
-- `convex/convex.config.ts`, `convex/rateLimit.ts`
-- `convex/crons.ts`, `convex/cronJobs.ts`
-- `convex/seedPreview.ts`
-- `docs/deployment.md`
-
-**Files Modified:**
-- `app/layout.tsx` (Analytics + SpeedInsights)
-- `next.config.js` (Sentry + PostHog proxy)
-- `middleware.ts` (exclude /monitoring)
-- `convex/users/teams/members/invites.tsx` (rate limiting)
-- `package.json` (@sentry/nextjs, @vercel/analytics, @vercel/speed-insights, @convex-dev/rate-limiter)
+Production Infrastructure — Sentry error monitoring, Vercel Analytics + Speed Insights, PostHog reverse proxy, 4 cron jobs, team-scoped rate limiting, preview seed data, deployment docs.
 
 **Spec:** `docs/specs/F001-014-production-infrastructure.spec`
-**Gates:** Phase 4 ✅ | Phase 5 ✅
-
----
-
-## Previously Completed
-**ID:** F001-001
-**Date:** 2026-02-11
-
-Convex Auth Migration + Magic Link
-
-**Spec:** `docs/specs/F001-001-convex-auth.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
