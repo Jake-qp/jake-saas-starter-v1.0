@@ -63,6 +63,9 @@ const schema = defineEntSchema(
       onboardingStep: v.optional(v.number()), // 0-indexed current step
       // Changelog tracking (F001-013) — ISO date string of last-seen changelog entry
       lastSeenChangelogDate: v.optional(v.string()),
+      // Impersonation (F001-010) — super admin viewing as another user
+      impersonatingUserId: v.optional(v.id("users")),
+      impersonationExpiresAt: v.optional(v.number()),
     })
       .field("email", v.optional(v.string()))
       .index("email", ["email"])
@@ -185,6 +188,19 @@ const schema = defineEntSchema(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
       .field("email", v.string(), { unique: true })
       .index("unsubscribeToken", ["unsubscribeToken"]),
+
+    // Audit log for admin actions (F001-010)
+    auditLog: defineEnt({
+      actorId: v.id("users"),
+      action: v.string(), // "impersonation_start" | "impersonation_stop" | "impersonation_expired"
+      targetUserId: v.optional(v.id("users")),
+      targetTeamId: v.optional(v.id("teams")),
+      metadata: v.optional(v.any()),
+      timestamp: v.number(),
+    })
+      .index("actorId", ["actorId"])
+      .index("action", ["action"])
+      .index("timestamp", ["timestamp"]),
 
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({
