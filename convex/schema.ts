@@ -202,6 +202,14 @@ const schema = defineEntSchema(
       .index("action", ["action"])
       .index("timestamp", ["timestamp"]),
 
+    // Waitlist entries for pre-launch mode (F001-015)
+    waitlistEntries: defineEnt({
+      status: v.string(), // "pending" | "approved" | "rejected"
+    })
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
+      .field("email", v.string(), { unique: true })
+      .index("status", ["status"]),
+
     // AI usage tracking for credit-based billing (F001-003)
     aiUsage: defineEnt({
       model: v.string(),
