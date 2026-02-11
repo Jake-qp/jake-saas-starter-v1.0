@@ -2,14 +2,20 @@
 
 ## Current Feature
 **ID:** F001-017
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
+**Phase:** 3 → 4
+**Status:** Data model approved, starting TDD implementation
 
 **Spec:** `docs/specs/F001-017-file-storage.spec`
 - User: Team member / team admin
 - Screens: 4 (FileUploader, profile avatar, team avatar, note attachments)
 - Flows: 4 (avatar upload, team avatar, note attachment, quota exceeded)
 - Acceptance criteria: 10
+
+**Data Model:**
+- New table: `files` (storageId, fileName, fileType, fileSize, teamId, uploadedBy, purpose)
+- Schema: users.avatarStorageId, teams.avatarStorageId
+- Storage: Convex native file storage (generateUploadUrl)
+- Quota: sum(fileSize) per team vs planConfig.storageQuotaMB
 
 ## PRD Anchor (Source of Truth)
 **Feature:** F001-017
