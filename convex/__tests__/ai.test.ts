@@ -21,7 +21,8 @@ describe("F001-005: AI/LLM Integration", () => {
     });
 
     it("should have teamId index from team edge on aiMessages", () => {
-      const table = schema.tables.aiMessages;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.aiMessages as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -30,7 +31,8 @@ describe("F001-005: AI/LLM Integration", () => {
 
     it("aiMessages table has teamId field for team edge", () => {
       // convex-ents edges create a teamId field; verify via index
-      const table = schema.tables.aiMessages;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.aiMessages as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

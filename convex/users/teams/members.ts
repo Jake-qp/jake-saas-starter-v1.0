@@ -68,7 +68,7 @@ export const list = query({
           pictureUrl: user.pictureUrl,
           initials:
             user.firstName === undefined || user.lastName === undefined
-              ? user.fullName[0]
+              ? (user.fullName ?? "?")[0]
               : user.firstName[0] + user.lastName[0],
           roleId: member.roleId,
           roleName: role.name,

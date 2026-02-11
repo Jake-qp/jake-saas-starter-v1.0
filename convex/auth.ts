@@ -53,7 +53,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           finalSlug = n === 0 ? slug : `${slug}-${n}`;
           const existing = await ctx.db
             .query("teams")
-            .withIndex("slug", (q) => q.eq("slug", finalSlug))
+            .filter((q) => q.eq(q.field("slug"), finalSlug))
             .unique();
           if (!existing) break;
           n++;
@@ -68,7 +68,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         // Find the Admin role
         const adminRole = await ctx.db
           .query("roles")
-          .withIndex("name", (q) => q.eq("name", "Admin"))
+          .filter((q) => q.eq(q.field("name"), "Admin"))
           .unique();
 
         if (adminRole) {

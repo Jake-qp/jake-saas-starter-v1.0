@@ -24,7 +24,8 @@ describe("billing schema (F001-003)", () => {
     });
 
     it("should have polarCustomerId index on teams", () => {
-      const teamsTable = schema.tables.teams;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const teamsTable = schema.tables.teams as any;
       const indexNames = teamsTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -38,7 +39,8 @@ describe("billing schema (F001-003)", () => {
     });
 
     it("should have teamTimestamp index on aiUsage", () => {
-      const aiUsageTable = schema.tables.aiUsage;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const aiUsageTable = schema.tables.aiUsage as any;
       const indexNames = aiUsageTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -187,7 +189,7 @@ describe("entitlement logic (F001-003)", () => {
       for (const key of limitKeys) {
         const freeLimit = PLAN_CONFIG.free.limits[key];
         const proLimit = PLAN_CONFIG.pro.limits[key];
-        if (freeLimit !== -1 && proLimit !== -1) {
+        if ((freeLimit as number) !== -1 && (proLimit as number) !== -1) {
           expect(freeLimit).toBeLessThan(proLimit);
         }
       }

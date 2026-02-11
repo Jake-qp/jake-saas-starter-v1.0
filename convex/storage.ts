@@ -167,11 +167,9 @@ export const saveTeamAvatar = mutation({
     if (team.avatarStorageId) {
       await ctx.storage.delete(team.avatarStorageId);
       // Delete old file record
-      const oldFiles = await ctx
-        .table("files", "teamPurpose", (q) =>
-          q.eq("teamId", args.teamId).eq("purpose", "teamAvatar"),
-        )
-        .collect();
+      const oldFiles = await ctx.table("files", "teamPurpose", (q) =>
+        q.eq("teamId", args.teamId).eq("purpose", "teamAvatar"),
+      );
       for (const oldFile of oldFiles) {
         await oldFile.delete();
       }
@@ -256,11 +254,9 @@ export const removeTeamAvatar = mutation({
     if (team.avatarStorageId) {
       await ctx.storage.delete(team.avatarStorageId);
       // Delete file record
-      const avatarFiles = await ctx
-        .table("files", "teamPurpose", (q) =>
-          q.eq("teamId", args.teamId).eq("purpose", "teamAvatar"),
-        )
-        .collect();
+      const avatarFiles = await ctx.table("files", "teamPurpose", (q) =>
+        q.eq("teamId", args.teamId).eq("purpose", "teamAvatar"),
+      );
       for (const file of avatarFiles) {
         await file.delete();
       }
@@ -296,11 +292,9 @@ export const listTeamFiles = query({
 
     let files;
     if (args.purpose) {
-      files = await ctx
-        .table("files", "teamPurpose", (q) =>
-          q.eq("teamId", args.teamId).eq("purpose", args.purpose!),
-        )
-        .collect();
+      files = await ctx.table("files", "teamPurpose", (q) =>
+        q.eq("teamId", args.teamId).eq("purpose", args.purpose!),
+      );
     } else {
       files = await ctx.table("teams").getX(args.teamId).edge("files");
     }

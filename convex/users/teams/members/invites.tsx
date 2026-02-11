@@ -97,7 +97,7 @@ export const prepare = internalMutation({
       throws: true,
     });
     return {
-      inviterEmail: ctx.viewerX().email,
+      inviterEmail: ctx.viewerX().email ?? "",
       teamName: (await ctx.table("teams").getX(teamId)).name,
     };
   },

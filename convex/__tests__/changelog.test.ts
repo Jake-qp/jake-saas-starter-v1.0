@@ -15,7 +15,8 @@ describe("F001-013: Blog & Changelog", () => {
     });
 
     it("should have a unique email field", () => {
-      const table = schema.tables.changelogSubscribers;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.changelogSubscribers as any;
       // convex-ents defines unique fields as indexes
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
@@ -24,7 +25,8 @@ describe("F001-013: Blog & Changelog", () => {
     });
 
     it("should have unsubscribeToken index", () => {
-      const table = schema.tables.changelogSubscribers;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.changelogSubscribers as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

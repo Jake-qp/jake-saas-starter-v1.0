@@ -11,7 +11,8 @@ describe("Waitlist / Pre-Launch Mode (F001-015)", () => {
     });
 
     it("waitlistEntries has email field with unique index", () => {
-      const table = schema.default.tables.waitlistEntries;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.default.tables.waitlistEntries as any;
       expect(table).toBeDefined();
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
@@ -20,7 +21,8 @@ describe("Waitlist / Pre-Launch Mode (F001-015)", () => {
     });
 
     it("waitlistEntries has status index", () => {
-      const table = schema.default.tables.waitlistEntries;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.default.tables.waitlistEntries as any;
       expect(table).toBeDefined();
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,

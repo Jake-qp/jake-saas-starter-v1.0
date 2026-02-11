@@ -14,7 +14,8 @@ auth.addHttpRoutes(http);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 polar.registerRoutes(http as any, {
   path: "/polar/events",
-  onSubscriptionCreated: async (ctx, event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubscriptionCreated: async (ctx: any, event: any) => {
     // Map Polar product to tier and update the team.
     // The teamId is stored in checkout metadata.
     const metadata = event.data.metadata as Record<string, string> | undefined;
@@ -32,7 +33,8 @@ polar.registerRoutes(http as any, {
       subscriptionStatus: "active",
     });
   },
-  onSubscriptionUpdated: async (ctx, event) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubscriptionUpdated: async (ctx: any, event: any) => {
     // Find team by Polar customer ID and update subscription state.
     const metadata = event.data.metadata as Record<string, string> | undefined;
     const teamId = metadata?.teamId;

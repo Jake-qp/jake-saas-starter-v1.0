@@ -56,7 +56,7 @@ export const seedPreview = internalMutation({
     // Check if data already exists
     const existingTeam = await ctx.db
       .query("teams")
-      .withIndex("slug", (q) => q.eq("slug", PREVIEW_DATA.team.slug))
+      .filter((q) => q.eq(q.field("slug"), PREVIEW_DATA.team.slug))
       .unique();
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -73,10 +73,8 @@ export const seedPreview = internalMutation({
 
     if (existingRoles.length === 0) {
       // Create all 14 permissions
-      const permissionIds: Record<
-        string,
-        ReturnType<typeof ctx.db.insert>
-      > = {};
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const permissionIds: Record<string, any> = {};
       for (const name of ALL_PERMISSIONS) {
         permissionIds[name] = await ctx.db.insert("permissions", { name });
       }
@@ -85,22 +83,47 @@ export const seedPreview = internalMutation({
       ownerRoleId = await ctx.db.insert("roles", {
         name: "Owner",
         isDefault: false,
-        permissions: ROLE_PERMISSION_MAP.Owner.map((n) => permissionIds[n]),
       });
+      // Link permissions via many-to-many junction table (roles_to_permissions)
+      for (const permName of ROLE_PERMISSION_MAP.Owner) {
+        await ctx.db.insert(
+          "roles_to_permissions" as never,
+          {
+            rolesId: ownerRoleId,
+            permissionsId: permissionIds[permName],
+          } as never,
+        );
+      }
 
       // Create Admin role
       adminRoleId = await ctx.db.insert("roles", {
         name: "Admin",
         isDefault: false,
-        permissions: ROLE_PERMISSION_MAP.Admin.map((n) => permissionIds[n]),
       });
+      for (const permName of ROLE_PERMISSION_MAP.Admin) {
+        await ctx.db.insert(
+          "roles_to_permissions" as never,
+          {
+            rolesId: adminRoleId,
+            permissionsId: permissionIds[permName],
+          } as never,
+        );
+      }
 
       // Create Member role (default)
       memberRoleId = await ctx.db.insert("roles", {
         name: "Member",
         isDefault: true,
-        permissions: ROLE_PERMISSION_MAP.Member.map((n) => permissionIds[n]),
       });
+      for (const permName of ROLE_PERMISSION_MAP.Member) {
+        await ctx.db.insert(
+          "roles_to_permissions" as never,
+          {
+            rolesId: memberRoleId,
+            permissionsId: permissionIds[permName],
+          } as never,
+        );
+      }
     } else {
       const ownerRole = existingRoles.find((r) => r.name === "Owner");
       const adminRole = existingRoles.find((r) => r.name === "Admin");

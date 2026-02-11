@@ -155,7 +155,9 @@ const schema = defineEntSchema(
       role: v.union(v.literal("user"), v.literal("assistant")),
       content: v.string(),
       model: v.optional(v.string()),
-    }).edge("team"),
+    })
+      .edge("team")
+      .index("teamCreation", ["teamId"]),
 
     // In-app notifications (F001-006)
     notifications: defineEnt({

@@ -42,8 +42,11 @@ export const transferOwnership = mutation({
     const ownerRole = await getRole(ctx, "Owner");
     const adminRole = await getRole(ctx, "Admin");
 
-    // Demote current owner to Admin
-    await currentMember.patch({ roleId: adminRole._id });
+    // Demote current owner to Admin (re-fetch as EntWriter for mutation)
+    const currentMemberWriter = await ctx
+      .table("members")
+      .getX(currentMember._id);
+    await currentMemberWriter.patch({ roleId: adminRole._id });
 
     // Promote new owner to Owner
     await newOwnerMember.patch({ roleId: ownerRole._id });

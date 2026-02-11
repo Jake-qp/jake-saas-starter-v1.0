@@ -30,7 +30,8 @@ describe("Super Admin Panel (F001-010)", () => {
 
   describe("Schema: auditLog indexes", () => {
     it("auditLog table has actorId index", () => {
-      const table = schema.default.tables.auditLog;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.default.tables.auditLog as any;
       expect(table).toBeDefined();
       expect(table.indexes).toBeDefined();
       const indexNames = table.indexes.map(
@@ -40,7 +41,8 @@ describe("Super Admin Panel (F001-010)", () => {
     });
 
     it("auditLog table has action index", () => {
-      const table = schema.default.tables.auditLog;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.default.tables.auditLog as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -48,7 +50,8 @@ describe("Super Admin Panel (F001-010)", () => {
     });
 
     it("auditLog table has timestamp index", () => {
-      const table = schema.default.tables.auditLog;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.default.tables.auditLog as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

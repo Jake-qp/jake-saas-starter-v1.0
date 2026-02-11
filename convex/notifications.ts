@@ -41,11 +41,9 @@ export const unreadCount = query({
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
     if (ctx.viewer === null) return 0;
     const userId = ctx.viewerX()._id;
-    const unread = await ctx
-      .table("notifications", "userIdRead", (q) =>
-        q.eq("userId", userId).eq("isRead", false),
-      )
-      .collect();
+    const unread = await ctx.table("notifications", "userIdRead", (q) =>
+      q.eq("userId", userId).eq("isRead", false),
+    );
     return unread.length;
   },
 });
@@ -73,11 +71,9 @@ export const markAllAsRead = mutation({
   args: {},
   async handler(ctx) {
     const userId = ctx.viewerX()._id;
-    const unread = await ctx
-      .table("notifications", "userIdRead", (q) =>
-        q.eq("userId", userId).eq("isRead", false),
-      )
-      .collect();
+    const unread = await ctx.table("notifications", "userIdRead", (q) =>
+      q.eq("userId", userId).eq("isRead", false),
+    );
     for (const notification of unread) {
       await notification.patch({ isRead: true });
     }

@@ -21,7 +21,8 @@ describe("F001-006: Notification System", () => {
     });
 
     it("should have userId index on notifications", () => {
-      const table = schema.tables.notifications;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.notifications as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -29,7 +30,8 @@ describe("F001-006: Notification System", () => {
     });
 
     it("should have userIdRead index for unread queries", () => {
-      const table = schema.tables.notifications;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.notifications as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -43,7 +45,8 @@ describe("F001-006: Notification System", () => {
     });
 
     it("should have userId index on notificationPreferences", () => {
-      const table = schema.tables.notificationPreferences;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.notificationPreferences as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

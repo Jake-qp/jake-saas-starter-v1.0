@@ -20,6 +20,10 @@ import {
 import { Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./types";
 
+// Read-only ctx cast — both QueryCtx and MutationCtx support table reads,
+// but TypeScript can't resolve the union's overloaded .table() method.
+type ReadCtx = QueryCtx;
+
 /**
  * Check if a team has entitlement for a given limit key.
  * Throws ConvexError with usage details and upgrade URL on limit hit.
@@ -31,7 +35,8 @@ export async function checkEntitlement(
   teamId: Id<"teams">,
   key: LimitKey,
 ) {
-  const team = await ctx.table("teams").getX(teamId);
+  const rCtx = ctx as unknown as ReadCtx;
+  const team = await rCtx.table("teams").getX(teamId);
   const tier = getTeamTier(team);
   const limit = PLAN_CONFIG[tier].limits[key];
 
@@ -57,9 +62,10 @@ export async function getCurrentUsage(
   teamId: Id<"teams">,
   key: LimitKey,
 ): Promise<number> {
+  const rCtx = ctx as unknown as ReadCtx;
   switch (key) {
     case "members": {
-      const members = await ctx
+      const members = await rCtx
         .table("teams")
         .getX(teamId)
         .edge("members")
@@ -69,7 +75,7 @@ export async function getCurrentUsage(
     case "aiCredits":
       return await getCreditsUsedThisPeriod(ctx, teamId);
     case "notes": {
-      const notes = await ctx
+      const notes = await rCtx
         .table("teams")
         .getX(teamId)
         .edge("notes")
@@ -78,7 +84,7 @@ export async function getCurrentUsage(
     }
     case "storageQuotaMB": {
       // Sum file sizes for this team, convert bytes to MB (F001-017)
-      const files = await ctx.table("teams").getX(teamId).edge("files");
+      const files = await rCtx.table("teams").getX(teamId).edge("files");
       const totalBytes = files.reduce((sum, file) => sum + file.fileSize, 0);
       return Math.ceil(totalBytes / (1024 * 1024));
     }
@@ -99,11 +105,10 @@ export async function getCreditsUsedThisPeriod(
   const now = new Date();
   const periodStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-  const usageRecords = await ctx
-    .table("aiUsage", "teamTimestamp", (q) =>
-      q.eq("teamId", teamId).gte("timestamp", periodStart),
-    )
-    .collect();
+  const rCtx = ctx as unknown as ReadCtx;
+  const usageRecords = await rCtx.table("aiUsage", "teamTimestamp", (q) =>
+    q.eq("teamId", teamId).gte("timestamp", periodStart),
+  );
 
   return usageRecords.reduce((sum, record) => sum + record.creditsUsed, 0);
 }
@@ -151,7 +156,7 @@ export async function getTeamBillingInfo(
     tier,
     displayName: config.displayName,
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    status: (team.subscriptionStatus as string | undefined) ?? "active",
+    status: team.subscriptionStatus ?? "active",
     usage: {
       members: {
         current: membersUsage,

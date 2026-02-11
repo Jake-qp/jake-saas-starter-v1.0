@@ -88,7 +88,7 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "convex": "^1.13.2",
-    "convex-ents": "^0.9.5",
+    "convex-ents": "^0.20.0",
     "convex-helpers": "0.1.27",
     "date-fns": "^2.30.0",
     "embla-carousel-react": "^8.6.0",

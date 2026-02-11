@@ -27,7 +27,8 @@ describe("storage schema (F001-017)", () => {
     });
 
     it("should have teamPurpose index on files", () => {
-      const filesTable = schema.tables.files;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filesTable = schema.tables.files as any;
       const indexNames = filesTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -35,7 +36,8 @@ describe("storage schema (F001-017)", () => {
     });
 
     it("should have uploadedBy index on files", () => {
-      const filesTable = schema.tables.files;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filesTable = schema.tables.files as any;
       const indexNames = filesTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

@@ -17,13 +17,15 @@ import { getTeamBillingInfo } from "./entitlements";
  * Polar component instance.
  * getUserInfo returns the team's ID and owner email for team-level billing.
  */
-export const polar = new Polar(components.polar, {
-  getUserInfo: async (ctx) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const polar: any = new Polar(components.polar, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getUserInfo: async (ctx: any): Promise<{ userId: string; email: string }> => {
     // In the checkout flow, the current viewer is the team admin.
     // We use their user ID + email as the Polar customer identity.
     // The actual team association is handled via checkout metadata.
     const viewer = await ctx.runQuery(api.billing.getViewerInfo);
-    if (!viewer) return null;
+    if (!viewer) return { userId: "", email: "" };
     return { userId: viewer.userId, email: viewer.email };
   },
 });
@@ -145,9 +147,10 @@ export const resetAllTeamCredits = internalMutation({
   handler: async (ctx) => {
     // Credit reset is automatic via calendar month boundary in getCreditsUsedThisPeriod.
     // Log the reset event for monitoring.
-    const teams = await ctx.table("teams").collect();
+    const teams = await ctx.table("teams");
     const activeTeams = teams.filter(
-      (t) => t.deletionTime === undefined && !t.isPersonal,
+      (t: { deletionTime?: number; isPersonal: boolean }) =>
+        t.deletionTime === undefined && !t.isPersonal,
     );
     console.log(
       `Monthly credit reset: ${activeTeams.length} active team(s) reset to fresh allocation`,
@@ -163,9 +166,13 @@ export const resetAllTeamCredits = internalMutation({
 export const syncAllSubscriptions = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const teams = await ctx.table("teams").collect();
+    const teams = await ctx.table("teams");
     const subscribedTeams = teams.filter(
-      (t) =>
+      (t: {
+        polarCustomerId?: string;
+        deletionTime?: number;
+        subscriptionStatus?: string;
+      }) =>
         t.polarCustomerId &&
         t.deletionTime === undefined &&
         t.subscriptionStatus !== "canceled",

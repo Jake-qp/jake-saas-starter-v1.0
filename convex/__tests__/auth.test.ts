@@ -41,7 +41,8 @@ describe("auth schema (F001-001)", () => {
     });
 
     it("should have email index on users", () => {
-      const usersTable = schema.tables.users;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usersTable = schema.tables.users as any;
       expect(usersTable.indexes).toBeDefined();
       // Verify the email index exists
       const indexNames = usersTable.indexes.map(
@@ -51,7 +52,8 @@ describe("auth schema (F001-001)", () => {
     });
 
     it("should have phone index on users", () => {
-      const usersTable = schema.tables.users;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usersTable = schema.tables.users as any;
       const indexNames = usersTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -59,7 +61,8 @@ describe("auth schema (F001-001)", () => {
     });
 
     it("should NOT have tokenIdentifier index", () => {
-      const usersTable = schema.tables.users;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usersTable = schema.tables.users as any;
       const indexNames = usersTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -69,7 +72,8 @@ describe("auth schema (F001-001)", () => {
 
   describe("auth session table structure", () => {
     it("should have userId index on authSessions", () => {
-      const table = schema.tables.authSessions;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.authSessions as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -77,7 +81,8 @@ describe("auth schema (F001-001)", () => {
     });
 
     it("should have userIdAndProvider index on authAccounts", () => {
-      const table = schema.tables.authAccounts;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.authAccounts as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -85,7 +90,8 @@ describe("auth schema (F001-001)", () => {
     });
 
     it("should have providerAndAccountId index on authAccounts", () => {
-      const table = schema.tables.authAccounts;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const table = schema.tables.authAccounts as any;
       const indexNames = table.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );

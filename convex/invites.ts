@@ -10,7 +10,9 @@ export const list = query({
       return null;
     }
     return await ctx
-      .table("invites", "email", (q) => q.eq("email", ctx.viewerX().email))
+      .table("invites", "email", (q) =>
+        q.eq("email", ctx.viewerX().email ?? ""),
+      )
       .map(async (invite) => ({
         _id: invite._id,
         email: invite.email,
@@ -50,7 +52,7 @@ export const accept = mutation({
     checkViewerWasInvited(ctx, invite);
     const existingMember = await ctx
       .table("members", "teamUser", (q) =>
-        q.eq("teamId", invite.teamId).eq("userId", ctx.viewerX()._id)
+        q.eq("teamId", invite.teamId).eq("userId", ctx.viewerX()._id),
       )
       .unique();
     if (existingMember !== null) {

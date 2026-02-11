@@ -20,7 +20,8 @@ describe("F001-011: Notes CRUD", () => {
     });
 
     it("notes table should have a searchIndex", () => {
-      const notesTable = schema.tables.notes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const notesTable = schema.tables.notes as any;
       const searchIndexes = notesTable.searchIndexes;
       expect(searchIndexes).toBeDefined();
       expect(searchIndexes.length).toBeGreaterThan(0);
@@ -32,7 +33,8 @@ describe("F001-011: Notes CRUD", () => {
     });
 
     it("notes table should have teamCreatedBy index", () => {
-      const notesTable = schema.tables.notes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const notesTable = schema.tables.notes as any;
       const indexNames = notesTable.indexes.map(
         (idx: { indexDescriptor: string }) => idx.indexDescriptor,
       );
@@ -41,7 +43,8 @@ describe("F001-011: Notes CRUD", () => {
 
     it("notes table should have teamId field (edge to teams)", () => {
       // convex-ents .edge("team") creates a teamId field + foreign key
-      const notesTable = schema.tables.notes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const notesTable = schema.tables.notes as any;
       expect(notesTable).toBeDefined();
       // The teamCreatedBy index references teamId, proving the edge exists
       const indexNames = notesTable.indexes.map(
@@ -89,7 +92,8 @@ describe("F001-011: Notes CRUD", () => {
 
   describe("search configuration", () => {
     it("notes searchIndex should filter by teamId", () => {
-      const notesTable = schema.tables.notes;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const notesTable = schema.tables.notes as any;
       const searchableIndex = notesTable.searchIndexes.find(
         (idx: { indexDescriptor: string }) =>
           idx.indexDescriptor === "searchable",
@@ -100,7 +104,8 @@ describe("F001-011: Notes CRUD", () => {
     });
 
     it("members table should also have a searchIndex (for command palette)", () => {
-      const membersTable = schema.tables.members;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const membersTable = schema.tables.members as any;
       expect(membersTable.searchIndexes.length).toBeGreaterThan(0);
     });
   });
