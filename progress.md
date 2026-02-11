@@ -2,14 +2,15 @@
 
 ## Current Feature
 **ID:** F001-012
-**Phase:** 1 → 2
-**Status:** Spec approved (auto), starting visual design
+**Phase:** 3 → 4
+**Status:** Data model approved (auto), starting TDD implementation
 
 **Spec:** `docs/specs/F001-012-marketing-legal.spec`
-- User: Prospective customer (visitor)
-- Screens: 6 (landing, pricing, contact, terms, privacy, cookies)
-- Flows: 4
-- Acceptance criteria: 7
+**Data Model:**
+- No new Convex tables — purely frontend + API route
+- `/api/contact` — Next.js API route with Zod validation → Resend email
+- `planConfig.ts` — existing static config for pricing (no changes)
+- `content/legal/*.mdx` — static MDX files read at build time
 
 ## PRD Anchor (Source of Truth)
 **Feature:** F001-012
