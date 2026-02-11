@@ -2,8 +2,8 @@
 
 ## Current Feature
 **ID:** F001-003
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
+**Phase:** 3 → 4
+**Status:** Data model approved, starting TDD implementation
 
 **Spec:** `docs/specs/F001-003-polar-billing.spec`
 - User: Team Admin
