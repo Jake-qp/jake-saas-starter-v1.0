@@ -41,17 +41,17 @@ I want to manage users, teams, and platform settings from an admin panel
 So that I can monitor platform health and troubleshoot user issues
 
 ## Acceptance Criteria
-- [ ] AC1: Super admin can access /admin routes
-- [ ] AC2: Non-super-admin users are blocked from /admin
-- [ ] AC3: Dashboard shows user, team, and revenue metrics
-- [ ] AC4: Admin actions are logged to auditLog table (Convex-native)
-- [ ] AC5: Feature flag management at `/admin/flags` proxies PostHog REST API (EXISTING)
-- [ ] AC6: Analytics page links to PostHog dashboard (no custom charts)
-- [ ] AC7: Admin can impersonate any user via "View as User" button in user list
-- [ ] AC8: Impersonation shows `<ImpersonationBanner>`: "Viewing as [Name] — Exit"
-- [ ] AC9: Impersonation is read-only (mutations blocked or flagged)
-- [ ] AC10: Impersonation auto-expires after 30 minutes
-- [ ] AC11: Every impersonation start/stop is logged to auditLog
+- [x] AC1: Super admin can access /admin routes
+- [x] AC2: Non-super-admin users are blocked from /admin
+- [x] AC3: Dashboard shows user, team, and revenue metrics
+- [x] AC4: Admin actions are logged to auditLog table (Convex-native)
+- [x] AC5: Feature flag management at `/admin/flags` proxies PostHog REST API (EXISTING)
+- [x] AC6: Analytics page links to PostHog dashboard (no custom charts)
+- [x] AC7: Admin can impersonate any user via "View as User" button in user list
+- [x] AC8: Impersonation shows `<ImpersonationBanner>`: "Viewing as [Name] — Exit"
+- [x] AC9: Impersonation is read-only (mutations blocked or flagged)
+- [x] AC10: Impersonation auto-expires after 30 minutes
+- [x] AC11: Every impersonation start/stop is logged to auditLog
 
 ## Edge Cases
 - Super admin tries to impersonate themselves: Denied with friendly message

@@ -1,35 +1,35 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-010
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-010-super-admin.spec`
-- User: Platform operator / super admin
-- Screens: 6 (dashboard, users, teams, flags (existing), analytics, audit)
-- Flows: 3 (dashboard metrics, user impersonation, audit trail)
-- Acceptance criteria: 11
-
-## PRD Anchor (Source of Truth)
-**Feature:** F001-010
-**Source:** docs/prds/F001-saas-boilerplate-v2.md
-**Extract:** `sed -n '/<!-- START_FEATURE: F001-010 -->/,/<!-- END_FEATURE: F001-010 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+None — all scheduled features complete.
 
 ---
 
 ## Last Completed
-**ID:** F001-013
+**ID:** F001-010
 **Date:** 2026-02-11
 
-Blog & Changelog (MDX) — 21 new tests, 11/11 ACs.
+Super Admin Panel — 23 new tests, 11/11 ACs.
 
-**Spec:** `docs/specs/F001-013-blog-changelog.spec`
+**Spec:** `docs/specs/F001-010-super-admin.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
+
+**Files modified/created:**
+- `convex/schema.ts` — auditLog table, impersonation fields on users
+- `convex/admin.ts` — dashboardMetrics, listUsers, listTeams, listAuditLog, startImpersonation, stopImpersonation, getImpersonationStatus
+- `app/admin/layout.tsx` — sidebar nav with 6 items + super admin guard
+- `app/admin/page.tsx` — dashboard with real-time metrics
+- `app/admin/users/page.tsx` — user list with impersonation
+- `app/admin/teams/page.tsx` — team list with plan/status
+- `app/admin/analytics/page.tsx` — PostHog dashboard link
+- `app/admin/audit/page.tsx` — audit log with DataTable
+- `components/ImpersonationBanner.tsx` — fixed warning bar
+- `components/index.ts` — barrel export updated
+- `convex/__tests__/superAdmin.test.ts` — 23 tests
 
 ---
 
 ## Project State
-- **Tests:** 411 passing (6 todo seeds for future features)
+- **Tests:** 434 passing (6 todo seeds for future features)
 - **Build:** ✅ succeeds
-- **Features:** 15 complete | 1 in progress | 1 pending
+- **Features:** 16 complete | 0 in progress | 1 pending (F001-015)
