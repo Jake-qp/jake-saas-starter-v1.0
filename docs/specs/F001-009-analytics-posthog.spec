@@ -45,13 +45,13 @@ I want PostHog analytics integrated with env-var gating
 So that I can track user behavior without building custom analytics infrastructure
 
 ## Acceptance Criteria
-- [ ] AC1: `useTrack(event, properties?)` fires events that appear in PostHog dashboard
-- [ ] AC2: `useTrack()` is a no-op when PostHog is not configured
-- [ ] AC3: PostHog reverse proxy works: network tab shows requests to `/ph/` not `us.i.posthog.com`
-- [ ] AC4: `posthog.identify()` links events to authenticated users after auth resolves
-- [ ] AC5: `posthog.group("team", teamId)` enables team-level analytics
-- [ ] AC6: Manual pageview capture works with App Router navigation
-- [ ] AC7: App works without errors when `NEXT_PUBLIC_POSTHOG_KEY` is not set
+- [x] AC1: `useTrack(event, properties?)` fires events that appear in PostHog dashboard
+- [x] AC2: `useTrack()` is a no-op when PostHog is not configured
+- [x] AC3: PostHog reverse proxy works: network tab shows requests to `/ph/` not `us.i.posthog.com`
+- [x] AC4: `posthog.identify()` links events to authenticated users after auth resolves
+- [x] AC5: `posthog.group("team", teamId)` enables team-level analytics
+- [x] AC6: Manual pageview capture works with App Router navigation
+- [x] AC7: App works without errors when `NEXT_PUBLIC_POSTHOG_KEY` is not set
 
 ## Implementation Notes (from PRD)
 - PostHog client/server setup with env-var gating + reverse proxy

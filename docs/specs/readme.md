@@ -9,6 +9,7 @@
 | F001-014 | Production Infrastructure | ✅ | `docs/specs/F001-014-production-infrastructure.spec` |
 | F001-016 | Testing & Quality Infrastructure | ✅ | `docs/specs/F001-016-testing-quality-infrastructure.spec` |
 | F001-003 | Polar Billing + Credit System | ✅ | `docs/specs/F001-003-polar-billing.spec` |
+| F001-009 | Analytics & Event Tracking (PostHog) | ✅ | `docs/specs/F001-009-analytics-posthog.spec` |
 
 ## Source Code Index
 
@@ -88,6 +89,22 @@
 | Settings menu | `app/t/[teamSlug]/settings/SettingsMenu.tsx` | Added Billing nav link |
 | Plan config tests | `lib/__tests__/planConfig.test.ts` | 27 tests for plan config logic |
 | Billing tests | `convex/__tests__/billing.test.ts` | 29 tests for schema + entitlement logic |
+
+### F001-009 — Analytics & Event Tracking (PostHog)
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| PostHog client | `lib/posthog/client.ts` | Browser singleton with /ph reverse proxy, env-var gated |
+| PostHog server | `lib/posthog/server.ts` | Server-side singleton for API routes (posthog-node) |
+| PostHogProvider | `lib/posthog/PostHogProvider.tsx` | Client component that initializes PostHog on mount |
+| PostHogPageView | `lib/posthog/PostHogPageView.tsx` | Manual pageview capture for App Router navigation |
+| PostHogIdentify | `lib/posthog/PostHogIdentify.tsx` | User identify + team group integration |
+| useTrack | `lib/hooks/use-track.ts` | Hook wrapping posthog.capture() — no-op when unconfigured |
+| useFeatureFlag | `lib/hooks/use-feature-flag.ts` | Hook for PostHog feature flag evaluation |
+| Convex PostHog | `convex/posthog.ts` | @samhoque/convex-posthog instance for server-side events |
+| Component config | `convex/convex.config.ts` | PostHog component registration |
+| Root layout | `app/layout.tsx` | PostHogProvider + PostHogPageView integration |
+| PostHog tests | `lib/__tests__/posthog.test.ts` | 19 tests for all PostHog modules |
 
 ## Concept Index
 

@@ -1,10 +1,10 @@
 {
   "project": "SaaS Boilerplate V2",
   "pending_features": {
-    "count": 11,
+    "count": 10,
     "ids": [
       "F001-004", "F001-005", "F001-006",
-      "F001-007", "F001-008", "F001-009", "F001-010", "F001-011",
+      "F001-007", "F001-008", "F001-010", "F001-011",
       "F001-012", "F001-013", "F001-015",
       "F001-017"
     ]
@@ -123,13 +123,16 @@
       "name": "Analytics & Event Tracking (PostHog)",
       "type": "backend",
       "priority": 3,
-      "status": "in_progress",
+      "status": "complete",
       "current_phase": 5,
+      "phase_completed": 5,
       "batch": 2,
       "dependencies": ["F001-001"],
       "description": "PostHog product analytics — client/server setup, reverse proxy, identify/group, useTrack hook",
       "spec_file": "docs/specs/F001-009-analytics-posthog.spec",
       "started_at": "2026-02-11T18:00:00-05:00",
+      "completed_at": "2026-02-11T19:00:00-05:00",
+      "tests_added": 19,
       "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
