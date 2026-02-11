@@ -13,7 +13,10 @@ export function SettingsMenu() {
       <NavLink relativeHref="">General</NavLink>
       <NavLink relativeHref="/profile">Profile</NavLink>
       {team?.isPersonal ? null : (
-        <NavLink relativeHref="/members">Members</NavLink>
+        <>
+          <NavLink relativeHref="/members">Members</NavLink>
+          <NavLink relativeHref="/billing">Billing</NavLink>
+        </>
       )}
     </div>
   );
