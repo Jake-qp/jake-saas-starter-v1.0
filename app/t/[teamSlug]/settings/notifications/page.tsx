@@ -10,43 +10,31 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { api } from "@/convex/_generated/api";
 import {
   NOTIFICATION_TYPES,
   ALL_NOTIFICATION_TYPES,
+  getDefaultPreferences,
   type NotificationType,
 } from "@/lib/notificationTypes";
-import { useState } from "react";
-
-// Mock preferences for Phase 2 visual design — will be replaced in Phase 4
-const MOCK_PREFERENCES: Record<
-  NotificationType,
-  { email: boolean; inApp: boolean }
-> = Object.fromEntries(
-  ALL_NOTIFICATION_TYPES.map((type) => [
-    type,
-    {
-      email: NOTIFICATION_TYPES[type].defaultEmail,
-      inApp: NOTIFICATION_TYPES[type].defaultInApp,
-    },
-  ]),
-) as Record<NotificationType, { email: boolean; inApp: boolean }>;
+import { useMutation, useQuery } from "convex/react";
 
 export default function NotificationPreferencesPage() {
-  // Phase 2: Local state with mock data
-  // Phase 4: Replace with Convex query + mutation
-  const [preferences, setPreferences] =
-    useState<Record<NotificationType, { email: boolean; inApp: boolean }>>(
-      MOCK_PREFERENCES,
-    );
+  const serverPreferences = useQuery(api.notifications.getPreferences);
+  const updatePreferences = useMutation(api.notifications.updatePreferences);
+
+  // Use server preferences or defaults while loading
+  const preferences = serverPreferences ?? getDefaultPreferences();
 
   const handleToggle = (type: NotificationType, channel: "email" | "inApp") => {
-    setPreferences((prev) => ({
-      ...prev,
+    const updated = {
+      ...preferences,
       [type]: {
-        ...prev[type],
-        [channel]: !prev[type][channel],
+        ...preferences[type],
+        [channel]: !preferences[type][channel],
       },
-    }));
+    };
+    void updatePreferences({ preferences: updated });
   };
 
   return (

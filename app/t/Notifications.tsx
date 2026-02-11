@@ -16,42 +16,6 @@ import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { Fragment } from "react";
 
-// Mock data for Phase 2 visual design — will be replaced in Phase 4
-const MOCK_NOTIFICATIONS = [
-  {
-    _id: "mock-1" as never,
-    type: "invite_sent" as const,
-    title: "Team Invitation",
-    body: "John Doe invited you to join Acme Corp",
-    isRead: false,
-    _creationTime: Date.now() - 1000 * 60 * 5, // 5 min ago
-  },
-  {
-    _id: "mock-2" as never,
-    type: "subscription_changed" as const,
-    title: "Subscription Upgraded",
-    body: "Acme Corp has been upgraded to Pro plan",
-    isRead: false,
-    _creationTime: Date.now() - 1000 * 60 * 30, // 30 min ago
-  },
-  {
-    _id: "mock-3" as never,
-    type: "approaching_limit" as const,
-    title: "Usage Alert",
-    body: "Acme Corp has used 80% of AI Credits",
-    isRead: true,
-    _creationTime: Date.now() - 1000 * 60 * 60 * 2, // 2 hours ago
-  },
-  {
-    _id: "mock-4" as never,
-    type: "payment_received" as const,
-    title: "Payment Received",
-    body: "$29.00 payment for Pro plan processed",
-    isRead: true,
-    _creationTime: Date.now() - 1000 * 60 * 60 * 24, // 1 day ago
-  },
-];
-
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / (1000 * 60));
@@ -67,13 +31,12 @@ export function Notifications() {
   const router = useRouter();
   const invites = useQuery(api.invites.list);
   const acceptInvite = useMutation(api.invites.accept);
+  const notifications = useQuery(api.notifications.list) ?? [];
+  const unreadCountValue = useQuery(api.notifications.unreadCount) ?? 0;
+  const markAsRead = useMutation(api.notifications.markAsRead);
 
-  // Phase 2: Use mock data for visual validation
-  // Phase 4: Replace with real Convex query
-  const notifications = MOCK_NOTIFICATIONS;
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
   const inviteCount = (invites ?? []).length;
-  const totalUnread = unreadCount + inviteCount;
+  const totalUnread = unreadCountValue + inviteCount;
 
   return (
     <DropdownMenu>
@@ -139,7 +102,16 @@ export function Notifications() {
         ) : (
           notifications.map((notification, i) => (
             <Fragment key={notification._id}>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
+              <DropdownMenuItem
+                className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                onSelect={handleFailure(async () => {
+                  if (!notification.isRead) {
+                    await markAsRead({
+                      notificationId: notification._id,
+                    });
+                  }
+                })}
+              >
                 <div className="flex w-full items-center justify-between">
                   <p
                     className={`text-sm ${notification.isRead ? "text-muted-foreground" : "font-medium"}`}
