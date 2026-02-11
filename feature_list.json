@@ -165,11 +165,14 @@
       "name": "Marketing Site & Legal Pages",
       "type": "frontend",
       "priority": 1,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 2,
       "batch": 2,
       "dependencies": ["F001-002"],
       "description": "Landing page, pricing, contact form, terms/privacy/cookies (MDX), marketing layout",
+      "spec_file": "docs/specs/F001-012-marketing-legal.spec",
+      "started_at": "2026-02-11T19:30:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {

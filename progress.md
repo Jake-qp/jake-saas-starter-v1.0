@@ -1,9 +1,22 @@
 # Build Progress
 
 ## Current Feature
-**ID:** (none)
-**Phase:** -
-**Status:** Ready for next build
+**ID:** F001-012
+**Phase:** 1 → 2
+**Status:** Spec approved (auto), starting visual design
+
+**Spec:** `docs/specs/F001-012-marketing-legal.spec`
+- User: Prospective customer (visitor)
+- Screens: 6 (landing, pricing, contact, terms, privacy, cookies)
+- Flows: 4
+- Acceptance criteria: 7
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-012
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-012 -->/,/<!-- END_FEATURE: F001-012 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+
+<!-- ⚠️ DO NOT INVENT REQUIREMENTS. Re-extract from PRD when needed. -->
 
 ---
 
@@ -11,29 +24,7 @@
 **ID:** F001-009
 **Date:** 2026-02-11
 
-Analytics & Event Tracking (PostHog) — PostHog product analytics with env-var gated graceful degradation, useTrack() hook, PostHogProvider/PostHogPageView in root layout, user identify + team group, Convex-side tracking via @samhoque/convex-posthog.
-
-**Files Created:**
-- `lib/posthog/client.ts` (browser singleton with /ph reverse proxy)
-- `lib/posthog/server.ts` (server singleton for API routes)
-- `lib/posthog/PostHogProvider.tsx` (client initialization component)
-- `lib/posthog/PostHogPageView.tsx` (App Router manual pageview capture)
-- `lib/posthog/PostHogIdentify.tsx` (user identify + team group)
-- `lib/hooks/use-track.ts` (useTrack hook wrapping posthog.capture)
-- `lib/hooks/use-feature-flag.ts` (useFeatureFlag hook)
-- `convex/posthog.ts` (@samhoque/convex-posthog instance)
-- `lib/__tests__/posthog.test.ts` (19 tests)
-
-**Files Modified:**
-- `convex/convex.config.ts` (added posthog component)
-- `app/layout.tsx` (PostHogProvider + PostHogPageView)
-- `package.json` (posthog-js, posthog-node, @samhoque/convex-posthog)
-
-**Key Implementation:**
-- All hooks return no-ops when NEXT_PUBLIC_POSTHOG_KEY is unset
-- PostHog client uses /ph reverse proxy to avoid ad-blockers
-- PostHogIdentify calls posthog.identify() + posthog.group("team", teamId)
-- PostHogPageView captures $pageview on pathname/searchParams changes
+Analytics & Event Tracking (PostHog)
 
 **Spec:** `docs/specs/F001-009-analytics-posthog.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
