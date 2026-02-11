@@ -42,7 +42,7 @@ if [ "$ATTEMPT" -ge 3 ]; then
     echo "- 🔄 Start fresh with: 'Reset gate attempt'" >&2
 
     # Update progress.md to show escalation
-    sed -i 's/\*\*Gate Status:\*\* pending/\*\*Gate Status:\*\* ESCALATED/' progress.md 2>/dev/null
+    sed -i '' 's/\*\*Gate Status:\*\* pending/\*\*Gate Status:\*\* ESCALATED/' progress.md 2>/dev/null
     exit 0  # Let Claude stop to show escalation
 fi
 
@@ -59,26 +59,38 @@ ERRORS=""
 
 case $CURRENT_PHASE in
     2)
-        # Phase 2: Mock data must exist
-        if [ -d "src/" ]; then
-            MOCK_COUNT=$(grep -rl "mockData\|MOCK_\|sampleData\|demoData" src/ 2>/dev/null | wc -l)
-            if [ "$MOCK_COUNT" -eq 0 ]; then
-                ERRORS="${ERRORS}Phase 2 requires mock data for visual validation.\n"
-                ERRORS="${ERRORS}Create realistic sample data in src/ (e.g., mockData = [...]).\n"
+        # Phase 2: Mock data must exist in app/, components/, or lib/
+        MOCK_COUNT=0
+        for dir in app/ components/ lib/; do
+            if [ -d "$dir" ]; then
+                DIR_COUNT=$(grep -rl "mockData\|MOCK_\|sampleData\|demoData" "$dir" 2>/dev/null | wc -l)
+                MOCK_COUNT=$((MOCK_COUNT + DIR_COUNT))
             fi
+        done
+        if [ "$MOCK_COUNT" -eq 0 ]; then
+            ERRORS="${ERRORS}Phase 2 requires mock data for visual validation.\n"
+            ERRORS="${ERRORS}Create realistic sample data (e.g., const mockData = [...]) in app/, components/, or lib/.\n"
         fi
         ;;
 
     4)
         # Phase 4: TDD + no mock data + tests pass + build succeeds
 
-        # Check: Mock data removed
-        if [ -d "src/" ]; then
-            MOCK_COUNT=$(grep -rl "mockData\|MOCK_\|sampleData" src/ 2>/dev/null | grep -v ".test." | grep -v "__test__" | wc -l)
-            if [ "$MOCK_COUNT" -gt 0 ]; then
-                ERRORS="${ERRORS}Mock data still present in $MOCK_COUNT file(s).\n"
-                ERRORS="${ERRORS}Replace mock data with real data context/store.\n"
+        # Check: Mock data removed from app/, components/, lib/
+        MOCK_FILES=""
+        for dir in app/ components/ lib/; do
+            if [ -d "$dir" ]; then
+                DIR_HITS=$(grep -rl "mockData\|MOCK_\|sampleData\|demoData" "$dir" 2>/dev/null | grep -v ".test." | grep -v "__test__" | grep -v "__tests__" || true)
+                if [ -n "$DIR_HITS" ]; then
+                    MOCK_FILES="${MOCK_FILES}${DIR_HITS}\n"
+                fi
             fi
+        done
+        if [ -n "$MOCK_FILES" ]; then
+            MOCK_COUNT=$(echo -e "$MOCK_FILES" | grep -c . || true)
+            ERRORS="${ERRORS}Mock data still present in ${MOCK_COUNT} file(s):\n"
+            ERRORS="${ERRORS}${MOCK_FILES}\n"
+            ERRORS="${ERRORS}Replace ALL mock data with real backend-wired data. Every component must use real Convex queries/mutations.\n"
         fi
 
         # Check: Tests pass
@@ -143,17 +155,22 @@ case $CURRENT_PHASE in
             fi
         fi
 
-        # Check: Security audit - no hardcoded secrets
-        if [ -d "src/" ]; then
-            # Check for common secret patterns
-            SECRET_HITS=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
-                -E "(sk_live_|pk_live_|AKIA[A-Z0-9]{16}|ghp_[a-zA-Z0-9]{36}|password\s*=\s*['\"][^'\"]+['\"])" \
-                src/ 2>/dev/null | grep -v "\.test\." | grep -v "__test__" | head -5)
-            if [ -n "$SECRET_HITS" ]; then
-                ERRORS="${ERRORS}⚠️ SECURITY: Potential hardcoded secrets found:\n"
-                ERRORS="${ERRORS}$SECRET_HITS\n"
-                ERRORS="${ERRORS}Remove secrets and use environment variables.\n"
+        # Check: Security audit - no hardcoded secrets in app/, components/, lib/, convex/
+        SECRET_HITS=""
+        for dir in app/ components/ lib/ convex/; do
+            if [ -d "$dir" ]; then
+                DIR_SECRETS=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
+                    -E "(sk_live_|pk_live_|AKIA[A-Z0-9]{16}|ghp_[a-zA-Z0-9]{36}|password\s*=\s*['\"][^'\"]+['\"])" \
+                    "$dir" 2>/dev/null | grep -v "\.test\." | grep -v "__test__" | grep -v "__tests__" | head -5 || true)
+                if [ -n "$DIR_SECRETS" ]; then
+                    SECRET_HITS="${SECRET_HITS}${DIR_SECRETS}\n"
+                fi
             fi
+        done
+        if [ -n "$SECRET_HITS" ]; then
+            ERRORS="${ERRORS}SECURITY: Potential hardcoded secrets found:\n"
+            ERRORS="${ERRORS}$SECRET_HITS\n"
+            ERRORS="${ERRORS}Remove secrets and use environment variables.\n"
         fi
         ;;
 esac
@@ -161,7 +178,7 @@ esac
 # If errors, increment attempt and return exit 2
 if [ -n "$ERRORS" ]; then
     NEW_ATTEMPT=$((ATTEMPT + 1))
-    sed -i "s/\*\*Gate Attempt:\*\* $ATTEMPT/\*\*Gate Attempt:\*\* $NEW_ATTEMPT/" progress.md 2>/dev/null
+    sed -i '' "s/\*\*Gate Attempt:\*\* $ATTEMPT/\*\*Gate Attempt:\*\* $NEW_ATTEMPT/" progress.md 2>/dev/null
 
     echo "❌ Phase $CURRENT_PHASE Verification Gate FAILED (attempt $ATTEMPT/3)" >&2
     echo "" >&2
@@ -173,8 +190,8 @@ if [ -n "$ERRORS" ]; then
 fi
 
 # Gate passed - update status
-sed -i 's/\*\*Gate Status:\*\* pending/\*\*Gate Status:\*\* PASSED/' progress.md 2>/dev/null
-sed -i 's/\*\*Gate Attempt:\*\* [0-9]/\*\*Gate Attempt:\*\* 1/' progress.md 2>/dev/null
+sed -i '' 's/\*\*Gate Status:\*\* pending/\*\*Gate Status:\*\* PASSED/' progress.md 2>/dev/null
+sed -i '' 's/\*\*Gate Attempt:\*\* [0-9]/\*\*Gate Attempt:\*\* 1/' progress.md 2>/dev/null
 
 echo "✅ Phase $CURRENT_PHASE Verification Gate PASSED" >> .claude/state/gate-log.txt
 exit 0

@@ -916,6 +916,7 @@ convex/crons.ts:
 
 ## Acceptance Criteria (Testable)
 
+<!-- START_FEATURE: F001-001 -->
 ### Auth (F001-001)
 - [ ] User can sign up with email/password and is redirected to dashboard
 - [ ] User can sign in with existing email/password and is redirected to dashboard
@@ -930,11 +931,31 @@ convex/crons.ts:
 - [ ] User can set timezone preference (IANA timezone dropdown in profile settings)
 - [ ] Dates throughout the app render in the user's selected timezone
 
+**Implementation Notes:**
+- Replace Clerk with Convex Auth (two-layer provider pattern)
+- Add Password + ResendOTP providers
+- New auth pages (sign-in with email/password + magic link, sign-up, forgot-password)
+- `afterUserCreatedOrUpdated` callback for auto personal team creation
+- `createRouteMatcher` middleware for route protection
+- Update ConvexClientProvider, middleware, user store
+- Session management: query `authSessions` table, "Active sessions" list, "Log out all devices"
+- Timezone preference: `user.timezone` field (IANA), dropdown in profile settings
+- Verify all existing flows work with new auth
+<!-- END_FEATURE: F001-001 -->
+
+<!-- START_FEATURE: F001-002 -->
 ### Design System (F001-002)
 - [ ] All 10 new shadcn/ui components are installed and importable
 - [ ] PageHeader, DataTable, EmptyState, StatusBadge render correctly
 - [ ] Dark/light/system theme toggle works across all pages
 
+**Implementation Notes:**
+- ~~Add 10+ shadcn/ui components~~
+- ~~Build 14 app-level components (including marketing components)~~
+- ~~Dark mode support via next-themes~~
+<!-- END_FEATURE: F001-002 -->
+
+<!-- START_FEATURE: F001-003 -->
 ### Billing (F001-003)
 - [ ] Team admin can view billing page with current plan
 - [ ] Polar checkout flow creates subscription and updates team tier
@@ -946,6 +967,16 @@ convex/crons.ts:
 - [ ] Dashboard shows credit usage meter (used/remaining for current period)
 - [ ] Free tier teams have appropriate feature restrictions
 
+**Implementation Notes:**
+- Convex component registration
+- Webhook handling via HTTP routes with `onSubscriptionUpdated` callback
+- `getUserInfo` mapped to team for team-level billing
+- Billing settings page with `CheckoutLink`/`CustomerPortalLink`
+- Configurable entitlement system with credit-based consumption
+- Credit decrement per AI request (model-specific cost)
+<!-- END_FEATURE: F001-003 -->
+
+<!-- START_FEATURE: F001-004 -->
 ### RBAC (F001-004)
 - [ ] Owner role exists and can perform all actions
 - [ ] Owner cannot leave team without transferring ownership
@@ -958,6 +989,16 @@ convex/crons.ts:
 - [ ] Invite sending is rate-limited (via `@convex-dev/rate-limiter`)
 - [ ] Team avatar can be uploaded and displays in sidebar and invite pages
 
+**Implementation Notes:**
+- Owner role + 9 new permissions
+- Custom roles (Enterprise tier)
+- Preserve existing permission API
+- Ownership transfer: `transferOwnership` mutation + confirmation dialog + email notification
+- Invite management: 7-day TTL (via `ctx.scheduler.runAt()`), revoke/resend buttons, rate limiting
+- Team avatar upload (uses F001-017 file storage)
+<!-- END_FEATURE: F001-004 -->
+
+<!-- START_FEATURE: F001-005 -->
 ### AI (F001-005)
 - [ ] AI chat page renders with streaming responses
 - [ ] Default streaming via Next.js API route (`/api/ai/chat`) works on Vercel Edge
@@ -967,6 +1008,15 @@ convex/crons.ts:
 - [ ] Rate limiting prevents exceeding tier credit quota
 - [ ] "Use AI" permission gates access
 
+**Implementation Notes:**
+- **Default:** Next.js API route (`app/api/ai/chat/route.ts`) — Vercel Edge Function
+- **Alternative:** Convex HTTP action (`convex/http.ts`) — documented as option
+- Both share Convex mutations for saving messages + tracking credits
+- Usage tracking + rate limiting + credit decrement
+- AI chat page with useChat
+<!-- END_FEATURE: F001-005 -->
+
+<!-- START_FEATURE: F001-006 -->
 ### Notifications (F001-006)
 - [ ] In-app notification bell shows unread count
 - [ ] Clicking notification marks as read
@@ -976,11 +1026,26 @@ convex/crons.ts:
 - [ ] Email preview route (`/dev/emails`) renders all templates with sample data (dev only)
 - [ ] Notification preferences allow users to toggle email vs in-app per notification type
 
+**Implementation Notes:**
+- In-app notifications (real-time)
+- 8-12 branded React Email templates: welcome, invite sent/accepted, subscription changed, payment failed/received, approaching limit, member removed
+- Shared email layout component (brand header + footer)
+- Email preview dev route (`/dev/emails`) for local development
+- Notification preferences
+<!-- END_FEATURE: F001-006 -->
+
+<!-- START_FEATURE: F001-007 -->
 ### Onboarding (F001-007)
 - [ ] New user sees onboarding wizard after first sign-up
 - [ ] Wizard tracks completed steps across sessions
 - [ ] User can skip onboarding
 
+**Implementation Notes:**
+- Multi-step wizard
+- Progress tracking
+<!-- END_FEATURE: F001-007 -->
+
+<!-- START_FEATURE: F001-008 -->
 ### Feature Flags (F001-008) — PostHog
 - [ ] `useFeatureFlag(key)` returns correct boolean value from PostHog
 - [ ] `useFeatureFlag(key)` returns `false` when PostHog is not configured (graceful degradation)
@@ -989,6 +1054,13 @@ convex/crons.ts:
 - [ ] `POSTHOG_PERSONAL_API_KEY` is never exposed to client-side code
 - [ ] Flag management API routes verify `isSuperAdmin` before proxying
 
+**Implementation Notes:**
+- `useFeatureFlag()` hook wrapping PostHog's `useFeatureFlagEnabled()`
+- Admin flag management UI at `/admin/flags` (proxies PostHog REST API)
+- `useFeatureFlagWithPayload()` for JSON payload flags
+<!-- END_FEATURE: F001-008 -->
+
+<!-- START_FEATURE: F001-009 -->
 ### Analytics (F001-009) — PostHog
 - [ ] `useTrack(event, properties?)` fires events that appear in PostHog dashboard
 - [ ] `useTrack()` is a no-op when PostHog is not configured
@@ -998,6 +1070,14 @@ convex/crons.ts:
 - [ ] Manual pageview capture works with App Router navigation
 - [ ] App works without errors when `NEXT_PUBLIC_POSTHOG_KEY` is not set
 
+**Implementation Notes:**
+- PostHog client/server setup with env-var gating + reverse proxy
+- `useTrack()` hook wrapping `posthog.capture()`
+- `PostHogProvider`, `PostHogPageView`, identify/group integration
+- Server-side tracking from Convex via `@samhoque/convex-posthog`
+<!-- END_FEATURE: F001-009 -->
+
+<!-- START_FEATURE: F001-010 -->
 ### Super Admin (F001-010)
 - [ ] Super admin can access /admin routes
 - [ ] Non-super-admin users are blocked from /admin
@@ -1011,6 +1091,16 @@ convex/crons.ts:
 - [ ] Impersonation auto-expires after 30 minutes
 - [ ] Every impersonation start/stop is logged to auditLog
 
+**Implementation Notes:**
+- Dashboard, user/team management
+- Feature flag management (proxies PostHog API via `/api/posthog/flags/`)
+- Analytics page links to PostHog dashboard (no custom analytics UI)
+- Audit log (Convex-native `auditLog` table)
+- Waitlist management section
+- User impersonation: "View as User" button, `<ImpersonationBanner>` with "Viewing as [Name] — Exit", read-only mode, 30-min auto-expire, audit log every impersonation
+<!-- END_FEATURE: F001-010 -->
+
+<!-- START_FEATURE: F001-011 -->
 ### Example App (F001-011)
 - [ ] Notes CRUD works with real-time updates
 - [ ] Permission-gated: Contribute can create, Manage Content can delete others'
@@ -1022,6 +1112,15 @@ convex/crons.ts:
 - [ ] Command palette shows recent items and navigation shortcuts
 - [ ] Selecting a search result navigates to the appropriate page
 
+**Implementation Notes:**
+- Full CRUD with permissions
+- Search, pagination, soft deletion
+- Entitlement gating
+- File attachments on notes (uses F001-017 file storage)
+- Command palette (Cmd+K): `<CommandPalette>` via shadcn `Command` + Convex search indexes on notes, teams, members
+<!-- END_FEATURE: F001-011 -->
+
+<!-- START_FEATURE: F001-012 -->
 ### Marketing Site & Legal Pages (F001-012)
 - [ ] Landing page renders with hero, features grid, pricing table, FAQ, and CTA sections
 - [ ] PricingTable auto-populates from `planConfig.ts` and highlights recommended plan
@@ -1031,6 +1130,16 @@ convex/crons.ts:
 - [ ] Marketing pages are fully responsive (mobile/tablet/desktop)
 - [ ] Marketing layout has distinct nav/footer from authenticated app layout
 
+**Implementation Notes:**
+- Landing page: HeroSection, FeaturesGrid, PricingTable, FAQAccordion, CTASection
+- PricingTable auto-populated from `planConfig.ts`
+- `/pricing` dedicated pricing page
+- `/contact` form with Resend integration
+- `/legal/terms`, `/legal/privacy`, `/legal/cookies` (MDX templates)
+- Marketing layout with nav + footer
+<!-- END_FEATURE: F001-012 -->
+
+<!-- START_FEATURE: F001-013 -->
 ### Blog & Changelog (F001-013)
 - [ ] Blog listing page shows all posts sorted by date
 - [ ] Individual blog posts render MDX content with proper typography
@@ -1044,6 +1153,18 @@ convex/crons.ts:
 - [ ] `<WhatsNewBadge>` in app header shows dot indicator when new changelog entries exist since user last dismissed
 - [ ] Clicking the badge opens the changelog; dismissing updates user's last-seen timestamp
 
+**Implementation Notes:**
+- MDX files in `content/blog/` and `content/changelog/`
+- `@next/mdx` or `contentlayer2` for MDX processing
+- Static generation at build time (zero runtime cost)
+- Blog listing, individual post, changelog listing pages
+- Auto-generated sitemap entries
+- RSS feed generation
+- Changelog email subscription: `changelogSubscribers` table, subscribe/unsubscribe mutations, email on new entry
+- "What's New" badge: `<WhatsNewBadge>` in app header, dismissible, tracks last-seen changelog date
+<!-- END_FEATURE: F001-013 -->
+
+<!-- START_FEATURE: F001-014 -->
 ### Production Infrastructure (F001-014)
 - [ ] Sentry captures client-side and server-side errors when `NEXT_PUBLIC_SENTRY_DSN` is set
 - [ ] App runs without errors when Sentry env vars are not set (graceful degradation)
@@ -1059,6 +1180,17 @@ convex/crons.ts:
 - [ ] `@convex-dev/rate-limiter` is installed and configured for team-scoped rate limiting
 - [ ] Rate limiter used in invite sending and AI request mutations
 
+**Implementation Notes:**
+- Sentry integration (optional, env-var gated) — client, server, edge
+- Vercel Analytics + Speed Insights (2 components in root layout)
+- Sentry tunnel route (`/monitoring`) to avoid ad-blockers
+- Preview seed data function (`convex/seedPreview.ts`)
+- Deployment documentation (`docs/deployment.md`)
+- `convex/crons.ts`: expired invite cleanup (daily), monthly credit resets, hourly subscription sync, stale session cleanup (daily)
+- `@convex-dev/rate-limiter` setup: token bucket + fixed window, team-scoped
+<!-- END_FEATURE: F001-014 -->
+
+<!-- START_FEATURE: F001-015 -->
 ### Waitlist / Pre-Launch Mode (F001-015)
 - [ ] When `waitlist_mode` feature flag is enabled, unauthenticated users see `/waitlist` instead of landing page
 - [ ] Waitlist form accepts email and stores in `waitlistEntries` with status "pending"
@@ -1067,6 +1199,16 @@ convex/crons.ts:
 - [ ] Approved users receive invitation email via Resend
 - [ ] When `waitlist_mode` flag is disabled, app functions normally (landing page visible)
 
+**Implementation Notes:**
+- `waitlist_mode` feature flag controls pre-launch mode
+- `/waitlist` public page with email collection form
+- `waitlistEntries` table (email, status: pending/approved/rejected)
+- Admin panel section to review, approve, reject entries
+- Approved users get email invitation via Resend
+- When flag is off, app functions normally
+<!-- END_FEATURE: F001-015 -->
+
+<!-- START_FEATURE: F001-016 -->
 ### Testing & Quality Infrastructure (F001-016)
 - [ ] `npm run test` runs Vitest unit/integration tests and passes
 - [ ] `npm run test:e2e` runs Playwright E2E tests (requires dev server)
@@ -1080,6 +1222,16 @@ convex/crons.ts:
 - [ ] `docs/adrs/` has 8 Architecture Decision Records
 - [ ] CONTRIBUTING.md documents dev setup, testing, PR process
 
+**Implementation Notes:**
+- Vitest + convex-test for unit/integration tests
+- Playwright + axe-playwright for E2E + accessibility tests
+- GitHub Actions CI pipeline (type-check, lint, test, e2e)
+- Husky + lint-staged pre-commit hooks
+- Seed test files for permissions, plan config, auth, accessibility
+- Tightened ESLint rules (`no-explicit-any: warn`, `no-unused-vars: error`)
+<!-- END_FEATURE: F001-016 -->
+
+<!-- START_FEATURE: F001-017 -->
 ### File Storage & Uploads (F001-017)
 - [ ] `<FileUploader>` component renders with drag-drop zone, progress bar, and type/size validation
 - [ ] Files upload directly to Convex storage via signed URL (no server relay)
@@ -1091,6 +1243,14 @@ convex/crons.ts:
 - [ ] Upload rejected with clear error when file type is not in allowlist
 - [ ] Upload rejected with clear error when file exceeds size limit
 - [ ] Files can be deleted (removes from Convex storage and entity reference)
+
+**Implementation Notes:**
+- `<FileUploader>` component: drag-drop, progress bar, type validation, size limit
+- `convex/storage.ts`: `generateUploadUrl`, `deleteFile`, `getFileUrl` mutations
+- Avatar uploads for user profile + team settings (via `avatarStorageId`)
+- Storage quota per tier in `planConfig.ts` (`storageQuotaMB`)
+- Entitlement check before upload
+<!-- END_FEATURE: F001-017 -->
 
 ---
 

@@ -8,6 +8,9 @@
 # testing
 /coverage
 
+# build batch orchestrator logs
+/logs
+
 # next.js
 /.next/
 /out/
