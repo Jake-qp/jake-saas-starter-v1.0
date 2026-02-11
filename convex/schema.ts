@@ -30,6 +30,7 @@ const schema = defineEntSchema(
       .edges("invites", { ref: true })
       .edges("aiUsage", { ref: true })
       .edges("files", { ref: true })
+      .edges("customRoles", { ref: true })
       .deletion("scheduled", { delayMs: TEAM_DELETION_DELAY_MS }),
 
     // Users table: merges Convex Auth required fields with app-specific fields.
@@ -92,6 +93,15 @@ const schema = defineEntSchema(
     permissions: defineEnt({})
       .field("name", vPermission, { unique: true })
       .edges("roles"),
+
+    // Custom roles for Enterprise tier (F001-004)
+    customRoles: defineEnt({
+      name: v.string(),
+      description: v.optional(v.string()),
+      permissionNames: v.array(vPermission),
+    })
+      .edge("team")
+      .index("teamName", ["teamId", "name"]),
 
     messages: defineEnt({
       text: v.string(),
