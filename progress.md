@@ -1,9 +1,19 @@
 # Build Progress
 
 ## Current Feature
-**ID:** (none)
-**Phase:** -
-**Status:** Ready for next build
+**ID:** F001-009
+**Phase:** 1 → 4
+**Status:** Spec complete, starting TDD implementation (backend-only, skipping Phases 2-3)
+
+**Spec:** `docs/specs/F001-009-analytics-posthog.spec`
+- Type: Backend-only (infrastructure)
+- Acceptance criteria: 7
+- Dependencies: F001-001 (Auth) ✅
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-009
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-009 -->/,/<!-- END_FEATURE: F001-009 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
 
 ---
 
@@ -13,40 +23,7 @@
 
 Polar Billing + Credits — Team-level billing via `@convex-dev/polar`, three-tier plan system (Free/Pro/Enterprise), configurable entitlements, credit-based AI billing, webhook integration, billing settings page.
 
-**Files Created:**
-- `lib/planConfig.ts` (tier definitions, limits, AI credit costs)
-- `convex/entitlements.ts` (checkEntitlement, getCurrentUsage, decrementCredits)
-- `convex/billing.ts` (Polar component, queries, mutations)
-- `convex/__tests__/billing.test.ts` (29 tests)
-- `app/t/[teamSlug]/settings/billing/page.tsx` (billing settings UI)
-
-**Files Modified:**
-- `convex/schema.ts` (teams billing fields, aiUsage table)
-- `convex/convex.config.ts` (@convex-dev/polar component)
-- `convex/http.ts` (Polar webhook routes)
-- `convex/cronJobs.ts` (implemented resetMonthlyCredits, syncSubscriptions)
-- `app/t/[teamSlug]/settings/SettingsMenu.tsx` (Billing nav link)
-- `lib/__tests__/planConfig.test.ts` (27 real tests, replaced 14 todo seeds)
-- `package.json` (@convex-dev/polar, @polar-sh/sdk, @polar-sh/checkout)
-
-**Key Implementation:**
-- `checkEntitlement()` enforces per-tier limits with ConvexError upgrade prompts
-- `decrementCredits()` tracks AI credit consumption per model per team
-- Free tier default when no Polar subscription (no Polar required)
-- Webhook-driven subscription state sync with idempotent handlers
-
 **Spec:** `docs/specs/F001-003-polar-billing.spec`
-**Gates:** Phase 4 ✅ | Phase 5 ✅
-
----
-
-## Previously Completed
-**ID:** F001-014
-**Date:** 2026-02-11
-
-Production Infrastructure — Sentry, Vercel Analytics, PostHog proxy, cron jobs, rate limiting.
-
-**Spec:** `docs/specs/F001-014-production-infrastructure.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---

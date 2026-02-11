@@ -123,11 +123,14 @@
       "name": "Analytics & Event Tracking (PostHog)",
       "type": "backend",
       "priority": 3,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 1,
       "batch": 2,
       "dependencies": ["F001-001"],
       "description": "PostHog product analytics — client/server setup, reverse proxy, identify/group, useTrack hook",
+      "spec_file": "docs/specs/F001-009-analytics-posthog.spec",
+      "started_at": "2026-02-11T18:00:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
