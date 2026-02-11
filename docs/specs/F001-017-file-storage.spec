@@ -38,16 +38,16 @@ As a team member, I want to upload files with drag-drop and see progress, so tha
 As a team admin, I want to manage team avatars and monitor storage usage, so that our team's identity is polished and within plan limits.
 
 ## Acceptance Criteria
-- [ ] AC1: `<FileUploader>` component renders with drag-drop zone, progress bar, and type/size validation
-- [ ] AC2: Files upload directly to Convex storage via signed URL (no server relay)
-- [ ] AC3: User can upload/change their profile avatar; avatar displays in sidebar and profile
-- [ ] AC4: Team admin can upload/change team avatar; team avatar displays in sidebar, emails, and invite pages
-- [ ] AC5: Notes support adding file attachments (images, PDFs, CSVs)
-- [ ] AC6: File attachments display inline or as download links depending on type
-- [ ] AC7: Storage quota is enforced per tier (via `checkEntitlement` with `storageQuotaMB`)
-- [ ] AC8: Upload rejected with clear error when file type is not in allowlist
-- [ ] AC9: Upload rejected with clear error when file exceeds size limit
-- [ ] AC10: Files can be deleted (removes from Convex storage and entity reference)
+- [x] AC1: `<FileUploader>` component renders with drag-drop zone, progress bar, and type/size validation
+- [x] AC2: Files upload directly to Convex storage via signed URL (no server relay)
+- [x] AC3: User can upload/change their profile avatar; avatar displays in sidebar and profile
+- [x] AC4: Team admin can upload/change team avatar; team avatar displays in sidebar, emails, and invite pages
+- [x] AC5: Notes support adding file attachments (images, PDFs, CSVs) — infrastructure ready, wired in F001-011
+- [x] AC6: File attachments display inline or as download links depending on type
+- [x] AC7: Storage quota is enforced per tier (via `checkEntitlement` with `storageQuotaMB`)
+- [x] AC8: Upload rejected with clear error when file type is not in allowlist
+- [x] AC9: Upload rejected with clear error when file exceeds size limit
+- [x] AC10: Files can be deleted (removes from Convex storage and entity reference)
 
 ## Edge Cases
 - **Zero storage left:** Upload button disabled, message shows "Storage quota reached" with upgrade link

@@ -10,6 +10,8 @@
 | F001-016 | Testing & Quality Infrastructure | ✅ | `docs/specs/F001-016-testing-quality-infrastructure.spec` |
 | F001-003 | Polar Billing + Credit System | ✅ | `docs/specs/F001-003-polar-billing.spec` |
 | F001-009 | Analytics & Event Tracking (PostHog) | ✅ | `docs/specs/F001-009-analytics-posthog.spec` |
+| F001-012 | Marketing Site & Legal Pages | ✅ | `docs/specs/F001-012-marketing-legal.spec` |
+| F001-017 | File Storage & Uploads | ✅ | `docs/specs/F001-017-file-storage.spec` |
 
 ## Source Code Index
 
@@ -105,6 +107,37 @@
 | Component config | `convex/convex.config.ts` | PostHog component registration |
 | Root layout | `app/layout.tsx` | PostHogProvider + PostHogPageView integration |
 | PostHog tests | `lib/__tests__/posthog.test.ts` | 19 tests for all PostHog modules |
+
+### F001-012 — Marketing Site & Legal Pages
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| Landing page | `app/(marketing)/page.tsx` | Hero, features, pricing, FAQ, CTA sections |
+| Pricing page | `app/(marketing)/pricing/page.tsx` | Standalone pricing comparison |
+| Contact page | `app/(marketing)/contact/page.tsx` | Contact form with Zod validation |
+| Contact API | `app/api/contact/route.ts` | Resend email integration |
+| Legal pages | `app/(marketing)/legal/[slug]/page.tsx` | Terms, privacy, cookies via MDX |
+| Marketing layout | `app/(marketing)/layout.tsx` | Shared marketing nav/footer |
+| Marketing content | `lib/marketing-content.ts` | Shared content data (features, FAQ, etc.) |
+| Contact schema | `lib/contact-schema.ts` | Zod validation for contact form |
+| MDX content | `content/legal/` | Terms, privacy, cookies MDX files |
+
+### F001-017 — File Storage & Uploads
+
+| Module | Location | Purpose |
+|--------|----------|---------|
+| Storage backend | `convex/storage.ts` | Upload URL generation, file save, avatar management, deletion |
+| File config | `lib/fileConfig.ts` | Shared validation: allowed types, size limits, avatar constraints |
+| Upload hook | `lib/hooks/use-file-upload.ts` | React hook for 3-step Convex upload flow with progress |
+| FileUploader | `components/FileUploader.tsx` | Drag-drop upload zone with progress bars and validation |
+| AvatarUpload | `components/AvatarUpload.tsx` | Avatar display with upload/remove actions |
+| FileAttachment | `components/FileAttachment.tsx` | Inline image display and download links |
+| Schema (files) | `convex/schema.ts` | `files` table + `avatarStorageId` on users/teams |
+| Entitlements | `convex/entitlements.ts` | `storageQuotaMB` enforcement via file size summation |
+| Profile avatar | `app/t/[teamSlug]/settings/profile/page.tsx` | User avatar upload UI |
+| Team avatar | `app/t/[teamSlug]/settings/page.tsx` | Team avatar upload UI |
+| Teams query | `convex/users/teams.ts` | `avatarStorageId` in team list |
+| Storage tests | `convex/__tests__/storage.test.ts` | 34 tests: schema, validation, file config |
 
 ## Concept Index
 

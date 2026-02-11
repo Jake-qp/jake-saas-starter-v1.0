@@ -365,7 +365,7 @@ F001-015 (Waitlist) ← depends on F001-008, F001-006
 
 ```
 Batch 1 (parallel): F001-001 (DONE) + F001-002 (DONE) + F001-014 (DONE) + F001-016 (DONE)
-Batch 2 (parallel): F001-003 (DONE) + F001-009 (DONE) + F001-012 (Marketing Site) + F001-017 (File Storage)
+Batch 2 (parallel): F001-003 (DONE) + F001-009 (DONE) + F001-012 (DONE) + F001-017 (DONE)
 Batch 3:            F001-004 (RBAC)
 Batch 4 (parallel): F001-005 (AI) + F001-006 (Notifications) + F001-007 (Onboarding)
                    + F001-008 (Feature Flags) + F001-011 (Notes) + F001-013 (Blog)
