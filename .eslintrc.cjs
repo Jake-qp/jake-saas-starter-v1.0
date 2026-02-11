@@ -15,6 +15,8 @@ module.exports = {
     // There are currently ESLint errors in shadcn/ui
     "components/ui",
     "e2e",
+    // React Email templates require inline styles (no CSS class support in emails)
+    "emails",
   ],
   parserOptions: {
     project: true,
