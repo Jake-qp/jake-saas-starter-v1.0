@@ -9,6 +9,7 @@ export function TeamMenu() {
   return (
     <div className="flex gap-2">
       <NavLink relativeHref="">Projects</NavLink>
+      <NavLink relativeHref="/ai">AI Chat</NavLink>
       <NavLink relativeHref="/settings">Settings</NavLink>
     </div>
   );
@@ -33,7 +34,7 @@ function NavLink({
       href={linkPath}
       className={cn(
         "text-sm rounded-md bg-background px-4 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
-        active ? "text-foreground" : "text-foreground/60"
+        active ? "text-foreground" : "text-foreground/60",
       )}
     >
       {children}
