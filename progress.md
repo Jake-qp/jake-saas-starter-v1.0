@@ -1,35 +1,24 @@
 # Build Progress
 
 ## Current Feature
-**ID:** F001-006
-**Phase:** 1 → 2
-**Status:** Spec approved, starting visual design
-
-**Spec:** `docs/specs/F001-006-notification-system.spec`
-- User: Team member receiving notifications
-- Screens: 3 (bell dropdown, preferences, email preview)
-- Flows: 3 (view, email delivery, manage preferences)
-- Acceptance criteria: 7
-
-## PRD Anchor (Source of Truth)
-**Feature:** F001-006
-**Source:** docs/prds/F001-saas-boilerplate-v2.md
-**Extract:** `sed -n '/<!-- START_FEATURE: F001-006 -->/,/<!-- END_FEATURE: F001-006 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+None — ready for next feature
 
 ---
 
 ## Last Completed
-**ID:** F001-005
+**ID:** F001-006
 **Date:** 2026-02-11
 
-AI/LLM Integration (Dual Streaming) — 28 new tests.
+Notification System — 21 new tests (schema, types, defaults, templates, message builders).
+In-app bell with unread count, mark-as-read, preferences page, 8 React Email templates,
+email preview route, createNotification with preference-aware dispatch.
 
-**Spec:** `docs/specs/F001-005-ai-llm-integration.spec`
+**Spec:** `docs/specs/F001-006-notification-system.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
 
 ## Project State
-- **Tests:** 316 passing (6 todo seeds for future features)
+- **Tests:** 337 passing (6 todo seeds for future features)
 - **Build:** ✅ succeeds
-- **Features:** 10 complete | 7 pending
+- **Features:** 11 complete | 6 pending
