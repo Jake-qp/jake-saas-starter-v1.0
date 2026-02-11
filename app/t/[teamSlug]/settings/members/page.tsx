@@ -5,12 +5,18 @@ import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButt
 import { AddMember } from "@/app/t/[teamSlug]/settings/members/AddMember";
 import { MembersList } from "@/app/t/[teamSlug]/settings/members/MemberList";
 import { CustomRolesCard } from "@/app/t/[teamSlug]/settings/members/CustomRolesCard";
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function MembersPage() {
   const team = useCurrentTeam();
   const router = useRouter();
+  const billing = useQuery(
+    api.billing.getTeamBilling,
+    team?._id ? { teamId: team._id } : "skip",
+  );
   useEffect(() => {
     if (team?.isPersonal === true) {
       router.replace(`/t/${team.slug}/settings`);
@@ -25,7 +31,7 @@ export default function MembersPage() {
 
       <AddMember />
       <MembersList />
-      <CustomRolesCard />
+      <CustomRolesCard isEnterprise={billing?.tier === "enterprise"} />
     </>
   );
 }

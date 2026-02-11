@@ -32,8 +32,10 @@ export const list = query({
       .map(async (invite) => {
         return {
           _id: invite._id,
+          _creationTime: invite._creationTime,
           email: invite.email,
           role: (await invite.edge("role")).name,
+          roleId: invite.roleId,
         };
       });
   },

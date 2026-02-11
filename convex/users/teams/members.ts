@@ -15,12 +15,13 @@ export const viewerPermissions = query({
     teamId: v.optional(v.id("teams")),
   },
   async handler(ctx, { teamId }) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
     if (teamId === undefined || ctx.viewer === null) {
       return null;
     }
     return await ctx
       .table("members", "teamUser", (q) =>
-        q.eq("teamId", teamId).eq("userId", ctx.viewerX()._id)
+        q.eq("teamId", teamId).eq("userId", ctx.viewerX()._id),
       )
       .uniqueX()
       .edge("role")
@@ -36,10 +37,12 @@ export const list = query({
     paginationOpts: paginationOptsValidator,
   },
   async handler(ctx, { teamId, search, paginationOpts }) {
+    /* eslint-disable @typescript-eslint/no-unnecessary-condition -- convex-ents false positive */
     if (
       ctx.viewer === null ||
       !(await viewerHasPermission(ctx, teamId, "Read Members"))
     ) {
+      /* eslint-enable @typescript-eslint/no-unnecessary-condition */
       return emptyPage();
     }
     const query =
@@ -50,13 +53,14 @@ export const list = query({
             .search("searchable", (q) =>
               q
                 .search("searchable", normalizeStringForSearch(search))
-                .eq("teamId", teamId)
+                .eq("teamId", teamId),
             );
     return await query
       .filter((q) => q.eq(q.field("deletionTime"), undefined))
       .paginate(paginationOpts)
       .map(async (member) => {
         const user = await member.edge("user");
+        const role = await member.edge("role");
         return {
           _id: member._id,
           fullName: user.fullName,
@@ -67,6 +71,7 @@ export const list = query({
               ? user.fullName[0]
               : user.firstName[0] + user.lastName[0],
           roleId: member.roleId,
+          roleName: role.name,
         };
       });
   },
@@ -80,7 +85,7 @@ export const update = mutation({
   async handler(ctx, { memberId, roleId }) {
     const member = await ctx.table("members").getX(memberId);
     await viewerHasPermissionX(ctx, member.teamId, "Manage Members");
-    await checkAnotherAdminExists(ctx, member);
+    await checkCanRemoveOrDemote(ctx, member);
     await member.patch({ roleId });
   },
 });
@@ -92,26 +97,41 @@ export const deleteMember = mutation({
   async handler(ctx, { memberId }) {
     const member = await ctx.table("members").getX(memberId);
     await viewerHasPermissionX(ctx, member.teamId, "Manage Members");
-    await checkAnotherAdminExists(ctx, member);
+    await checkCanRemoveOrDemote(ctx, member);
     await ctx.table("members").getX(memberId).delete();
   },
 });
 
-async function checkAnotherAdminExists(ctx: QueryCtx, member: Ent<"members">) {
+async function checkCanRemoveOrDemote(ctx: QueryCtx, member: Ent<"members">) {
+  const role = await member.edge("role");
+
+  // Owner cannot be removed or demoted via this path — must use transferOwnership
+  if (role.name === "Owner") {
+    throw new ConvexError(
+      "Cannot remove or demote the team owner. Use Transfer Ownership instead.",
+    );
+  }
+
+  // Ensure at least one admin/owner remains
   const adminRole = await getRole(ctx, "Admin");
-  const otherAdmin = await ctx
+  const ownerRole = await getRole(ctx, "Owner");
+  const otherPrivileged = await ctx
     .table("teams")
     .getX(member.teamId)
     .edge("members")
     .filter((q) =>
       q.and(
         q.eq(q.field("deletionTime"), undefined),
-        q.eq(q.field("roleId"), adminRole._id),
-        q.neq(q.field("_id"), member._id)
-      )
+        q.or(
+          q.eq(q.field("roleId"), adminRole._id),
+          q.eq(q.field("roleId"), ownerRole._id),
+        ),
+        q.neq(q.field("_id"), member._id),
+      ),
     )
     .first();
-  if (otherAdmin === null) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- convex-ents false positive
+  if (otherPrivileged === null) {
     throw new ConvexError("There must be at least one admin left on the team");
   }
 }
@@ -122,7 +142,7 @@ export async function createMember(
     teamId,
     roleId,
     user,
-  }: { teamId: Id<"teams">; roleId: Id<"roles">; user: Ent<"users"> }
+  }: { teamId: Id<"teams">; roleId: Id<"roles">; user: Ent<"users"> },
 ) {
   return await ctx.table("members").insert({
     teamId,

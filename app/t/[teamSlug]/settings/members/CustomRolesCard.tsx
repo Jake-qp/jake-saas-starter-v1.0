@@ -11,8 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { LockClosedIcon } from "@radix-ui/react-icons";
 
-// MOCK DATA — Phase 2 visual validation only
-// In Phase 4, this will use real tier from billing context
 export function CustomRolesCard({
   isEnterprise = false,
 }: {

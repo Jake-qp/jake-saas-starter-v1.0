@@ -51,7 +51,7 @@ export const create = mutation({
     await createMember(ctx, {
       teamId,
       user: ctx.viewerX(),
-      roleId: (await getRole(ctx, "Admin"))._id,
+      roleId: (await getRole(ctx, "Owner"))._id,
     });
     return slug;
   },

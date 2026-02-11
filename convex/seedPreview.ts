@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { ALL_PERMISSIONS, ROLE_PERMISSION_MAP } from "./rbacConfig";
 
 /**
  * Demo data for preview/demo deployments.
@@ -45,9 +46,9 @@ export const PREVIEW_DATA = {
  *
  * Creates:
  * - 1 demo team (Acme Corp)
- * - 3 demo users with team memberships
+ * - 3 demo users with team memberships (Owner, Admin, Member)
  * - 5 sample messages
- * - Roles and permissions (via init)
+ * - All roles and 14 permissions
  */
 export const seedPreview = internalMutation({
   args: {},
@@ -66,43 +67,45 @@ export const seedPreview = internalMutation({
 
     // Ensure roles exist (idempotent check)
     const existingRoles = await ctx.db.query("roles").collect();
+    let ownerRoleId;
     let adminRoleId;
     let memberRoleId;
 
     if (existingRoles.length === 0) {
-      // Create permissions
-      const permissionIds = {
-        "Manage Team": await ctx.db.insert("permissions", {
-          name: "Manage Team",
-        }),
-        "Delete Team": await ctx.db.insert("permissions", {
-          name: "Delete Team",
-        }),
-        "Manage Members": await ctx.db.insert("permissions", {
-          name: "Manage Members",
-        }),
-        "Read Members": await ctx.db.insert("permissions", {
-          name: "Read Members",
-        }),
-        Contribute: await ctx.db.insert("permissions", {
-          name: "Contribute",
-        }),
-      };
+      // Create all 14 permissions
+      const permissionIds: Record<
+        string,
+        ReturnType<typeof ctx.db.insert>
+      > = {};
+      for (const name of ALL_PERMISSIONS) {
+        permissionIds[name] = await ctx.db.insert("permissions", { name });
+      }
 
-      // Create roles (using raw db since this is an internal mutation)
+      // Create Owner role (all permissions)
+      ownerRoleId = await ctx.db.insert("roles", {
+        name: "Owner",
+        isDefault: false,
+        permissions: ROLE_PERMISSION_MAP.Owner.map((n) => permissionIds[n]),
+      });
+
+      // Create Admin role
       adminRoleId = await ctx.db.insert("roles", {
         name: "Admin",
         isDefault: false,
-        permissions: Object.values(permissionIds),
+        permissions: ROLE_PERMISSION_MAP.Admin.map((n) => permissionIds[n]),
       });
+
+      // Create Member role (default)
       memberRoleId = await ctx.db.insert("roles", {
         name: "Member",
         isDefault: true,
-        permissions: [permissionIds["Read Members"], permissionIds.Contribute],
+        permissions: ROLE_PERMISSION_MAP.Member.map((n) => permissionIds[n]),
       });
     } else {
+      const ownerRole = existingRoles.find((r) => r.name === "Owner");
       const adminRole = existingRoles.find((r) => r.name === "Admin");
       const memberRole = existingRoles.find((r) => r.name === "Member");
+      ownerRoleId = ownerRole!._id;
       adminRoleId = adminRole!._id;
       memberRoleId = memberRole!._id;
     }
@@ -111,16 +114,15 @@ export const seedPreview = internalMutation({
     const teamId = await ctx.db.insert("teams", PREVIEW_DATA.team);
 
     // Create users and memberships
-    const userIds = [];
+    // Alice = Owner, Bob = Admin, Carol = Member
+    const roleIds = [ownerRoleId, adminRoleId, memberRoleId];
     for (let i = 0; i < PREVIEW_DATA.users.length; i++) {
       const userData = PREVIEW_DATA.users[i];
       const userId = await ctx.db.insert("users", {
         ...userData,
         name: userData.fullName,
       });
-      userIds.push(userId);
 
-      const roleId = i === 0 ? adminRoleId : memberRoleId;
       const searchable = `${userData.fullName} ${userData.email}`.normalize(
         "NFKD",
       );
@@ -128,13 +130,12 @@ export const seedPreview = internalMutation({
       await ctx.db.insert("members", {
         teamId,
         userId,
-        roleId,
+        roleId: roleIds[i],
         searchable,
       });
     }
 
     // Create sample messages
-    // First member (Alice) is the admin, use her for messages
     const members = await ctx.db
       .query("members")
       .filter((q) => q.eq(q.field("teamId"), teamId))
