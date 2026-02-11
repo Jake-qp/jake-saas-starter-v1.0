@@ -1,10 +1,20 @@
 # Build Progress
 
 ## Current Feature
-None — ready for next feature
+**ID:** F001-004
+**Phase:** 1 → 2
+**Status:** Spec approved, starting visual design
+
+**Spec:** `docs/specs/F001-004-enhanced-rbac.spec`
+- User: Team admin managing members and permissions
+- Screens: 3 (Members page enhanced, Ownership Transfer dialog, Custom Roles section)
+- Flows: 3
+- Acceptance criteria: 10
 
 ## PRD Anchor (Source of Truth)
+**Feature:** F001-004
 **Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-004 -->/,/<!-- END_FEATURE: F001-004 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
 
 <!-- DO NOT INVENT REQUIREMENTS. Re-extract from PRD when needed. -->
 
