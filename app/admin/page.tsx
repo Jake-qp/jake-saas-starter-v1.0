@@ -1,5 +1,7 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { PageHeader } from "@/components";
 import {
   Card,
@@ -8,18 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-// MOCK DATA — Phase 2 only, will be replaced with real Convex queries in Phase 4
-const MOCK_METRICS = {
-  totalUsers: 1_247,
-  activeUsers: 892,
-  signupsToday: 14,
-  totalTeams: 438,
-  activeTeams: 312,
-  paidTeams: 87,
-  mrr: 4_350,
-  totalAuditEvents: 2_391,
-};
 
 function MetricCard({
   title,
@@ -46,6 +36,23 @@ function MetricCard({
 }
 
 export default function AdminDashboardPage() {
+  const metrics = useQuery(api.admin.dashboardMetrics);
+
+  if (!metrics) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Admin Dashboard"
+          description="Platform overview and key metrics"
+          breadcrumbs={[{ label: "Admin" }]}
+        />
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-muted-foreground">Loading metrics...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -60,17 +67,17 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Total Users"
-            value={MOCK_METRICS.totalUsers.toLocaleString()}
+            value={metrics.totalUsers.toLocaleString()}
             description="All registered accounts"
           />
           <MetricCard
             title="Active Users"
-            value={MOCK_METRICS.activeUsers.toLocaleString()}
+            value={metrics.activeUsers.toLocaleString()}
             description="Active in last 30 days"
           />
           <MetricCard
             title="Signups Today"
-            value={MOCK_METRICS.signupsToday}
+            value={metrics.signupsToday}
             description="New registrations today"
           />
         </div>
@@ -82,34 +89,29 @@ export default function AdminDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Total Teams"
-            value={MOCK_METRICS.totalTeams.toLocaleString()}
+            value={metrics.totalTeams.toLocaleString()}
             description="All created teams"
           />
           <MetricCard
             title="Active Teams"
-            value={MOCK_METRICS.activeTeams.toLocaleString()}
+            value={metrics.activeTeams.toLocaleString()}
             description="Teams with recent activity"
           />
           <MetricCard
             title="Paid Teams"
-            value={MOCK_METRICS.paidTeams}
+            value={metrics.paidTeams}
             description="Teams on paid plans"
           />
         </div>
       </div>
 
-      {/* Revenue Metrics */}
+      {/* Platform Metrics */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Revenue</h2>
+        <h2 className="mb-3 text-lg font-semibold">Platform</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
-            title="Monthly Recurring Revenue"
-            value={`$${MOCK_METRICS.mrr.toLocaleString()}`}
-            description="Active subscriptions MRR"
-          />
-          <MetricCard
             title="Audit Events"
-            value={MOCK_METRICS.totalAuditEvents.toLocaleString()}
+            value={metrics.totalAuditEvents.toLocaleString()}
             description="Total admin actions logged"
           />
         </div>

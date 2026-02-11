@@ -1,64 +1,23 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { ColumnDef } from "@tanstack/react-table";
 import { PageHeader, DataTable, EmptyState } from "@/components";
 import { Badge } from "@/components/ui/badge";
 import { ReaderIcon } from "@radix-ui/react-icons";
 
-// MOCK DATA — Phase 2 only, will be replaced with real Convex queries in Phase 4
-interface MockAuditEntry {
-  _id: string;
+interface AuditEntry {
+  _id: Id<"auditLog">;
   action: string;
   actorName: string;
   actorEmail: string;
   targetName: string | null;
   targetEmail: string | null;
-  metadata: string | null;
-  timestamp: string;
+  metadata: unknown;
+  timestamp: number;
 }
-
-const MOCK_AUDIT_LOG: MockAuditEntry[] = [
-  {
-    _id: "a1",
-    action: "impersonation_start",
-    actorName: "Sarah Chen",
-    actorEmail: "sarah@acme.com",
-    targetName: "James Wilson",
-    targetEmail: "james@startup.io",
-    metadata: null,
-    timestamp: "2026-02-11T09:30:00Z",
-  },
-  {
-    _id: "a2",
-    action: "impersonation_stop",
-    actorName: "Sarah Chen",
-    actorEmail: "sarah@acme.com",
-    targetName: "James Wilson",
-    targetEmail: "james@startup.io",
-    metadata: "Manual exit",
-    timestamp: "2026-02-11T09:35:00Z",
-  },
-  {
-    _id: "a3",
-    action: "impersonation_start",
-    actorName: "Sarah Chen",
-    actorEmail: "sarah@acme.com",
-    targetName: "Maria Garcia",
-    targetEmail: "maria@enterprise.co",
-    metadata: null,
-    timestamp: "2026-02-11T10:15:00Z",
-  },
-  {
-    _id: "a4",
-    action: "impersonation_expired",
-    actorName: "Sarah Chen",
-    actorEmail: "sarah@acme.com",
-    targetName: "Maria Garcia",
-    targetEmail: "maria@enterprise.co",
-    metadata: "Auto-expired after 30 minutes",
-    timestamp: "2026-02-11T10:45:00Z",
-  },
-];
 
 function actionLabel(action: string): string {
   const labels: Record<string, string> = {
@@ -76,7 +35,9 @@ function actionVariant(action: string): "default" | "secondary" | "outline" {
 }
 
 export default function AdminAuditPage() {
-  const columns: ColumnDef<MockAuditEntry>[] = [
+  const entries = useQuery(api.admin.listAuditLog);
+
+  const columns: ColumnDef<AuditEntry>[] = [
     {
       accessorKey: "timestamp",
       header: "Time",
@@ -127,16 +88,35 @@ export default function AdminAuditPage() {
     {
       accessorKey: "metadata",
       header: "Details",
-      cell: ({ row }) =>
-        row.original.metadata ? (
-          <span className="text-sm text-muted-foreground">
-            {row.original.metadata}
-          </span>
+      cell: ({ row }) => {
+        const meta = row.original.metadata as Record<string, string> | null;
+        const detail = meta?.reason ?? meta?.targetEmail ?? null;
+        return detail ? (
+          <span className="text-sm text-muted-foreground">{detail}</span>
         ) : (
           <span className="text-muted-foreground">—</span>
-        ),
+        );
+      },
     },
   ];
+
+  if (!entries) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Audit Log"
+          description="Track all admin actions and impersonation events"
+          breadcrumbs={[
+            { label: "Admin", href: "/admin" },
+            { label: "Audit Log" },
+          ]}
+        />
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-muted-foreground">Loading audit log...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -149,7 +129,7 @@ export default function AdminAuditPage() {
         ]}
       />
 
-      {MOCK_AUDIT_LOG.length === 0 ? (
+      {entries.length === 0 ? (
         <EmptyState
           icon={<ReaderIcon className="h-12 w-12" />}
           title="No audit events"
@@ -158,7 +138,7 @@ export default function AdminAuditPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={MOCK_AUDIT_LOG}
+          data={entries}
           searchKey="action"
           searchPlaceholder="Search audit events..."
           pagination
