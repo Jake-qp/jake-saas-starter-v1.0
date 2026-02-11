@@ -25,7 +25,7 @@ export const listMessages = query({
   handler: async (ctx, { teamId }) => {
     ctx.viewerX();
     return await ctx
-      .table("aiMessages", "teamCreation", (q) => q.eq("teamId", teamId))
+      .table("aiMessages", "teamId", (q) => q.eq("teamId", teamId))
       .map(async (message) => ({
         _id: message._id,
         _creationTime: message._creationTime,
