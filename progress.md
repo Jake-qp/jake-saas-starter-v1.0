@@ -1,25 +1,30 @@
 # Build Progress
 
+## Current Feature
+**ID:** F001-014
+**Phase:** 1 → 4
+**Status:** Spec approved (backend-only, skipping Phases 2-3), starting TDD implementation
+
+**Spec:** `docs/specs/F001-014-production-infrastructure.spec`
+- Acceptance criteria: 13
+- Components: Sentry, Vercel Analytics, Speed Insights, PostHog proxy, crons, rate limiter, seed data, deployment docs
+
+## PRD Anchor (Source of Truth)
+**Feature:** F001-014
+**Source:** docs/prds/F001-saas-boilerplate-v2.md
+**Extract:** `sed -n '/<!-- START_FEATURE: F001-014 -->/,/<!-- END_FEATURE: F001-014 -->/p' docs/prds/F001-saas-boilerplate-v2.md`
+
+---
+
 ## Last Completed
 **ID:** F001-001
 **Date:** 2026-02-11
 
-Convex Auth Migration + Magic Link — Replaced Clerk with Convex Auth. Email/password + magic link (ResendOTP) providers, session management, timezone preference, profile settings, route protection.
+Convex Auth Migration + Magic Link
 
 **Spec:** `docs/specs/F001-001-convex-auth.spec`
 **Gates:** Phase 4 ✅ | Phase 5 ✅
 **Tests:** 19 added (76 total passing)
-
----
-
-## Previously Completed
-**ID:** F001-016
-**Date:** 2026-02-11
-
-Testing & Quality Infrastructure — Vitest, Playwright, CI/CD, pre-commit hooks, seed tests, ESLint tightening.
-
-**Spec:** `docs/specs/F001-016-testing-quality-infrastructure.spec`
-**Gates:** Phase 4 ✅ | Phase 5 ✅
 
 ---
 
