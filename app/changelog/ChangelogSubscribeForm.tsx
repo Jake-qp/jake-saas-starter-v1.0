@@ -1,30 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-// Mock data for Phase 2 visual design — will be replaced with Convex mutation in Phase 4
-const MOCK_SUBSCRIBED_EMAILS = ["already@example.com"];
 
 export function ChangelogSubscribeForm() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
-    "idle" | "success" | "already_subscribed" | "error"
+    "idle" | "loading" | "success" | "already_subscribed" | "error"
   >("idle");
+  const subscribe = useMutation(api.changelog.subscribe);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!email || status === "loading") return;
 
-    // Mock: check for duplicate
-    if (MOCK_SUBSCRIBED_EMAILS.includes(email)) {
-      setStatus("already_subscribed");
-      return;
+    setStatus("loading");
+    try {
+      const result = await subscribe({ email });
+      if (result.status === "already_subscribed") {
+        setStatus("already_subscribed");
+      } else {
+        setStatus("success");
+        setEmail("");
+      }
+    } catch {
+      setStatus("error");
     }
-
-    setStatus("success");
-    setEmail("");
   };
 
   return (
@@ -34,20 +38,20 @@ export function ChangelogSubscribeForm() {
         Subscribe to receive an email when we publish new changelog entries.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-3 flex gap-2">
+      <form onSubmit={(e) => void handleSubmit(e)} className="mt-3 flex gap-2">
         <Input
           type="email"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
-            if (status !== "idle") setStatus("idle");
+            if (status !== "idle" && status !== "loading") setStatus("idle");
           }}
           required
           className="max-w-xs"
         />
-        <Button type="submit" size="sm">
-          Subscribe
+        <Button type="submit" size="sm" disabled={status === "loading"}>
+          {status === "loading" ? "Subscribing..." : "Subscribe"}
         </Button>
       </form>
 

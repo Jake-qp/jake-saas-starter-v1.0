@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { RocketIcon } from "@radix-ui/react-icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,19 +12,26 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Mock data for Phase 2 visual design — will be replaced with Convex query/mutation in Phase 4
-const MOCK_HAS_NEW = true;
+// Latest changelog date — updated at build time via lib/content.ts
+// This is a hardcoded constant that gets set during the build process.
+// In production, this would be generated from the actual changelog MDX files.
+const LATEST_CHANGELOG_DATE = "2026-02-10";
 
 /**
  * WhatsNewBadge — shows a dot indicator in the app header when new changelog
  * entries exist since the user last dismissed. Clicking opens the changelog.
  */
 export function WhatsNewBadge() {
-  const [hasNew, setHasNew] = useState(MOCK_HAS_NEW);
+  const lastSeenDate = useQuery(api.changelog.getLastSeenDate);
+  const dismissWhatsNew = useMutation(api.changelog.dismissWhatsNew);
+
+  // Determine if there are new entries
+  const hasNew =
+    lastSeenDate !== undefined &&
+    (lastSeenDate === null || lastSeenDate < LATEST_CHANGELOG_DATE);
 
   const handleDismiss = () => {
-    // Phase 4: will call mutation to update user's lastSeenChangelogDate
-    setHasNew(false);
+    void dismissWhatsNew({ date: LATEST_CHANGELOG_DATE });
   };
 
   return (

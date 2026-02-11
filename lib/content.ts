@@ -19,14 +19,16 @@ export interface ChangelogEntry {
   content: string;
 }
 
-const CONTENT_DIR = path.join(process.cwd(), "content");
+function getContentDir() {
+  return path.join(process.cwd(), "content");
+}
 
 /**
  * Get all blog posts sorted by date (newest first).
  * Validates required frontmatter: title, date, description.
  */
 export function getAllBlogPosts(): BlogPost[] {
-  const blogDir = path.join(CONTENT_DIR, "blog");
+  const blogDir = path.join(getContentDir(), "blog");
   if (!fs.existsSync(blogDir)) return [];
 
   const files = fs.readdirSync(blogDir).filter((f) => f.endsWith(".mdx"));
@@ -54,7 +56,7 @@ export function getAllBlogPosts(): BlogPost[] {
  * Get a single blog post by slug.
  */
 export function getBlogPost(slug: string): BlogPost | null {
-  const filePath = path.join(CONTENT_DIR, "blog", `${slug}.mdx`);
+  const filePath = path.join(getContentDir(), "blog", `${slug}.mdx`);
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
@@ -77,7 +79,7 @@ export function getBlogPost(slug: string): BlogPost | null {
  * Validates required frontmatter: title, date, description.
  */
 export function getAllChangelogEntries(): ChangelogEntry[] {
-  const changelogDir = path.join(CONTENT_DIR, "changelog");
+  const changelogDir = path.join(getContentDir(), "changelog");
   if (!fs.existsSync(changelogDir)) return [];
 
   const files = fs.readdirSync(changelogDir).filter((f) => f.endsWith(".mdx"));
