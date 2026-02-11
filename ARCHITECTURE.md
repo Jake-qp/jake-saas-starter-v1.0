@@ -98,14 +98,17 @@ app/                        Next.js App Router pages & layouts
   monitoring/               Sentry tunnel route
 components/
   ui/                       shadcn/ui components (do not edit manually)
+  index.ts                  Barrel export for app-level components
+  CLAUDE.md                 AI coding rules for components
+  __tests__/                Component unit tests
   PageHeader.tsx            Consistent page title + breadcrumb + actions
-  DataTable.tsx             Configurable data table
+  DataTable.tsx             Configurable data table (@tanstack/react-table)
   EmptyState.tsx            Standardized empty states
-  StatusBadge.tsx           Status indicators
+  StatusBadge.tsx           Status indicators (6 semantic variants)
   PricingCard.tsx           Plan comparison
-  UsageMeter.tsx            Usage bars
+  UsageMeter.tsx            Usage bars (green/yellow/red thresholds)
   StepWizard.tsx            Multi-step forms
-  ThemeToggle.tsx           Dark/light/system
+  ThemeToggle.tsx           Dark/light/system (next-themes)
   HeroSection.tsx           Landing page hero
   FeaturesGrid.tsx          Feature cards grid
   PricingTable.tsx          Plan comparison table (reads planConfig.ts)
@@ -128,11 +131,13 @@ lib/
     use-track.ts            useTrack() — wraps posthog.capture()
     use-feature-flag.ts     useFeatureFlag() — wraps PostHog flag evaluation
     use-posthog-identify.ts PostHog identify + group calls
+eslint-rules/               Local ESLint rules (design system enforcement)
 tests/                      Vitest global setup
 e2e/                        Playwright E2E tests
 docs/
   prds/                     Product requirement documents
   adrs/                     Architecture decision records
+  component-manifest.md     Full component reference (props, variants, examples)
   deployment.md             Vercel deployment guide
 ```
 

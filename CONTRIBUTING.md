@@ -53,6 +53,7 @@ npm run test:all          # Run everything
 ```
 tests/setup.ts                    # Vitest global setup
 convex/__tests__/                 # Convex function tests
+components/__tests__/             # Component tests (React Testing Library)
 lib/__tests__/                    # Utility tests
 e2e/                              # Playwright E2E tests
   fixtures/                       # Reusable test fixtures
@@ -96,9 +97,18 @@ export const create = mutation({
 
 - **TypeScript strict mode** — no `any` types in new code
 - **Path aliases** — use `@/` for imports (e.g., `@/components/ui/button`)
-- **shadcn/ui** — add components via `npx shadcn-ui@latest add <component>`, don't hand-edit `components/ui/`
+- **shadcn/ui** — add components via `npx shadcn@latest add <component>`, don't hand-edit `components/ui/`
 - **Convex functions** — use custom wrappers from `convex/functions.ts`, not raw Convex imports
 - **Formatting** — Prettier with default config
+
+### Design System (ESLint-Enforced)
+
+- **Semantic color tokens only** — raw Tailwind colors (`bg-red-500`, `text-blue-300`) are ESLint errors. Use `bg-primary`, `bg-destructive`, `bg-warning`, `bg-success`, `bg-info`, etc.
+- **No inline styles** — `style={{}}` props are ESLint errors. Use Tailwind classes or component variants.
+- **Icons** — use `@radix-ui/react-icons` only. `lucide-react` imports are banned in app code (ESLint enforced).
+- **Class merging** — use `cn()` from `@/lib/utils`, not string concatenation.
+- **App components** — use `PageHeader`, `DataTable`, `EmptyState`, `StatusBadge`, `PricingCard`, `UsageMeter`, `StepWizard`, `ThemeToggle` from `@/components`. See `docs/component-manifest.md` for the full reference.
+- **Dark mode** — uses `next-themes` with class strategy. All UI should work in both light and dark modes.
 
 ## PR Process
 

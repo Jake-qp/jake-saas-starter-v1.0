@@ -4,6 +4,7 @@ import { Notifications } from "@/app/t/Notifications";
 import { TeamMenu } from "@/app/t/TeamMenu";
 import { ProfileButton } from "@/app/t/[teamSlug]/ProfileButton";
 import { StickyHeader } from "@/components/layout/sticky-header";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { TeamSwitcher } from "@/app/t/TeamSwitcher";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
@@ -20,6 +21,7 @@ export default function DashboardLayout({
           <div className="flex justify-between items-center">
             <TeamSwitcher />
             <div className="flex items-center gap-4">
+              <ThemeToggle />
               <Notifications />
               <ProfileButton />
             </div>

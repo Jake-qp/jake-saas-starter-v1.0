@@ -52,7 +52,50 @@ npm run test:all         # All tests (Vitest + Playwright)
 - **Blog/Legal:** MDX files in `content/`; processed at build time
 - **Monitoring:** Sentry (optional, env-var gated); Vercel Analytics + Speed Insights always active; PostHog (optional, env-var gated) for product analytics + feature flags
 - **Deployment:** Vercel (auto-deploy from GitHub). Build: `npx convex deploy --cmd 'npm run build'`
-- **ESLint:** Ignores `convex/_generated` and `components/ui`
+- **ESLint:** Ignores `convex/_generated` and `components/ui`. Enforces semantic color tokens via `tailwind-ban` plugin.
+
+## Design System
+
+### Available Components — USE THESE, never build alternatives
+
+| Component | Import | Use For |
+|-----------|--------|---------|
+| Button | `@/components/ui/button` | All clickable actions |
+| Card | `@/components/ui/card` | Content containers |
+| Dialog | `@/components/ui/dialog` | Modals and confirmations |
+| PageHeader | `@/components/PageHeader` | ALL page headers (never inline `<h1>`) |
+| DataTable | `@/components/DataTable` | ALL data tables |
+| EmptyState | `@/components/EmptyState` | ALL empty/zero states |
+| StatusBadge | `@/components/StatusBadge` | Subscription/status indicators |
+| PricingCard | `@/components/PricingCard` | Plan comparison cards |
+| UsageMeter | `@/components/UsageMeter` | Usage/quota bars |
+| StepWizard | `@/components/StepWizard` | Multi-step flows |
+| ThemeToggle | `@/components/ThemeToggle` | Dark/light/system toggle |
+
+Barrel export: `import { PageHeader, EmptyState, DataTable } from "@/components"`.
+Full reference: [`docs/component-manifest.md`](docs/component-manifest.md).
+
+### Color Tokens (REQUIRED — enforced by ESLint)
+
+| Intent | Use | NEVER use |
+|--------|-----|-----------|
+| Page background | `bg-background` | `bg-white`, `bg-slate-*` |
+| Primary action | `bg-primary text-primary-foreground` | `bg-blue-*`, `bg-indigo-*` |
+| Danger/error | `bg-destructive` | `bg-red-*` |
+| Warning | `bg-warning` | `bg-yellow-*`, `bg-amber-*` |
+| Success | `bg-success` | `bg-green-*`, `bg-emerald-*` |
+| Info | `bg-info` | `bg-blue-*`, `bg-sky-*` |
+| Subtle text | `text-muted-foreground` | `text-gray-*`, `text-slate-*` |
+| Borders | `border-border` | `border-gray-*`, `border-slate-*` |
+
+### UI Self-Check (verify after generating any UI code)
+
+- [ ] All colors use semantic tokens — no raw colors (ESLint enforced)
+- [ ] All interactive elements use shadcn components, not raw HTML
+- [ ] No inline `style={}` props (ESLint enforced)
+- [ ] Icons from `@radix-ui/react-icons` only — not lucide-react (ESLint enforced)
+- [ ] Class merging uses `cn()` from `@/lib/utils` — no string concatenation
+- [ ] Components imported from `@/components/ui/` or `@/components/` — not Radix directly
 
 ### Mutation Pattern (Required)
 
@@ -96,7 +139,7 @@ See `docs/prds/F001-saas-boilerplate-v2.md` for full PRD with specs.
 | Module | Priority | Status |
 |--------|----------|--------|
 | Convex Auth + Magic Link (F001-001) | P0 | Pending |
-| Design System Expansion (F001-002) | P0 | Pending |
+| Design System Expansion (F001-002) | P0 | Done |
 | Testing & Quality Infrastructure (F001-016) | P0 | Pending |
 | Polar Billing + Credits (F001-003) | P1 | Pending |
 | Enhanced RBAC (F001-004) | P1 | Pending |

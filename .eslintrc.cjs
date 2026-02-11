@@ -1,11 +1,16 @@
+const rulesDirPlugin = require("eslint-plugin-rulesdir");
+rulesDirPlugin.RULES_DIR = "eslint-rules";
+
 module.exports = {
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended-type-checked",
     "next/core-web-vitals",
   ],
+  plugins: ["rulesdir"],
   ignorePatterns: [
     ".eslintrc.cjs",
+    "eslint-rules",
     "convex/_generated",
     // There are currently ESLint errors in shadcn/ui
     "components/ui",
@@ -45,5 +50,36 @@ module.exports = {
     "@typescript-eslint/require-await": "off",
 
     "@typescript-eslint/no-unnecessary-condition": "error",
+
+    // ═══════════════════════════════════════════════════════════════
+    // Design System Enforcement (F001-002)
+    // ═══════════════════════════════════════════════════════════════
+
+    // Ban raw Tailwind color classes — force semantic tokens
+    "rulesdir/no-raw-tailwind-colors": "error",
+
+    // Ban inline styles — force Tailwind semantic tokens or component variants
+    "no-restricted-syntax": [
+      "error",
+      {
+        selector: "JSXAttribute[name.name='style']",
+        message: "Inline styles banned. Use Tailwind semantic tokens or component variants.",
+      },
+    ],
+
+    // Ban direct Radix imports (use shadcn wrappers) and lucide-react
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          { name: "@radix-ui/react-dialog", message: "Use @/components/ui/dialog instead." },
+          { name: "@radix-ui/react-dropdown-menu", message: "Use @/components/ui/dropdown-menu instead." },
+          { name: "@radix-ui/react-select", message: "Use @/components/ui/select instead." },
+          { name: "@radix-ui/react-tabs", message: "Use @/components/ui/tabs instead." },
+          { name: "@radix-ui/react-popover", message: "Use @/components/ui/popover instead." },
+          { name: "lucide-react", message: "Use @radix-ui/react-icons (project standard)." },
+        ],
+      },
+    ],
   },
 };

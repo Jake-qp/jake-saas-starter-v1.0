@@ -1,5 +1,6 @@
 import { DashboardButtons } from "@/app/DashboardButtons";
 import { StickyHeader } from "@/components/layout/sticky-header";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "@/components/typography/link";
 import { Suspense } from "react";
 
@@ -9,9 +10,12 @@ export default function Home() {
       <StickyHeader className="px-4 py-2">
         <div className="flex justify-between items-center">
           <span>SaaS Starter</span>
-          <Suspense>
-            <DashboardButtons />
-          </Suspense>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Suspense>
+              <DashboardButtons />
+            </Suspense>
+          </div>
         </div>
       </StickyHeader>
       <main className="container max-w-2xl flex flex-col gap-8">
