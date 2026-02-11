@@ -1,5 +1,6 @@
 "use client";
 
+import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
 import { StepWizard } from "@/components/StepWizard";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,34 +13,35 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { api } from "@/convex/_generated/api";
+import { ONBOARDING_STEPS, needsOnboarding } from "@/lib/onboardingConfig";
 import {
   RocketIcon,
   PersonIcon,
   GearIcon,
   CheckCircledIcon,
 } from "@radix-ui/react-icons";
+import { useMutation, useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-// MOCK DATA — Phase 2 only, will be replaced with real Convex backend in Phase 4
-const MOCK_USER = {
-  fullName: "",
-  email: "alex@example.com",
-};
-
-const ONBOARDING_STEPS = [
-  { label: "Profile", description: "Set up your profile" },
-  { label: "Team", description: "Name your workspace" },
-  { label: "Get Started", description: "You're all set!" },
-];
+const WIZARD_STEPS = ONBOARDING_STEPS.map((s) => ({
+  label: s.label,
+  description: s.description,
+}));
 
 function ProfileStep({
+  email,
+  initialName,
   onNext,
   onSkip,
 }: {
-  onNext: () => void;
+  email: string;
+  initialName: string;
+  onNext: (name: string) => void;
   onSkip: () => void;
 }) {
-  const [fullName, setFullName] = useState(MOCK_USER.fullName);
+  const [fullName, setFullName] = useState(initialName);
 
   return (
     <Card>
@@ -58,7 +60,7 @@ function ProfileStep({
           <Input
             id="onboarding-email"
             type="email"
-            value={MOCK_USER.email}
+            value={email}
             disabled
             className="bg-muted"
           />
@@ -78,7 +80,10 @@ function ProfileStep({
         <Button variant="ghost" onClick={onSkip}>
           Skip onboarding
         </Button>
-        <Button onClick={onNext} disabled={!fullName.trim()}>
+        <Button
+          onClick={() => onNext(fullName.trim())}
+          disabled={!fullName.trim()}
+        >
           Continue
         </Button>
       </CardFooter>
@@ -87,15 +92,17 @@ function ProfileStep({
 }
 
 function TeamStep({
+  initialTeamName,
   onNext,
   onBack,
   onSkip,
 }: {
-  onNext: () => void;
+  initialTeamName: string;
+  onNext: (teamName: string) => void;
   onBack: () => void;
   onSkip: () => void;
 }) {
-  const [teamName, setTeamName] = useState("");
+  const [teamName, setTeamName] = useState(initialTeamName);
 
   return (
     <Card>
@@ -129,7 +136,7 @@ function TeamStep({
             Skip
           </Button>
         </div>
-        <Button onClick={onNext}>Continue</Button>
+        <Button onClick={() => onNext(teamName.trim())}>Continue</Button>
       </CardFooter>
     </Card>
   );
@@ -189,18 +196,64 @@ function CompletionStep({ onFinish }: { onFinish: () => void }) {
 }
 
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const user = useQuery(api.users.viewer);
+  const onboardingStatus = useQuery(api.onboarding.getStatus);
+  const team = useCurrentTeam();
+  const router = useRouter();
 
-  const handleSkip = () => {
-    // MOCK: In Phase 4, this will call a mutation to mark onboarding as skipped
-    // and redirect to dashboard
-    setCurrentStep(ONBOARDING_STEPS.length - 1);
+  const updateStep = useMutation(api.onboarding.updateStep);
+  const completeOnboarding = useMutation(api.onboarding.complete);
+  const skipOnboarding = useMutation(api.onboarding.skip);
+  const updateProfile = useMutation(api.users.updateProfile);
+  const updateTeamName = useMutation(api.users.teams.update);
+
+  const currentStep = onboardingStatus?.onboardingStep ?? 0;
+
+  // If onboarding is already done, redirect to dashboard
+  useEffect(() => {
+    if (
+      user &&
+      team &&
+      onboardingStatus !== undefined &&
+      !needsOnboarding(onboardingStatus?.onboardingStatus)
+    ) {
+      router.replace(`/t/${team.slug}`);
+    }
+  }, [user, team, onboardingStatus, router]);
+
+  if (!user || !team || onboardingStatus === undefined) {
+    return null;
+  }
+
+  // Already completed — don't flash wizard while redirecting
+  if (!needsOnboarding(onboardingStatus?.onboardingStatus)) {
+    return null;
+  }
+
+  const goToStep = async (step: number) => {
+    await updateStep({ step });
   };
 
-  const handleFinish = () => {
-    // MOCK: In Phase 4, this will call a mutation to mark onboarding as complete
-    // and redirect to dashboard
-    alert("Onboarding complete! (mock — will redirect to dashboard)");
+  const handleProfileNext = async (name: string) => {
+    await updateProfile({ fullName: name });
+    await goToStep(1);
+  };
+
+  const handleTeamNext = async (teamName: string) => {
+    if (teamName) {
+      await updateTeamName({ teamId: team._id, name: teamName });
+    }
+    await goToStep(2);
+  };
+
+  const handleSkip = async () => {
+    await skipOnboarding({});
+    router.replace(`/t/${team.slug}`);
+  };
+
+  const handleFinish = async () => {
+    await completeOnboarding({});
+    router.replace(`/t/${team.slug}`);
   };
 
   return (
@@ -213,21 +266,29 @@ export default function OnboardingPage() {
       </div>
 
       <StepWizard
-        steps={ONBOARDING_STEPS}
+        steps={WIZARD_STEPS}
         currentStep={currentStep}
-        onStepChange={setCurrentStep}
+        onStepChange={(step) => void goToStep(step)}
       >
         {currentStep === 0 && (
-          <ProfileStep onNext={() => setCurrentStep(1)} onSkip={handleSkip} />
+          <ProfileStep
+            email={user.email ?? ""}
+            initialName={user.fullName ?? ""}
+            onNext={(name) => void handleProfileNext(name)}
+            onSkip={() => void handleSkip()}
+          />
         )}
         {currentStep === 1 && (
           <TeamStep
-            onNext={() => setCurrentStep(2)}
-            onBack={() => setCurrentStep(0)}
-            onSkip={handleSkip}
+            initialTeamName={team.name}
+            onNext={(name) => void handleTeamNext(name)}
+            onBack={() => void goToStep(0)}
+            onSkip={() => void handleSkip()}
           />
         )}
-        {currentStep === 2 && <CompletionStep onFinish={handleFinish} />}
+        {currentStep === 2 && (
+          <CompletionStep onFinish={() => void handleFinish()} />
+        )}
       </StepWizard>
     </main>
   );

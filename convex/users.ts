@@ -30,6 +30,7 @@ export const viewer = query({
       lastName: ctx.viewer.lastName,
       pictureUrl: ctx.viewer.pictureUrl,
       timezone: ctx.viewer.timezone,
+      onboardingStatus: ctx.viewer.onboardingStatus,
     };
   },
 });

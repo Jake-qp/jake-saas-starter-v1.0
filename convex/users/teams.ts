@@ -57,6 +57,18 @@ export const create = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    teamId: v.id("teams"),
+    name: v.string(),
+  },
+  async handler(ctx, { teamId, name }) {
+    await viewerHasPermissionX(ctx, teamId, "Manage Team");
+    const team = await ctx.table("teams").getX(teamId);
+    await team.patch({ name });
+  },
+});
+
 export const deleteTeam = mutation({
   args: {
     teamId: v.id("teams"),
