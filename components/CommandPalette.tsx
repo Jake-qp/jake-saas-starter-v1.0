@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/convex/_generated/api";
 import {
   CommandDialog,
   CommandEmpty,
@@ -20,34 +21,32 @@ import {
 } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
-// --- MOCK DATA (Phase 2 only — replaced in Phase 4) ---
-const MOCK_RECENT_NOTES = [
-  { _id: "note_1", title: "Q1 Product Roadmap" },
-  { _id: "note_3", title: "Bug: File uploads failing on Safari" },
-];
-
-const MOCK_SEARCH_NOTES = [
-  { _id: "note_1", title: "Q1 Product Roadmap" },
-  { _id: "note_2", title: "Meeting Notes: Design Review" },
-  { _id: "note_3", title: "Bug: File uploads failing on Safari" },
-  { _id: "note_4", title: "API Rate Limiting Strategy" },
-];
-
-const MOCK_TEAMS = [{ _id: "team_1", name: "Acme Corp", slug: "acme-corp" }];
-
-const MOCK_MEMBERS = [
-  { _id: "member_1", name: "Sarah Chen", email: "sarah@example.com" },
-  { _id: "member_2", name: "Alex Rivera", email: "alex@example.com" },
-  { _id: "member_3", name: "Jamie Nguyen", email: "jamie@example.com" },
-];
-// --- END MOCK DATA ---
+import { useQuery } from "convex/react";
+import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const router = useRouter();
   const { teamSlug } = useParams();
+  const team = useCurrentTeam();
+
+  // Search queries — only run when searching
+  const noteResults = useQuery(
+    api.notes.search,
+    team && search.trim() ? { teamId: team._id, query: search } : "skip",
+  );
+
+  const memberResults = useQuery(
+    api.notes.searchMembers,
+    team && search.trim() ? { teamId: team._id, query: search } : "skip",
+  );
+
+  // Recent notes (last 5)
+  const recentNotes = useQuery(
+    api.notes.list,
+    team ? { teamId: team._id } : "skip",
+  );
 
   // Cmd+K keyboard shortcut
   useEffect(() => {
@@ -73,6 +72,9 @@ export function CommandPalette() {
   const isSearching = search.length > 0;
   const teamBase = `/t/${teamSlug as string}`;
 
+  // Take first 3 recent notes for the non-search view
+  const recentItems = (recentNotes ?? []).slice(0, 3);
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
@@ -91,35 +93,50 @@ export function CommandPalette() {
         {/* Recent items (shown when not searching) */}
         {!isSearching && (
           <>
-            <CommandGroup heading="Recent Notes">
-              {MOCK_RECENT_NOTES.map((note) => (
-                <CommandItem
-                  key={note._id}
-                  onSelect={() => navigate(`${teamBase}/notes`)}
-                >
-                  <FileTextIcon className="mr-2 h-4 w-4" />
-                  {note.title}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {recentItems.length > 0 && (
+              <CommandGroup heading="Recent Notes">
+                {recentItems.map((note) => (
+                  <CommandItem
+                    key={note._id}
+                    value={`note-${note.title}`}
+                    onSelect={() => navigate(`${teamBase}/notes`)}
+                  >
+                    <FileTextIcon className="mr-2 h-4 w-4" />
+                    {note.title}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
             <CommandSeparator />
             <CommandGroup heading="Navigation">
-              <CommandItem onSelect={() => navigate(teamBase)}>
+              <CommandItem
+                value="nav-dashboard"
+                onSelect={() => navigate(teamBase)}
+              >
                 <HomeIcon className="mr-2 h-4 w-4" />
                 Dashboard
                 <CommandShortcut>Go</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => navigate(`${teamBase}/notes`)}>
+              <CommandItem
+                value="nav-notes"
+                onSelect={() => navigate(`${teamBase}/notes`)}
+              >
                 <FileTextIcon className="mr-2 h-4 w-4" />
                 Notes
                 <CommandShortcut>Go</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => navigate(`${teamBase}/ai`)}>
+              <CommandItem
+                value="nav-ai"
+                onSelect={() => navigate(`${teamBase}/ai`)}
+              >
                 <ChatBubbleIcon className="mr-2 h-4 w-4" />
                 AI Chat
                 <CommandShortcut>Go</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => navigate(`${teamBase}/settings`)}>
+              <CommandItem
+                value="nav-settings"
+                onSelect={() => navigate(`${teamBase}/settings`)}
+              >
                 <GearIcon className="mr-2 h-4 w-4" />
                 Settings
                 <CommandShortcut>Go</CommandShortcut>
@@ -131,54 +148,42 @@ export function CommandPalette() {
         {/* Search results (shown when searching) */}
         {isSearching && (
           <>
-            <CommandGroup heading="Notes">
-              {MOCK_SEARCH_NOTES.filter((n) =>
-                n.title.toLowerCase().includes(search.toLowerCase()),
-              ).map((note) => (
-                <CommandItem
-                  key={note._id}
-                  onSelect={() => navigate(`${teamBase}/notes`)}
-                >
-                  <FileTextIcon className="mr-2 h-4 w-4" />
-                  {note.title}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup heading="Teams">
-              {MOCK_TEAMS.filter((t) =>
-                t.name.toLowerCase().includes(search.toLowerCase()),
-              ).map((team) => (
-                <CommandItem
-                  key={team._id}
-                  onSelect={() => navigate(`/t/${team.slug}`)}
-                >
-                  <HomeIcon className="mr-2 h-4 w-4" />
-                  {team.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-            <CommandSeparator />
-            <CommandGroup heading="Members">
-              {MOCK_MEMBERS.filter(
-                (m) =>
-                  m.name.toLowerCase().includes(search.toLowerCase()) ||
-                  m.email.toLowerCase().includes(search.toLowerCase()),
-              ).map((member) => (
-                <CommandItem
-                  key={member._id}
-                  onSelect={() => navigate(`${teamBase}/settings/members`)}
-                >
-                  <PersonIcon className="mr-2 h-4 w-4" />
-                  <div className="flex flex-col">
-                    <span>{member.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {member.email}
-                    </span>
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {noteResults && noteResults.length > 0 && (
+              <CommandGroup heading="Notes">
+                {noteResults.map((note) => (
+                  <CommandItem
+                    key={note._id}
+                    value={`search-note-${note.title}`}
+                    onSelect={() => navigate(`${teamBase}/notes`)}
+                  >
+                    <FileTextIcon className="mr-2 h-4 w-4" />
+                    {note.title}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {memberResults && memberResults.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading="Members">
+                  {memberResults.map((member) => (
+                    <CommandItem
+                      key={member._id}
+                      value={`search-member-${member.name}-${member.email}`}
+                      onSelect={() => navigate(`${teamBase}/settings/members`)}
+                    >
+                      <PersonIcon className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>{member.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {member.email}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
           </>
         )}
       </CommandList>

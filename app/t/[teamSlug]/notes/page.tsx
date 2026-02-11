@@ -1,5 +1,7 @@
 "use client";
 
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
 import { PageHeader, EmptyState } from "@/components";
 import { Button } from "@/components/ui/button";
@@ -37,48 +39,9 @@ import {
   TrashIcon,
   FileTextIcon,
 } from "@radix-ui/react-icons";
-import { useState } from "react";
-
-// --- MOCK DATA (Phase 2 only — replaced in Phase 4) ---
-const MOCK_NOTES = [
-  {
-    _id: "note_1",
-    title: "Q1 Product Roadmap",
-    content:
-      "Key priorities for Q1:\n1. Ship billing integration\n2. Launch command palette\n3. Improve onboarding flow\n\nTimeline: Jan 15 - Mar 31",
-    createdBy: { fullName: "Sarah Chen", email: "sarah@example.com" },
-    _creationTime: Date.now() - 2 * 24 * 60 * 60 * 1000,
-    attachmentCount: 2,
-  },
-  {
-    _id: "note_2",
-    title: "Meeting Notes: Design Review",
-    content:
-      "Attendees: Sarah, Alex, Jamie\n\nDecisions:\n- Use semantic color tokens everywhere\n- PageHeader required for all pages\n- EmptyState component for zero states\n\nAction items:\n- Alex: update design system docs\n- Jamie: audit existing pages",
-    createdBy: { fullName: "Alex Rivera", email: "alex@example.com" },
-    _creationTime: Date.now() - 5 * 24 * 60 * 60 * 1000,
-    attachmentCount: 0,
-  },
-  {
-    _id: "note_3",
-    title: "Bug: File uploads failing on Safari",
-    content:
-      "Reported by customer. Steps to reproduce:\n1. Open Safari 17.2\n2. Navigate to file upload\n3. Select a .png file > 2MB\n4. Upload progress hangs at 80%\n\nWorkaround: Use Chrome for now.\nRoot cause: Safari blob handling differs.",
-    createdBy: { fullName: "Jamie Nguyen", email: "jamie@example.com" },
-    _creationTime: Date.now() - 1 * 24 * 60 * 60 * 1000,
-    attachmentCount: 1,
-  },
-  {
-    _id: "note_4",
-    title: "API Rate Limiting Strategy",
-    content:
-      "Proposed limits:\n- Free: 100 req/min\n- Pro: 1000 req/min\n- Enterprise: unlimited\n\nImplement using token bucket algorithm with Redis.",
-    createdBy: { fullName: "Sarah Chen", email: "sarah@example.com" },
-    _creationTime: Date.now() - 10 * 24 * 60 * 60 * 1000,
-    attachmentCount: 0,
-  },
-];
-// --- END MOCK DATA ---
+import { useState, useCallback } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useToast } from "@/components/ui/use-toast";
 
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
@@ -90,24 +53,59 @@ function formatRelativeTime(timestamp: number): string {
   return `${Math.floor(days / 30)} months ago`;
 }
 
+type NoteListItem = {
+  _id: Id<"notes">;
+  title: string;
+  content: string;
+  createdBy: { _id: Id<"users">; fullName: string; email: string };
+  attachmentStorageIds: Id<"_storage">[];
+  _creationTime: number;
+};
+
 export default function NotesPage() {
   const team = useCurrentTeam();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
-  const [editNote, setEditNote] = useState<(typeof MOCK_NOTES)[0] | null>(null);
-  const [deleteNote, setDeleteNote] = useState<(typeof MOCK_NOTES)[0] | null>(
-    null,
-  );
+  const [editNote, setEditNote] = useState<NoteListItem | null>(null);
+  const [deleteNote, setDeleteNote] = useState<NoteListItem | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Convex queries
+  const notes = useQuery(
+    api.notes.list,
+    team
+      ? {
+          teamId: team._id,
+          search: debouncedSearch || undefined,
+        }
+      : "skip",
+  );
+
+  const canManageContent = useQuery(
+    api.notes.canManageContent,
+    team ? { teamId: team._id } : "skip",
+  );
+
+  const viewer = useQuery(api.users.viewer);
+
+  // Convex mutations
+  const createNote = useMutation(api.notes.create);
+  const updateNote = useMutation(api.notes.update);
+  const removeNote = useMutation(api.notes.remove);
+
+  // Debounce search input
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    // Simple debounce via setTimeout
+    const timeout = setTimeout(() => setDebouncedSearch(value), 300);
+    return () => clearTimeout(timeout);
+  }, []);
 
   if (!team) return null;
-
-  const filteredNotes = MOCK_NOTES.filter(
-    (note) =>
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.content.toLowerCase().includes(search.toLowerCase()),
-  );
 
   const handleCreate = () => {
     setTitle("");
@@ -115,11 +113,80 @@ export default function NotesPage() {
     setCreateOpen(true);
   };
 
-  const handleEdit = (note: (typeof MOCK_NOTES)[0]) => {
+  const handleEdit = (note: NoteListItem) => {
     setTitle(note.title);
     setContent(note.content);
     setEditNote(note);
   };
+
+  const handleCreateSubmit = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    try {
+      await createNote({
+        teamId: team._id,
+        title: title.trim(),
+        content: content.trim(),
+      });
+      setCreateOpen(false);
+      toast({ title: "Note created" });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create note";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editNote || !title.trim()) return;
+    setSaving(true);
+    try {
+      await updateNote({
+        noteId: editNote._id,
+        title: title.trim(),
+        content: content.trim(),
+      });
+      setEditNote(null);
+      toast({ title: "Note updated" });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update note";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteNote) return;
+    try {
+      await removeNote({ noteId: deleteNote._id });
+      setDeleteNote(null);
+      toast({ title: "Note deleted" });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete note";
+      toast({ title: "Error", description: message, variant: "destructive" });
+    }
+  };
+
+  const canDeleteNote = (note: NoteListItem) => {
+    if (!viewer) return false;
+    // Creator can always delete their own notes
+    if (note.createdBy._id === viewer._id) return true;
+    // "Manage Content" holders can delete any note
+    return canManageContent === true;
+  };
+
+  const canEditNote = (note: NoteListItem) => {
+    if (!viewer) return false;
+    if (note.createdBy._id === viewer._id) return true;
+    return canManageContent === true;
+  };
+
+  const notesList = notes ?? [];
 
   return (
     <main className="container py-6">
@@ -145,14 +212,27 @@ export default function NotesPage() {
           <Input
             placeholder="Search notes..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
           />
         </div>
       </div>
 
       {/* Notes list */}
-      {filteredNotes.length === 0 && !search ? (
+      {notes === undefined ? (
+        <div className="mt-6 space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="animate-pulse rounded-lg border border-border p-4"
+            >
+              <div className="h-5 w-1/3 rounded bg-muted" />
+              <div className="mt-2 h-4 w-2/3 rounded bg-muted" />
+              <div className="mt-2 h-3 w-1/4 rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      ) : notesList.length === 0 && !search ? (
         <EmptyState
           icon={<FileTextIcon className="h-12 w-12" />}
           title="No notes yet"
@@ -165,7 +245,7 @@ export default function NotesPage() {
           }
           className="mt-6"
         />
-      ) : filteredNotes.length === 0 && search ? (
+      ) : notesList.length === 0 && search ? (
         <div className="mt-6 flex flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center">
           <MagnifyingGlassIcon className="mb-4 h-12 w-12 text-muted-foreground" />
           <h3 className="text-lg font-semibold">No results found</h3>
@@ -175,7 +255,7 @@ export default function NotesPage() {
         </div>
       ) : (
         <div className="mt-6 space-y-2">
-          {filteredNotes.map((note) => (
+          {notesList.map((note) => (
             <div
               key={note._id}
               className="group flex items-start gap-4 rounded-lg border border-border p-4 transition-colors hover:bg-accent/50"
@@ -183,10 +263,10 @@ export default function NotesPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold">{note.title}</h3>
-                  {note.attachmentCount > 0 && (
+                  {note.attachmentStorageIds.length > 0 && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <FileTextIcon className="h-3 w-3" />
-                      {note.attachmentCount}
+                      {note.attachmentStorageIds.length}
                     </span>
                   )}
                 </div>
@@ -199,30 +279,36 @@ export default function NotesPage() {
                   <span>{formatRelativeTime(note._creationTime)}</span>
                 </div>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <DotsHorizontalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleEdit(note)}>
-                    <Pencil1Icon className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => setDeleteNote(note)}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {(canEditNote(note) || canDeleteNote(note)) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <DotsHorizontalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canEditNote(note) && (
+                      <DropdownMenuItem onClick={() => handleEdit(note)}>
+                        <Pencil1Icon className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    {canDeleteNote(note) && (
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => setDeleteNote(note)}
+                      >
+                        <TrashIcon className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           ))}
         </div>
@@ -256,10 +342,19 @@ export default function NotesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setCreateOpen(false)}
+              disabled={saving}
+            >
               Cancel
             </Button>
-            <Button onClick={() => setCreateOpen(false)}>Create Note</Button>
+            <Button
+              onClick={() => void handleCreateSubmit()}
+              disabled={saving || !title.trim()}
+            >
+              {saving ? "Creating..." : "Create Note"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -290,10 +385,19 @@ export default function NotesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditNote(null)}>
+            <Button
+              variant="outline"
+              onClick={() => setEditNote(null)}
+              disabled={saving}
+            >
               Cancel
             </Button>
-            <Button onClick={() => setEditNote(null)}>Save Changes</Button>
+            <Button
+              onClick={() => void handleEditSubmit()}
+              disabled={saving || !title.trim()}
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -312,7 +416,7 @@ export default function NotesPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => setDeleteNote(null)}
+              onClick={() => void handleDelete()}
             >
               Delete
             </AlertDialogAction>
