@@ -20,3 +20,5 @@ export { AvatarUpload } from "./AvatarUpload";
 export type { AvatarUploadProps } from "./AvatarUpload";
 export { FileAttachment, FileAttachmentList } from "./FileAttachment";
 export type { FileAttachmentProps, FileAttachmentData } from "./FileAttachment";
+export { ImpersonationBanner } from "./ImpersonationBanner";
+export type { ImpersonationBannerProps } from "./ImpersonationBanner";
