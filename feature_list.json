@@ -217,11 +217,14 @@
       "name": "Blog & Changelog (MDX)",
       "type": "frontend",
       "priority": 2,
-      "status": "pending",
-      "current_phase": 0,
+      "status": "in_progress",
+      "current_phase": 1,
       "batch": 4,
       "dependencies": ["F001-012"],
       "description": "MDX blog + changelog with email subscription and What's New badge",
+      "spec_file": "docs/specs/F001-013-blog-changelog.spec",
+      "started_at": "2026-02-11T16:00:00-05:00",
+      "parent_prd": "F001",
       "prd": "docs/prds/F001-saas-boilerplate-v2.md"
     },
     {
