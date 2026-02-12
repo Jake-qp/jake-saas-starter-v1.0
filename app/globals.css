@@ -127,3 +127,12 @@
 .hide-lastpass-icon [data-lastpass-icon-root="true"] {
   display: none;
 }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

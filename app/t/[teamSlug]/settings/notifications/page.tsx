@@ -1,6 +1,5 @@
 "use client";
 
-import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
 import {
   Card,
   CardContent,
@@ -39,10 +38,7 @@ export default function NotificationPreferencesPage() {
 
   return (
     <>
-      <div className="flex items-center mt-8">
-        <SettingsMenuButton />
-        <h1 className="text-4xl font-extrabold">Notification Preferences</h1>
-      </div>
+      <h1 className="text-4xl font-extrabold mt-8">Notification Preferences</h1>
 
       <Card>
         <CardHeader>

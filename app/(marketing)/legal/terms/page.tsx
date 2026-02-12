@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
-import { getMdxSource } from "@/lib/mdx";
+import { getMdxSource, mdxOptions } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Terms of Service - SaaS Starter",
@@ -9,5 +9,5 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   const source = getMdxSource("legal/terms.mdx");
-  return <MDXRemote source={source} />;
+  return <MDXRemote source={source} options={mdxOptions} />;
 }

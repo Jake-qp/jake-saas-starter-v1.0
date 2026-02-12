@@ -1,7 +1,6 @@
 "use client";
 
 import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
-import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
 import { AddMember } from "@/app/t/[teamSlug]/settings/members/AddMember";
 import { MembersList } from "@/app/t/[teamSlug]/settings/members/MemberList";
 import { CustomRolesCard } from "@/app/t/[teamSlug]/settings/members/CustomRolesCard";
@@ -24,10 +23,7 @@ export default function MembersPage() {
   }, [team, router]);
   return (
     <>
-      <div className="flex items-center mt-8">
-        <SettingsMenuButton />
-        <h1 className="text-4xl font-extrabold">Members</h1>
-      </div>
+      <h1 className="text-4xl font-extrabold mt-8">Members</h1>
 
       <AddMember />
       <MembersList />

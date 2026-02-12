@@ -1,13 +1,8 @@
-import { ConvexClientProvider } from "@/app/ConvexClientProvider";
 import { AcceptInviteDialog } from "@/app/t/AcceptInviteDialog";
-import { Notifications } from "@/app/t/Notifications";
-import { TeamMenu } from "@/app/t/TeamMenu";
-import { ProfileButton } from "@/app/t/[teamSlug]/ProfileButton";
-import { StickyHeader } from "@/components/layout/sticky-header";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { WhatsNewBadge } from "@/components/WhatsNewBadge";
-import { TeamSwitcher } from "@/app/t/TeamSwitcher";
+import { AppHeader } from "@/app/t/[teamSlug]/AppHeader";
+import { AppSidebar } from "@/app/t/[teamSlug]/AppSidebar";
 import { CommandPalette } from "@/components/CommandPalette";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { Suspense } from "react";
 
@@ -18,24 +13,16 @@ export default function DashboardLayout({
 }) {
   return (
     <Suspense>
-      <ConvexClientProvider>
-        <StickyHeader className="px-4 py-2 flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <TeamSwitcher />
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              <WhatsNewBadge />
-              <Notifications />
-              <ProfileButton />
-            </div>
-          </div>
-          <TeamMenu />
-        </StickyHeader>
-        {children}
-        <AcceptInviteDialog />
-        <CommandPalette />
-        <Toaster />
-      </ConvexClientProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <AppHeader />
+          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+      <AcceptInviteDialog />
+      <CommandPalette />
+      <Toaster />
     </Suspense>
   );
 }

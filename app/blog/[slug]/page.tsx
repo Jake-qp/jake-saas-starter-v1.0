@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllBlogPosts, getBlogPost } from "@/lib/content";
+import { mdxOptions } from "@/lib/mdx";
 import { ChevronLeftIcon } from "@radix-ui/react-icons";
 
 interface Props {
@@ -60,7 +61,7 @@ export default function BlogPostPage({ params }: Props) {
       </header>
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">
-        <MDXRemote source={post.content} />
+        <MDXRemote source={post.content} options={mdxOptions} />
       </div>
     </article>
   );

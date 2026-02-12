@@ -1,7 +1,9 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { PageHeader } from "@/components";
+import { PageHeader } from "@/components/PageHeader";
+import { UsageMeter } from "@/components/UsageMeter";
+import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -12,8 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { UsageMeter } from "@/components";
-import { EmptyState } from "@/components";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_AI_MODELS } from "@/lib/aiModels";
 import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";

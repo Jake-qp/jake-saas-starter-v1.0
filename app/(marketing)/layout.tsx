@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/app/(marketing)/_components/MobileNav";
 
 function MarketingNav() {
   return (
@@ -31,12 +32,24 @@ function MarketingNav() {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" size="sm" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="hidden md:inline-flex"
+          >
             <Link href="/auth/sign-in">Sign in</Link>
           </Button>
-          <Button size="sm" asChild>
+          <Button size="sm" asChild className="hidden md:inline-flex">
             <Link href="/auth/sign-up">Get Started</Link>
           </Button>
+          <MobileNav
+            links={[
+              { href: "/pricing", label: "Pricing" },
+              { href: "/blog", label: "Blog" },
+              { href: "/contact", label: "Contact" },
+            ]}
+          />
         </div>
       </div>
     </header>

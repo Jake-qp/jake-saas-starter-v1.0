@@ -1,7 +1,6 @@
 "use client";
 
 import { useCurrentTeam } from "@/app/t/[teamSlug]/hooks";
-import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,10 +153,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <>
-      <div className="flex items-center mt-8">
-        <SettingsMenuButton />
-        <h1 className="text-4xl font-extrabold">Profile Settings</h1>
-      </div>
+      <h1 className="text-4xl font-extrabold mt-8">Profile Settings</h1>
 
       {/* Avatar */}
       <Card>

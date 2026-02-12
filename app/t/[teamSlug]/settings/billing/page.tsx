@@ -1,10 +1,9 @@
 "use client";
 
 import { useCurrentTeam, useViewerPermissions } from "@/app/t/[teamSlug]/hooks";
-import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
-import { StatusBadge } from "@/components";
-import { UsageMeter } from "@/components";
-import { PricingCard } from "@/components";
+import { StatusBadge } from "@/components/StatusBadge";
+import { UsageMeter } from "@/components/UsageMeter";
+import { PricingCard } from "@/components/PricingCard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,10 +43,7 @@ export default function BillingSettingsPage() {
   if (team.isPersonal) {
     return (
       <>
-        <div className="flex items-center mt-8">
-          <SettingsMenuButton />
-          <h1 className="text-4xl font-extrabold">Billing</h1>
-        </div>
+        <h1 className="text-4xl font-extrabold mt-8">Billing</h1>
         <Card>
           <CardHeader>
             <CardTitle>Personal Account</CardTitle>
@@ -65,17 +61,14 @@ export default function BillingSettingsPage() {
   const currentTier = billing?.tier ?? "free";
   const displayName = billing?.displayName ?? "Free";
   const status = (billing?.status ?? "active") as SubscriptionStatus;
-  const membersUsage = billing?.usage?.members ?? { current: 0, limit: 3 };
-  const creditsUsage = billing?.usage?.aiCredits ?? { current: 0, limit: 100 };
+  const membersUsage = billing?.usage.members ?? { current: 0, limit: 3 };
+  const creditsUsage = billing?.usage.aiCredits ?? { current: 0, limit: 100 };
 
   const tiers: PlanTier[] = ["free", "pro", "enterprise"];
 
   return (
     <>
-      <div className="flex items-center mt-8">
-        <SettingsMenuButton />
-        <h1 className="text-4xl font-extrabold">Billing</h1>
-      </div>
+      <h1 className="text-4xl font-extrabold mt-8">Billing</h1>
 
       {/* Current Plan */}
       <Card>

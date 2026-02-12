@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import remarkGfm from "remark-gfm";
 
 /**
  * Read an MDX file from the content directory at build time.
@@ -12,3 +13,10 @@ export function getMdxSource(relativePath: string): string {
   }
   return fs.readFileSync(fullPath, "utf-8");
 }
+
+/** Shared MDX options for next-mdx-remote — enables GFM tables, strikethrough, etc. */
+export const mdxOptions = {
+  mdxOptions: {
+    remarkPlugins: [remarkGfm],
+  },
+};

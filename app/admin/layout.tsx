@@ -1,26 +1,16 @@
 "use client";
 
 import { ReactNode } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components";
+import { EmptyState } from "@/components/EmptyState";
 import { LockClosedIcon } from "@radix-ui/react-icons";
-
-const adminNavItems = [
-  { href: "/admin", label: "Dashboard", exact: true },
-  { href: "/admin/users", label: "Users", exact: false },
-  { href: "/admin/teams", label: "Teams", exact: false },
-  { href: "/admin/waitlist", label: "Waitlist", exact: false },
-  { href: "/admin/flags", label: "Feature Flags", exact: false },
-  { href: "/admin/analytics", label: "Analytics", exact: false },
-  { href: "/admin/audit", label: "Audit Log", exact: false },
-];
+import { AdminSidebar } from "@/app/admin/AdminSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const isSuperAdmin = useQuery(api.admin.isSuperAdmin);
 
   // Loading state
@@ -32,7 +22,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // Access denied (AC2)
+  // Access denied
   if (!isSuperAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -46,36 +36,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 border-r border-border bg-muted/30 p-4">
-        <div className="mb-6">
-          <Link href="/admin" className="text-lg font-bold">
-            Admin
-          </Link>
-        </div>
-        <nav className="space-y-1">
-          {adminNavItems.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "block rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
-      <main className="flex-1 p-6">{children}</main>
-    </div>
+    <SidebarProvider>
+      <AdminSidebar />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <h1 className="text-sm font-semibold">Admin</h1>
+        </header>
+        <main className="flex-1 p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

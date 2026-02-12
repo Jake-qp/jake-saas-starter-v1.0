@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHeader } from "@/components";
+import { PageHeader } from "@/components/PageHeader";
 import {
   Card,
   CardContent,

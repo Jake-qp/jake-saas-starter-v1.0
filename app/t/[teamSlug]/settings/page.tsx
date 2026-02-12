@@ -2,7 +2,6 @@
 
 import { useCurrentTeam, useViewerPermissions } from "@/app/t/[teamSlug]/hooks";
 import { DeleteTeamDialog } from "@/app/t/[teamSlug]/settings/DeleteTeamDialog";
-import { SettingsMenuButton } from "@/app/t/[teamSlug]/settings/SettingsMenuButton";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,12 +85,9 @@ export default function GeneralSettingsPage() {
 
   return (
     <>
-      <div className="flex items-center mt-8">
-        <SettingsMenuButton />
-        <h1 className="text-4xl font-extrabold">
-          {team.isPersonal ? <>Account Settings</> : <>Team Settings</>}
-        </h1>
-      </div>
+      <h1 className="text-4xl font-extrabold mt-8">
+        {team.isPersonal ? <>Account Settings</> : <>Team Settings</>}
+      </h1>
 
       {/* Team Avatar (non-personal teams only) */}
       {!team.isPersonal && (

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { getAllChangelogEntries } from "@/lib/content";
-import { PageHeader } from "@/components";
+import { mdxOptions } from "@/lib/mdx";
+import { PageHeader } from "@/components/PageHeader";
 import { Separator } from "@/components/ui/separator";
 import { ChangelogSubscribeForm } from "./ChangelogSubscribeForm";
 
@@ -48,7 +49,7 @@ export default function ChangelogPage() {
                 </time>
               </div>
               <div className="mt-4 prose prose-neutral dark:prose-invert max-w-none prose-h1:text-2xl prose-h1:mt-0">
-                <MDXRemote source={entry.content} />
+                <MDXRemote source={entry.content} options={mdxOptions} />
               </div>
             </div>
           ))}
