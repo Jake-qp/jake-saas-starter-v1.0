@@ -37,6 +37,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# playwright-cli runtime artifacts
+.playwright-cli/
+
 # claude / vibe system
 .claude/settings.local.json
 .claude/state/
