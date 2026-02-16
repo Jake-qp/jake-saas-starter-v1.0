@@ -269,7 +269,6 @@ function InvitesTable({
           .filter((invite) => invite.email.includes(search))
           .map((invite) => {
             const isExpired =
-              invite._creationTime !== undefined &&
               Date.now() - invite._creationTime > 7 * 24 * 60 * 60 * 1000;
             return (
               <TableRow key={invite._id}>
@@ -283,11 +282,9 @@ function InvitesTable({
                         </Badge>
                       )}
                     </div>
-                    {invite._creationTime !== undefined && (
-                      <div className="text-xs text-muted-foreground">
-                        Sent {formatInviteAge(invite._creationTime)}
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Sent {formatInviteAge(invite._creationTime)}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

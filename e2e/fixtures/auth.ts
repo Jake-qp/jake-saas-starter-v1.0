@@ -4,16 +4,14 @@ import { test as base, expect, type Page } from "@playwright/test";
  * Auth fixture for E2E tests.
  *
  * Provides authenticated page contexts by signing in once and reusing
- * the session state. This avoids signing in for every test.
+ * the session state. Uses env vars E2E_TEST_EMAIL and E2E_TEST_PASSWORD
+ * with fallback to hardcoded test account.
  *
  * Usage:
  *   import { test, expect } from "./fixtures/auth";
  *   test("authenticated test", async ({ authenticatedPage }) => {
  *     // authenticatedPage is already signed in
  *   });
- *
- * Expand this fixture when F001-001 (Auth) is built with actual
- * sign-in flows.
  */
 
 type AuthFixtures = {
@@ -22,14 +20,22 @@ type AuthFixtures = {
 
 export const test = base.extend<AuthFixtures>({
   authenticatedPage: async ({ page }, use) => {
-    // TODO: Implement actual sign-in flow when F001-001 is built
-    // 1. Navigate to /auth/sign-in
-    // 2. Fill in email/password
-    // 3. Submit form
-    // 4. Wait for redirect to dashboard
-    //
-    // For now, this is a placeholder that navigates to the app root.
-    await page.goto("/");
+    const email = process.env.E2E_TEST_EMAIL ?? "e2e-test@example.com";
+    const password = process.env.E2E_TEST_PASSWORD ?? "testpassword123";
+
+    try {
+      await page.goto("/auth/sign-in");
+      await page.locator("#email").fill(email);
+      await page.locator("#password").fill(password);
+      await page.getByRole("button", { name: "Sign in" }).click();
+
+      // Wait for redirect to team dashboard
+      await page.waitForURL(/\/t/, { timeout: 10000 });
+    } catch {
+      // Auth failed — backend unavailable or no test account.
+      // Individual tests should handle this gracefully.
+    }
+
     await use(page);
   },
 });

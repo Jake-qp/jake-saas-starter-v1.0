@@ -4,55 +4,70 @@ import AxeBuilder from "@axe-core/playwright";
 /**
  * Accessibility E2E tests.
  *
- * Runs axe-core scans on key pages to check WCAG compliance.
- * Expand as new pages are added.
+ * Runs axe-core scans on key pages to check WCAG 2.0 AA compliance.
+ * Only flags critical violations.
  */
 
-test.describe("Accessibility", () => {
-  test("landing page should have no critical accessibility violations", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
-      .analyze();
+function axeScan(page: import("@playwright/test").Page) {
+  return new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+}
 
+test.describe("Accessibility — Public pages", () => {
+  test("landing page has no critical violations", async ({ page }) => {
+    await page.goto("/");
+    const results = await axeScan(page);
     expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
       [],
     );
   });
 
-  test.describe("Public pages", () => {
-    test.skip("pricing page should have no critical accessibility violations", async () => {
-      // TODO: Implement when F001-012 (Marketing) is built
-    });
-
-    test.skip("contact page should have no critical accessibility violations", async () => {
-      // TODO: Implement when F001-012 (Marketing) is built
-    });
-
-    test.skip("blog listing should have no critical accessibility violations", async () => {
-      // TODO: Implement when F001-013 (Blog) is built
-    });
+  test("pricing page has no critical violations", async ({ page }) => {
+    await page.goto("/pricing");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
   });
 
-  test.describe("Auth pages", () => {
-    test.skip("sign-in page should have no critical accessibility violations", async () => {
-      // TODO: Implement when F001-001 (Auth) is built
-    });
-
-    test.skip("sign-up page should have no critical accessibility violations", async () => {
-      // TODO: Implement when F001-001 (Auth) is built
-    });
+  test("contact page has no critical violations", async ({ page }) => {
+    await page.goto("/contact");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
   });
 
-  test.describe("Authenticated pages", () => {
-    test.skip("dashboard should have no critical accessibility violations", async () => {
-      // TODO: Implement when dashboard is built
-    });
+  test("blog listing has no critical violations", async ({ page }) => {
+    await page.goto("/blog");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
+  });
+});
 
-    test.skip("settings page should have no critical accessibility violations", async () => {
-      // TODO: Implement when settings is built
-    });
+test.describe("Accessibility — Auth pages", () => {
+  test("sign-in page has no critical violations", async ({ page }) => {
+    await page.goto("/auth/sign-in");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
+  });
+
+  test("sign-up page has no critical violations", async ({ page }) => {
+    await page.goto("/auth/sign-up");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
+  });
+
+  test("forgot-password page has no critical violations", async ({ page }) => {
+    await page.goto("/auth/forgot-password");
+    const results = await axeScan(page);
+    expect(results.violations.filter((v) => v.impact === "critical")).toEqual(
+      [],
+    );
   });
 });
