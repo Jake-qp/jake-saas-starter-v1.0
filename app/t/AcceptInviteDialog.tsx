@@ -26,19 +26,19 @@ export function AcceptInviteDialog() {
   const [inviteId, setInviteId] = useState<Id<"invites"> | null>(null);
   const invite = useQuery(
     api.invites.get,
-    inviteId === null ? "skip" : { inviteId }
+    inviteId === null ? "skip" : { inviteId },
   );
   const showInviteId = searchParams.get(INVITE_PARAM);
   useEffect(() => {
     if (showInviteId !== null) {
       setInviteId(showInviteId as Id<"invites">);
-      const newSearchParams = new URLSearchParams(searchParams);
+      const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.delete(INVITE_PARAM);
       const newSearchParamsString = newSearchParams.toString();
       router.replace(
         `${pathname}${
           newSearchParamsString.length > 0 ? `?${newSearchParamsString}` : ""
-        }`
+        }`,
       );
     }
   }, [showInviteId, pathname, router, searchParams]);

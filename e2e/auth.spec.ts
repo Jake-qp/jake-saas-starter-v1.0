@@ -20,7 +20,7 @@ test.describe("Authentication flows", () => {
     await page.goto("/auth/sign-in");
     await page.locator("#email").fill(email!);
     await page.locator("#password").fill(password!);
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL(/\/t/, { timeout: 10000 });
   });
@@ -29,7 +29,7 @@ test.describe("Authentication flows", () => {
     await page.goto("/auth/sign-in");
     await page.locator("#email").fill("nonexistent@example.com");
     await page.locator("#password").fill("wrongpassword123");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page.getByText(/invalid email or password/i)).toBeVisible({
       timeout: 10000,
@@ -74,11 +74,8 @@ test.describe("Authentication flows", () => {
   }) => {
     await page.goto("/t/some-team");
     // Should redirect to sign-in or show auth gate
-    await expect(
-      page
-        .getByRole("heading", { name: /sign in/i })
-        .or(page.locator("#email")),
-    ).toBeVisible({ timeout: 10000 });
+    // Should end up on sign-in page or see the email input
+    await expect(page.locator("#email")).toBeVisible({ timeout: 10000 });
   });
 
   test("forgot password shows verification step", async ({ page }) => {

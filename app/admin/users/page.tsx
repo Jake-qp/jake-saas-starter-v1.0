@@ -32,7 +32,7 @@ interface AdminUser {
 }
 
 export default function AdminUsersPage() {
-  const users = useQuery(api.admin.listUsers);
+  const users = useQuery(api.admin.listUsers, {});
   const startImpersonation = useMutation(api.admin.startImpersonation);
   const [impersonateTarget, setImpersonateTarget] = useState<AdminUser | null>(
     null,

@@ -18,7 +18,7 @@ export async function verifySuperAdmin(): Promise<boolean> {
   client.setAuth(token);
 
   try {
-    const isSuperAdmin = await client.query(api.admin.isSuperAdmin);
+    const isSuperAdmin = await client.query(api.admin.isSuperAdmin, {});
     return isSuperAdmin === true;
   } catch {
     return false;

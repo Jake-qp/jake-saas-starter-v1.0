@@ -36,7 +36,7 @@ function MetricCard({
 }
 
 export default function AdminDashboardPage() {
-  const metrics = useQuery(api.admin.dashboardMetrics);
+  const metrics = useQuery(api.admin.dashboardMetrics, {});
 
   if (!metrics) {
     return (

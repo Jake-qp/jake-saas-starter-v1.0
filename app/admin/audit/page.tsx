@@ -37,7 +37,7 @@ function actionVariant(action: string): "default" | "secondary" | "outline" {
 }
 
 export default function AdminAuditPage() {
-  const entries = useQuery(api.admin.listAuditLog);
+  const entries = useQuery(api.admin.listAuditLog, {});
 
   const columns: ColumnDef<AuditEntry>[] = [
     {

@@ -122,7 +122,8 @@ export default function BillingSettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CustomerPortalLink polarApi={api.billing}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <CustomerPortalLink polarApi={api.billing as any}>
               <Button variant="outline">Manage Subscription</Button>
             </CustomerPortalLink>
           </CardContent>
@@ -159,7 +160,8 @@ export default function BillingSettingsPage() {
                       </Button>
                     ) : (
                       <CheckoutLink
-                        polarApi={api.billing}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        polarApi={api.billing as any}
                         productIds={[]}
                         embed={false}
                       >

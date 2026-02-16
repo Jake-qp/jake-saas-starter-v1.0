@@ -43,7 +43,7 @@ interface FeatureFlag {
 }
 
 export default function AdminFlagsPage() {
-  const isSuperAdmin = useQuery(api.admin.isSuperAdmin);
+  const isSuperAdmin = useQuery(api.admin.isSuperAdmin, {});
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);

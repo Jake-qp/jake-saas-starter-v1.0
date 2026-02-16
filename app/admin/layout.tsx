@@ -11,7 +11,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const isSuperAdmin = useQuery(api.admin.isSuperAdmin);
+  const isSuperAdmin = useQuery(api.admin.isSuperAdmin, {});
 
   // Loading state
   if (isSuperAdmin === undefined) {

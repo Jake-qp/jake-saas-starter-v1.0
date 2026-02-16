@@ -12,18 +12,21 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
 
+type WaitlistStatus = "pending" | "approved" | "rejected";
+
 interface WaitlistEntry {
   _id: Id<"waitlistEntries">;
   email: string;
-  status: string;
+  status: WaitlistStatus;
   _creationTime: number;
 }
 
-const statusMap: Record<string, "default" | "success" | "error"> = {
-  pending: "default",
-  approved: "success",
-  rejected: "error",
-};
+const statusToBadge: Record<WaitlistStatus, "pending" | "active" | "canceled"> =
+  {
+    pending: "pending",
+    approved: "active",
+    rejected: "canceled",
+  };
 
 export default function AdminWaitlistPage() {
   const entries = useQuery(api.waitlist.listWaitlistEntries);
@@ -113,8 +116,11 @@ export default function AdminWaitlistPage() {
       header: "Status",
       cell: ({ row }) => (
         <StatusBadge
-          status={row.original.status}
-          variant={statusMap[row.original.status]}
+          status={statusToBadge[row.original.status]}
+          label={
+            row.original.status.charAt(0).toUpperCase() +
+            row.original.status.slice(1)
+          }
         />
       ),
     },
@@ -173,7 +179,7 @@ export default function AdminWaitlistPage() {
       ) : (
         <DataTable
           columns={columns}
-          data={entries}
+          data={entries as WaitlistEntry[]}
           searchKey="email"
           searchPlaceholder="Search by email..."
           pagination

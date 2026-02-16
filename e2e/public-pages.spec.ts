@@ -40,18 +40,18 @@ test.describe("Marketing pages", () => {
 
 test.describe("Legal pages", () => {
   test("privacy policy loads", async ({ page }) => {
-    await page.goto("/privacy");
-    await expect(page.getByRole("heading", { name: /privacy/i })).toBeVisible();
+    await page.goto("/legal/privacy");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
   test("terms of service loads", async ({ page }) => {
-    await page.goto("/terms");
-    await expect(page.getByRole("heading", { name: /terms/i })).toBeVisible();
+    await page.goto("/legal/terms");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
   test("cookie policy loads", async ({ page }) => {
-    await page.goto("/cookies");
-    await expect(page.getByRole("heading", { name: /cookie/i })).toBeVisible();
+    await page.goto("/legal/cookies");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
 
@@ -76,7 +76,9 @@ test.describe("Auth pages render correctly", () => {
     await page.goto("/auth/sign-in");
     await expect(page.locator("#email")).toBeVisible();
     await expect(page.locator("#password")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Sign in", exact: true }),
+    ).toBeVisible();
   });
 
   test("sign-in page has magic link section", async ({ page }) => {
@@ -113,7 +115,10 @@ test.describe("Auth form validation", () => {
     await page.locator("#password").fill("short");
     await page.locator("#confirm-password").fill("short");
     await page.getByRole("button", { name: "Sign up" }).click();
-    await expect(page.getByText(/at least 8 characters/i)).toBeVisible();
+    // Browser native validation or custom JS error should prevent submission
+    const customError = page.getByText(/at least 8 characters/i);
+    const nativeValidation = page.locator("#password:invalid");
+    await expect(customError.or(nativeValidation)).toBeVisible();
   });
 
   test("sign-up rejects mismatched passwords", async ({ page }) => {

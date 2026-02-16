@@ -25,6 +25,7 @@ import {
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 
 export default function AIChatPage() {
   const team = useCurrentTeam();
@@ -53,8 +54,10 @@ export default function AIChatPage() {
     error,
     stop,
   } = useChat({
-    api: "/api/ai/chat",
-    body: { model, teamId: team?._id },
+    transport: new DefaultChatTransport({
+      api: "/api/ai/chat",
+      body: { model, teamId: team?._id },
+    }),
     onFinish: ({ message }) => {
       if (!team) return;
       // Extract text from message parts

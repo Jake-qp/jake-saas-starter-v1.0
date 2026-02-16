@@ -27,7 +27,7 @@ export const test = base.extend<AuthFixtures>({
       await page.goto("/auth/sign-in");
       await page.locator("#email").fill(email);
       await page.locator("#password").fill(password);
-      await page.getByRole("button", { name: "Sign in" }).click();
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
       // Wait for redirect to team dashboard
       await page.waitForURL(/\/t/, { timeout: 10000 });

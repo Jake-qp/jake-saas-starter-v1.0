@@ -25,7 +25,7 @@ interface AdminTeam {
 }
 
 export default function AdminTeamsPage() {
-  const teams = useQuery(api.admin.listTeams);
+  const teams = useQuery(api.admin.listTeams, {});
 
   const columns: ColumnDef<AdminTeam>[] = [
     {

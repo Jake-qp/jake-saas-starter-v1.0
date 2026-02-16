@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     await resend.emails.send({
       from: "Contact Form <noreply@resend.dev>",
       to: [toAddress],
-      replyTo: email,
+      reply_to: email,
       subject: `Contact form: ${name}`,
       text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
     });

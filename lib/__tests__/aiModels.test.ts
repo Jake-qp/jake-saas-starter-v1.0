@@ -9,9 +9,9 @@ describe("lib/aiModels", () => {
     });
 
     it("should include both OpenAI and Anthropic providers", () => {
-      const providers = [
-        ...new Set(SUPPORTED_AI_MODELS.map((m) => m.provider)),
-      ];
+      const providers = Array.from(
+        new Set(SUPPORTED_AI_MODELS.map((m) => m.provider)),
+      );
       expect(providers).toContain("openai");
       expect(providers).toContain("anthropic");
     });
