@@ -12,7 +12,11 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./functions";
 import { viewerHasPermissionX } from "./permissions";
-import { checkEntitlement, decrementCredits } from "./entitlements";
+import {
+  checkEntitlement,
+  decrementCredits,
+  getTeamBillingInfo,
+} from "./entitlements";
 import { rateLimiter } from "./rateLimit";
 
 /**
@@ -104,7 +108,6 @@ export const getCreditUsage = query({
   },
   handler: async (ctx, { teamId }) => {
     ctx.viewerX();
-    const { getTeamBillingInfo } = await import("./entitlements");
     const billingInfo = await getTeamBillingInfo(ctx, teamId);
     return {
       current: billingInfo.usage.aiCredits.current,
