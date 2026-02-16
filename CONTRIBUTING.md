@@ -45,7 +45,7 @@ npm run test:all          # Run everything
 
 - **Convex functions:** Place tests in `convex/__tests__/`. Use `convex-test` for mocking auth context and database state.
 - **Utilities:** Place tests in `lib/__tests__/`.
-- **E2E tests:** Place tests in `e2e/`. Use Playwright with the auth fixture from `e2e/fixtures/auth.ts`.
+- **E2E tests:** Place tests in `e2e/`. See [`docs/e2e-testing.md`](docs/e2e-testing.md) for the full guide.
 - **Convention:** Every Convex mutation must have permission and entitlement tests. Every utility function must have unit tests.
 
 ### Test Structure
@@ -53,10 +53,10 @@ npm run test:all          # Run everything
 ```
 tests/setup.ts                    # Vitest global setup
 convex/__tests__/                 # Convex function tests
-components/__tests__/             # Component tests (React Testing Library)
 lib/__tests__/                    # Utility tests
 e2e/                              # Playwright E2E tests
-  fixtures/                       # Reusable test fixtures
+  global-setup.ts                 # Account provisioning + storageState
+  .auth/                          # Saved browser state (gitignored)
 ```
 
 ## Adding a New Module
